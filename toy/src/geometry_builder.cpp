@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "geometry_builder.h"
+#include "timed_info.h"
 
 #include <algorithm>
 #include <map>
@@ -202,7 +203,7 @@ void TimedGeometryBuilder::add_line(glm::vec3 position0, glm::vec3 position1, gl
 		position1,
 		color
 	};
-	TimedInfo<LineInfo> timed_info{
+	timedinfo::TimedInfo<LineInfo> timed_info{
 		info,
 		duration
 	};
@@ -216,7 +217,7 @@ void TimedGeometryBuilder::add_cube(glm::vec3 position, float length, glm::vec3 
 		length,
 		color
 	};
-	TimedInfo<CubeInfo> timed_info{
+	timedinfo::TimedInfo<CubeInfo> timed_info{
 		info,
 		duration
 	};
@@ -230,46 +231,18 @@ void TimedGeometryBuilder::add_sphere(glm::vec3 position, float radius, glm::vec
 		radius,
 		color
 	};
-	TimedInfo<SphereInfo> timed_info{
+	timedinfo::TimedInfo<SphereInfo> timed_info{
 		info,
 		duration
 	};
 	m_spheres.push_back(timed_info);
 }
 
-template <typename T>
-void update_info_duration(std::vector<TimedInfo<T>>& m_infos, float delta_time)
-{
-	for (auto& info : m_infos) {
-		info.duration -= delta_time;
-	}
-}
-
-template <typename T>
-bool is_expired(const TimedInfo<T>& info)
-{
-	return info.duration < 0.0f;
-}
-
-template <typename T>
-void remove_expired_info(std::vector<TimedInfo<T>>& m_infos)
-{
-	auto it = std::remove_if(m_infos.begin(), m_infos.end(), is_expired<T>);
-	m_infos.erase(it, m_infos.end());
-}
-
-template <typename T>
-void process_timed_info(std::vector<TimedInfo<T>>& m_infos, float delta_time)
-{
-	update_info_duration(m_infos, delta_time);
-	remove_expired_info(m_infos);
-}
-
 void TimedGeometryBuilder::update(float delta_time)
 {
-	process_timed_info(m_lines, delta_time);
-	process_timed_info(m_cubes, delta_time);
-	process_timed_info(m_spheres, delta_time);
+	timedinfo::process_timed_info(m_lines, delta_time);
+	timedinfo::process_timed_info(m_cubes, delta_time);
+	timedinfo::process_timed_info(m_spheres, delta_time);
 }
 
 std::vector<ColorLineData> TimedGeometryBuilder::build_buffer()

@@ -47,12 +47,21 @@ set(toy_SOURCES
 	src/color_util.h
 	src/color_util.cpp
 
+	src/timed_info_fwd.h
+	src/timed_info.h
+	src/timed_info.cpp
+
 	src/geometry_builder.h
 	src/geometry_builder.cpp
 	src/geometry_util.h
 	src/geometry_util.cpp
 	src/geometry_mesh.h
 	src/geometry_mesh.cpp
+
+	src/text_builder.h
+	src/text_builder.cpp
+	src/vertex_mesh.h
+	src/vertex_mesh.cpp
 
 	src/camera_controller.h
 	src/camera_controller.cpp

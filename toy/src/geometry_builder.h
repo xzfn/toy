@@ -1,5 +1,7 @@
 #pragma once
 
+#include "timed_info_fwd.h"
+
 #include <vector>
 
 #include <glm/vec3.hpp>
@@ -66,13 +68,6 @@ private:
 	std::vector<SphereInfo> m_spheres;
 };
 
-
-template <typename T>
-struct TimedInfo {
-	T info;
-	float duration;
-};
-
 class TimedGeometryBuilder {
 public:
 	void clear();
@@ -86,7 +81,7 @@ public:
 	std::vector<ColorLineData> build_buffer();
 
 private:
-	std::vector<TimedInfo<LineInfo>> m_lines;
-	std::vector<TimedInfo<CubeInfo>> m_cubes;
-	std::vector<TimedInfo<SphereInfo>> m_spheres;
+	std::vector<timedinfo::TimedInfo<LineInfo>> m_lines;
+	std::vector<timedinfo::TimedInfo<CubeInfo>> m_cubes;
+	std::vector<timedinfo::TimedInfo<SphereInfo>> m_spheres;
 };

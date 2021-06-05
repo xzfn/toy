@@ -9,6 +9,7 @@
 enum class VertexFormat {
 	PositionNormalUv,
 	PositionColor,
+	PositionColorUv,
 };
 
 struct VertexPositionNormalUv {
@@ -20,6 +21,12 @@ struct VertexPositionNormalUv {
 struct VertexPositionColor {
 	glm::vec3 position;
 	glm::vec3 color;
+};
+
+struct VertexPositionColorUv {
+	glm::vec3 position;
+	glm::vec3 color;
+	glm::vec2 uv;
 };
 
 VkPipelineVertexInputStateCreateInfo generate_vertex_input_state(VertexFormat vertex_format);

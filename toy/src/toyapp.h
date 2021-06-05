@@ -13,6 +13,8 @@
 #include "camera_controller.h"
 #include "geometry_builder.h"
 #include "geometry_mesh.h"
+#include "vertex_mesh.h"
+#include "text_builder.h"
 #include "color_util.h"
 #include "resource_manager.h"
 #include "timer_manager.h"
@@ -64,6 +66,7 @@ public:
 	BasicPipeline pipeline;
 	BasicPipeline pipeline_lines;
 	BasicPipeline pipeline_skybox;
+	BasicPipeline pipeline_text;
 
 	double timestamp = 0.0;
 
@@ -82,11 +85,14 @@ public:
 
 	Texture texture;
 	TextureCubemap texture_cubemap;
+	Texture texture_ascii;
 	Mesh mesh;
 	GeometryMesh mesh2;
 	Mesh mesh3;
+	VertexMesh mesh_text;
 	Material material;
 	Material material_cubemap;
+	Material material_text;
 
 	glm::vec3 old_translation;
 
@@ -96,6 +102,7 @@ public:
 
 	GeometryBuilder geometry_builder;
 	TimedGeometryBuilder timed_geometry_builder;
+	TextBuilder text_builder;
 
 	KeyDownCallback script_on_key_down;
 	TimerManager timer_manager;

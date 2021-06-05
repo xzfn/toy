@@ -883,11 +883,11 @@ std::pair<VkPipeline, VkPipelineLayout> create_pipeline(VkDevice device, VkRende
     };
 
     VkPipelineColorBlendAttachmentState color_blend_attachment_state = {
-        VK_FALSE,  // blendEnable;
-        VK_BLEND_FACTOR_ONE,  // srcColorBlendFactor;
-        VK_BLEND_FACTOR_ZERO,  // dstColorBlendFactor;
+        VK_TRUE,  // blendEnable;
+        VK_BLEND_FACTOR_SRC_ALPHA,  // srcColorBlendFactor;
+        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // dstColorBlendFactor;
         VK_BLEND_OP_ADD,  // colorBlendOp;
-        VK_BLEND_FACTOR_ONE,  // srcAlphaBlendFactor;
+        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcAlphaBlendFactor;
         VK_BLEND_FACTOR_ZERO,  // dstAlphaBlendFactor;
         VK_BLEND_OP_ADD,  // alphaBlendOp;
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT  // colorWriteMask;
@@ -1936,11 +1936,11 @@ VkPipeline create_pipeline(VkDevice device, VkRenderPass render_pass, uint32_t w
     };
 
     VkPipelineColorBlendAttachmentState color_blend_attachment_state = {
-        VK_FALSE,  // blendEnable;
-        VK_BLEND_FACTOR_ONE,  // srcColorBlendFactor;
-        VK_BLEND_FACTOR_ZERO,  // dstColorBlendFactor;
+        VK_TRUE,  // blendEnable;
+        VK_BLEND_FACTOR_SRC_ALPHA,  // srcColorBlendFactor;
+        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // dstColorBlendFactor;
         VK_BLEND_OP_ADD,  // colorBlendOp;
-        VK_BLEND_FACTOR_ONE,  // srcAlphaBlendFactor;
+        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcAlphaBlendFactor;
         VK_BLEND_FACTOR_ZERO,  // dstAlphaBlendFactor;
         VK_BLEND_OP_ADD,  // alphaBlendOp;
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT  // colorWriteMask;

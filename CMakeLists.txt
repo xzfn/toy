@@ -13,7 +13,8 @@ endif()
 set(WIN32_UNICODE_DEFINES _UNICODE UNICODE)
 
 find_package(volk CONFIG REQUIRED)
-set(stb_INCLUDE_DIR "stb_INCLUDE_DIR_NOT_FOUND" CACHE PATH "Path to stb folder")
+
+find_path(stb_INCLUDE_DIR stb_image.h DOC "Path to stb folder" REQUIRED)
 
 find_package(glm REQUIRED)
 

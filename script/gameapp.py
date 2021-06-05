@@ -10,7 +10,7 @@ import vmath
 
 import remoteconsole.server
 
-import toyqt
+#import toyqt
 from world import World
 import drawutil
 
@@ -29,8 +29,8 @@ class App:
 
     def startup(self):
         toy.bind_on_key_down(self.on_key_down)
-        toyqt.startup()
-        toyqt.qtwindow.on_shoot = self.on_shoot
+        #toyqt.startup()
+        #toyqt.qtwindow.on_shoot = self.on_shoot
         self.world = World()
         self.world.unit_manager.create_unit(Player)
 
@@ -47,7 +47,7 @@ class App:
     def update(self):
         self.console_server.service()
         time.sleep(0.001)
-        toyqt.update()
+        #toyqt.update()
 
         mouse_dx, mouse_dy = toy.get_input_manager().get_mouse_move()
         mouse_wheel = toy.get_input_manager().get_mouse_wheel()

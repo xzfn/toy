@@ -81,6 +81,47 @@ VkPipelineVertexInputStateCreateInfo vertex_input_state_position_color = {
 };
 
 
+// PositionColorUv
+
+std::vector<VkVertexInputBindingDescription> vertex_binding_descriptions_position_color_uv{
+    {
+        0,  // binding;
+        sizeof(VertexPositionNormalUv),  // stride;
+        VK_VERTEX_INPUT_RATE_VERTEX  // inputRate;
+    }
+};
+
+std::vector<VkVertexInputAttributeDescription> vertex_attribute_descriptions_position_color_uv = {
+    {
+        0,  // location;
+        vertex_binding_descriptions_position_color_uv[0].binding,  // binding;
+        VK_FORMAT_R32G32B32_SFLOAT,  // format;
+        0  // offset;
+    },
+    {
+        1,  // location;
+        vertex_binding_descriptions_position_color_uv[0].binding,  // binding;
+        VK_FORMAT_R32G32B32_SFLOAT,  // format;
+        sizeof(float) * 3  // offset;
+    },
+    {
+        2,  // location;
+        vertex_binding_descriptions_position_color_uv[0].binding,  // binding;
+        VK_FORMAT_R32G32_SFLOAT,  // format;
+        sizeof(float) * (3 + 3)  // offset;
+    }
+};
+
+VkPipelineVertexInputStateCreateInfo vertex_input_state_position_color_uv = {
+        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,  // sType;
+        nullptr,  // pNext;
+        0,  // flags;
+        (uint32_t)vertex_binding_descriptions_position_color_uv.size(),  // vertexBindingDescriptionCount;
+        vertex_binding_descriptions_position_color_uv.data(),  // pVertexBindingDescriptions;
+        (uint32_t)vertex_attribute_descriptions_position_color_uv.size(),  // vertexAttributeDescriptionCount;
+        vertex_attribute_descriptions_position_color_uv.data()  // pVertexAttributeDescriptions;
+};
+
 
 VkPipelineVertexInputStateCreateInfo generate_vertex_input_state(VertexFormat vertex_format)
 {
@@ -89,6 +130,8 @@ VkPipelineVertexInputStateCreateInfo generate_vertex_input_state(VertexFormat ve
         return vertex_input_state_position_normal_uv;
     case VertexFormat::PositionColor:
         return vertex_input_state_position_color;
+    case VertexFormat::PositionColorUv:
+        return vertex_input_state_position_color_uv;
     default:
         break;
 	}

@@ -240,6 +240,10 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 	mesh2.init_resource(ctx, geometry_builder.build_buffer());
 
 
+	text_builder.add_text(VEC3_ZERO, "ABCDEFG!@#$%^&abcdefg", COLOR_BLUE);
+	//text_builder.add_text(glm::vec3(0.0f, 5.0f, 0.0f), "this is test text2", COLOR_BLUE);
+	mesh_text.init_resource(ctx, text_builder.build_buffer());
+
 	ShapeData shape_data = generate_unit_cube();
 	MeshData mesh_data;
 	mesh_data.set_vertices_data(shape_data.positions, shape_data.normals, shape_data.uvs);
@@ -276,11 +280,25 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 	desc.cull_model_flags = VK_CULL_MODE_FRONT_BIT;
 	pipeline_skybox.init_pipeline(ctx, desc);
 
+	desc.filename_vert_spv = resource_manager.full_path("shader/text.vert.spv");
+	desc.filename_frag_spv = resource_manager.full_path("shader/text.frag.spv");
+	desc.vertex_format = VertexFormat::PositionColorUv;
+	desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
+	pipeline_text.init_pipeline(ctx, desc);
+
 
 	imageutil::Image raw_image = imageutil::load_image_force_channels(resource_manager.full_path("resource/cube.png"), 4);
 	texture.init(ctx, raw_image);
 
 	material.init(ctx, pipeline, texture);
+
+
+	imageutil::Image raw_image_ascii = imageutil::load_image_force_channels(resource_manager.full_path("resource/uvgrid_512.png"), 4);
+	texture_ascii.init(ctx, raw_image_ascii);
+
+	material_text.init(ctx, pipeline_text, texture_ascii);
+
 
 	std::vector<imageutil::Image> cubemap_raw_images;
 	//front, back, up, down, right and left
@@ -511,6 +529,26 @@ inline void App::render(VkCommandBuffer command_buffer) {
 	model = glm::mat4(1.0f);
 	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 	temp_mesh.draw(command_buffer);
+
+
+	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_text.get_pipeline());
+	std::vector<VkDescriptorSet> descriptor_sets4{
+		descriptor_set_frame  //, descriptor_set_model
+	};
+	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets3.size(), descriptor_sets3.data(), 0, nullptr);
+
+	model = glm::mat4(1.0f) * 0.1f;
+	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
+	material_text.bind(command_buffer);
+	mesh_text.draw(command_buffer);
+	
+	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
+	material_text.bind(command_buffer);
+	VertexMesh mesh_text_temp;
+	TextBuilder text_builder_temp;
+	text_builder_temp.add_text(glm::vec3(0.0f, 10.0f, 0.0f), std::to_string(timestamp));
+	mesh_text_temp.init_resource(ctx, text_builder_temp.build_buffer());
+	mesh_text_temp.draw(command_buffer);
 
 }
 
