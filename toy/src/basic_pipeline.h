@@ -20,6 +20,11 @@ struct FrameUniforms {
 
 	glm::vec3 sun_light_direction;
 	float padding_1;
+
+	float screen_width;
+	float screen_height;
+	float padding_2;
+	float padding_3;
 };
 
 struct ModelUniforms {

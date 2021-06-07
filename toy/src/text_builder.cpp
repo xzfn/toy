@@ -2,10 +2,18 @@
 
 #include <iostream>
 
+#include "ascii_texture.h"
+#include "timed_info.h"
+#include "global_app.h"
+
+
+void write_screen_text_triangles(TextInfo info, std::vector<ColorTextureTriangleData>& buffer);
+
 
 void TextBuilder::clear()
 {
 	m_texts.clear();
+	m_screen_texts.clear();
 }
 
 void TextBuilder::add_text(glm::vec3 position, std::string text, glm::vec3 color)
@@ -18,40 +26,58 @@ void TextBuilder::add_text(glm::vec3 position, std::string text, glm::vec3 color
 	m_texts.push_back(info);
 }
 
+void TextBuilder::add_screen_text(glm::vec3 position, std::string text, glm::vec3 color)
+{
+	TextInfo info{
+		position,
+		text,
+		color
+	};
+	m_screen_texts.push_back(info);
+}
+
 void write_text_triangles(TextInfo info, std::vector<ColorTextureTriangleData>& buffer) {
-	int extent = 512;
-	int char_width = 30;
-	int char_height = 52;
-	int col_gap = 40;
-	int row_gap = 60;
-	int ncols = 12;
-	int nrows = 8;
-	int anchor_x = 17;
-	int anchor_y = 73;
-	char char_start = 32;
-	char char_stop = 0x7e + 1;
+	glm::vec3 world_position = info.position;
+	Camera* camera = get_app()->camera_manager.get_camera();
+	glm::vec3 screen_position = camera->world_to_screen(world_position);
 
-	float du = 1.0f * char_width / extent;
-	float dv = 1.0f * char_height / extent;
+	TextInfo screen_text_info{
+		screen_position,
+		info.text,
+		info.color
+	};
+	write_screen_text_triangles(screen_text_info, buffer);
+}
 
-	float pos_dx = char_width / 10.0f;
-	float pos_dy = char_height / 10.0f;
+void write_screen_text_triangles(TextInfo info, std::vector<ColorTextureTriangleData>& buffer) {
+	int char_width = ASCIITextureInfo::char_width;
+	int char_height = ASCIITextureInfo::char_height;
+
+	float spacing_scale = 0.8f;
+
+	float pos_dx = char_width * 0.5 * spacing_scale;
+	float pos_dy = char_height * 0.5 * spacing_scale;
 
 	float pos_x = 0.0f;
 	float pos_y = 0.0f;
 
+	float screen_height = get_app()->ctxptr->basic.extent.height;
+
+	glm::vec3 base_position = glm::vec3(info.position.x, screen_height - info.position.y, info.position.z);
+
 	for (char c : info.text) {
-		char i = c - char_start;
-		int row = i / ncols;
-		int col = i % ncols;
-		int x = anchor_x + col_gap * col;
-		int y = anchor_y + row_gap * row - char_height;
-		
-		float u1 = 1.0f * x / extent;
-		float v1 = 1.0f * y / extent;
-		float u2 = u1 + du;
-		float v2 = v1 + dv;
-		
+		if (c == '\n') {
+			pos_x = 0.0f;
+			pos_y -= pos_dy;
+			continue;
+		}
+
+		CharUv char_uv = get_char_uv(c);
+		float u1 = char_uv.u1;
+		float v1 = char_uv.v1;
+		float u2 = char_uv.u2;
+		float v2 = char_uv.v2;
+
 		float pos_x2 = pos_x + pos_dx;
 		float pos_y2 = pos_y + pos_dy;
 
@@ -59,25 +85,25 @@ void write_text_triangles(TextInfo info, std::vector<ColorTextureTriangleData>& 
 		// u1, v2 lower-left; u2 v1 upper-right
 
 		ColorTextureVertex vertex_a{
-			info.position + glm::vec3(pos_x, pos_y, 0.0f),
+			base_position + glm::vec3(pos_x, pos_y, 0.0f),
 			info.color,
 			glm::vec2(u1, v2)
 		};
 
 		ColorTextureVertex vertex_b{
-			info.position + glm::vec3(pos_x2, pos_y, 0.0f),
+			base_position + glm::vec3(pos_x2, pos_y, 0.0f),
 			info.color,
 			glm::vec2(u2, v2)
 		};
 
 		ColorTextureVertex vertex_c{
-			info.position + glm::vec3(pos_x, pos_y2, 0.0f),
+			base_position + glm::vec3(pos_x, pos_y2, 0.0f),
 			info.color,
 			glm::vec2(u1, v1)
 		};
 
 		ColorTextureVertex vertex_d{
-			info.position + glm::vec3(pos_x2, pos_y2, 0.0f),
+			base_position + glm::vec3(pos_x2, pos_y2, 0.0f),
 			info.color,
 			glm::vec2(u2, v1)
 		};
@@ -93,7 +119,6 @@ void write_text_triangles(TextInfo info, std::vector<ColorTextureTriangleData>& 
 		buffer.push_back(triangle1);
 		buffer.push_back(triangle2);
 
-
 		pos_x += pos_dx;
 	}
 }
@@ -103,6 +128,63 @@ std::vector<ColorTextureTriangleData> TextBuilder::build_buffer()
 	std::vector<ColorTextureTriangleData> buffer;
 	for (auto& text : m_texts) {
 		write_text_triangles(text, buffer);
+	}
+
+	for (auto& text : m_screen_texts) {
+		write_screen_text_triangles(text, buffer);
+	}
+	return buffer;
+}
+
+void TimedTextBuilder::clear()
+{
+	m_texts.clear();
+	m_screen_texts.clear();
+}
+
+void TimedTextBuilder::add_text(glm::vec3 position, std::string text, glm::vec3 color, float duration)
+{
+	TextInfo info{
+		position,
+		text,
+		color
+	};
+	timedinfo::TimedInfo<TextInfo> timed_info{
+		info,
+		duration
+	};
+	m_texts.push_back(timed_info);
+}
+
+void TimedTextBuilder::add_screen_text(glm::vec3 position, std::string text, glm::vec3 color, float duration)
+{
+	TextInfo info{
+		position,
+		text,
+		color
+	};
+	timedinfo::TimedInfo<TextInfo> timed_info{
+		info,
+		duration
+	};
+	m_screen_texts.push_back(timed_info);
+}
+
+void TimedTextBuilder::update(float delta_time)
+{
+	timedinfo::process_timed_info(m_texts, delta_time);
+	timedinfo::process_timed_info(m_screen_texts, delta_time);
+}
+
+std::vector<ColorTextureTriangleData> TimedTextBuilder::build_buffer()
+{
+	std::vector<ColorTextureTriangleData> buffer;
+	for (auto& text : m_texts) {
+		write_text_triangles(text.info, buffer);
+	}
+
+	for (auto& text : m_screen_texts) {
+		write_screen_text_triangles(text.info, buffer);
 	}
 	return buffer;
 }

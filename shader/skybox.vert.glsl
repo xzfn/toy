@@ -1,12 +1,8 @@
 #version 450
 
 #include "frame_uniforms.glsl"
+#include "push_constants.glsl"
 
-
-
-layout(push_constant) uniform PushConstantBlock {
-	mat4 model;
-} u_push;
 
 layout(location = 0) in vec3 in_Position;
 layout(location = 1) in vec3 in_Normal;

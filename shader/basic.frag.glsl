@@ -1,20 +1,11 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform FrameUniforms {
-	mat4 u_view_projection;
+#include "frame_uniforms.glsl"
 
-	vec3 u_camera_position;
-	float u_padding_0;
-
-	vec4 u_sun_light_color;
-
-	vec3 u_sun_light_direction;
-	float u_padding_1;
-};
 
 layout(set = 2, binding = 0) uniform MaterialUniforms {
-	vec3 u_base_color;
-};
+	vec3 base_color;
+}u_material;
 
 layout(set = 2, binding = 1) uniform sampler2D u_Texture;
 // layout(set = 2, binding = 2) uniform sampler2D u_Bump;
@@ -31,8 +22,8 @@ vec3 encode_normal(vec3 normal) {
 void main() {
 	vec4 base_color = texture(u_Texture, v_Texcoord);
 	vec3 normal_color = encode_normal(v_Normal);
-	float intensity = dot(u_sun_light_direction, v_Normal);
-	base_color.xyz = base_color.xyz * intensity * u_base_color;
+	float intensity = dot(u_frame.sun_light_direction, v_Normal);
+	base_color.xyz = base_color.xyz * intensity * u_material.base_color;
 	
 	//base_color.xyz = normal_color;
 	out_Color = base_color;

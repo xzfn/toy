@@ -59,6 +59,11 @@ class App:
         transform = vmath.Transform()
         transform.translation = vmath.Vector3(0.0, 0.0, -10.0)
         drawutil.draw_transform(transform)
+
+        mouse_x, mouse_y = toy.get_input_manager().get_mouse_position()
+        text = '{:4} {:4}'.format(mouse_x, mouse_y)
+        drawutil.draw_screen_text(vmath.Vector3(mouse_x, mouse_y, 0.0), text)
+
         self.world.render()
 
     def shutdown(self):

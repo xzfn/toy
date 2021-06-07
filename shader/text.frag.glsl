@@ -1,16 +1,7 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform FrameUniforms {
-	mat4 u_view_projection;
+#include "frame_uniforms.glsl"
 
-	vec3 u_camera_position;
-	float u_padding_0;
-
-	vec4 u_sun_light_color;
-
-	vec3 u_sun_light_direction;
-	float u_padding_1;
-};
 
 layout(set = 2, binding = 1) uniform sampler2D u_Texture;
 

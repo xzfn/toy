@@ -60,6 +60,9 @@ set(toy_SOURCES
 
 	src/text_builder.h
 	src/text_builder.cpp
+	src/ascii_texture.h
+	src/ascii_texture.cpp
+
 	src/vertex_mesh.h
 	src/vertex_mesh.cpp
 

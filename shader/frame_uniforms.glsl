@@ -9,4 +9,9 @@ layout(set = 0, binding = 0) uniform FrameUniforms {
 
 	vec3 sun_light_direction;
 	float padding_1;
+	
+	float screen_width;
+	float screen_height;
+	float padding_2;
+	float padding_3;
 } u_frame;

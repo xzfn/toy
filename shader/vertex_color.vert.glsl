@@ -1,24 +1,8 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform FrameUniforms {
-	mat4 u_view_projection;
+#include "frame_uniforms.glsl"
+#include "push_constants.glsl"
 
-	vec3 u_camera_position;
-	float u_padding_0;
-
-	vec4 u_sun_light_color;
-
-	vec3 u_sun_light_direction;
-	float u_padding_1;
-};
-
-layout(set = 1, binding = 0) uniform ModelUniforms {
-	mat4 u_model;
-};
-
-layout(push_constant) uniform PushConstantBlock {
-    mat4 model;
-} u_push;
 
 layout(location = 0) in vec3 in_Position;
 layout(location = 1) in vec3 in_Color;
@@ -30,6 +14,6 @@ out gl_PerVertex {
 layout(location = 0) out vec3 v_Color;
 
 void main() {
-	gl_Position = u_view_projection * u_push.model * vec4(in_Position, 1.0f);
+	gl_Position = u_frame.view_projection * u_push.model * vec4(in_Position, 1.0f);
 	v_Color = in_Color;
 }

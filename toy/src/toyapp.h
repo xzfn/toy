@@ -103,6 +103,7 @@ public:
 	GeometryBuilder geometry_builder;
 	TimedGeometryBuilder timed_geometry_builder;
 	TextBuilder text_builder;
+	TimedTextBuilder timed_text_builder;
 
 	KeyDownCallback script_on_key_down;
 	TimerManager timer_manager;

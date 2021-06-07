@@ -122,6 +122,14 @@ PYBIND11_EMBEDDED_MODULE(toy, m) {
 		g_app->timed_geometry_builder.add_line(start, end, color, duration);
 	});
 
+	m.def("draw_text", [](glm::vec3 position, std::string text, glm::vec3 color, float duration) {
+		g_app->timed_text_builder.add_text(position, text, color, duration);
+	});
+
+	m.def("draw_screen_text", [](glm::vec3 position, std::string text, glm::vec3 color, float duration) {
+		g_app->timed_text_builder.add_screen_text(position, text, color, duration);
+	});
+
 	wrap_toy(m);
 
 	m.def("bind_on_key_down", [](KeyDownCallback callback) {
@@ -240,7 +248,12 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 	mesh2.init_resource(ctx, geometry_builder.build_buffer());
 
 
-	text_builder.add_text(VEC3_ZERO, "ABCDEFG!@#$%^&abcdefg", COLOR_BLUE);
+	text_builder.add_screen_text(VEC3_ZERO + glm::vec3(0.0f, 20.0f, 0.0f), "ABCDEFG!@#$%^&abcdefg", COLOR_BLUE);
+
+	text_builder.add_screen_text(glm::vec3(0.0f, 300.0f, 0.0f), "(_+|)", COLOR_YELLOW);
+
+	text_builder.add_screen_text(glm::vec3(300.0f, 300.0f, 0.0f), "(_+|)", COLOR_YELLOW);
+
 	//text_builder.add_text(glm::vec3(0.0f, 5.0f, 0.0f), "this is test text2", COLOR_BLUE);
 	mesh_text.init_resource(ctx, text_builder.build_buffer());
 
@@ -294,7 +307,7 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 	material.init(ctx, pipeline, texture);
 
 
-	imageutil::Image raw_image_ascii = imageutil::load_image_force_channels(resource_manager.full_path("resource/uvgrid_512.png"), 4);
+	imageutil::Image raw_image_ascii = imageutil::load_image_force_channels(resource_manager.full_path("resource/ascii_white.png"), 4);
 	texture_ascii.init(ctx, raw_image_ascii);
 
 	material_text.init(ctx, pipeline_text, texture_ascii);
@@ -426,6 +439,9 @@ inline void App::update() {
 	cos_theta = cosf(theta);
 	sin_theta = sinf(theta);
 	frame_uniform.sun_light_direction = glm::vec3(cos_theta, 0.5f, sin_theta);
+	frame_uniform.screen_width = ctx.basic.extent.width;
+	frame_uniform.screen_height = ctx.basic.extent.height;
+
 	model_uniform.model = model;
 
 	MaterialUniforms& material_uniform = material.ref_uniforms();
@@ -455,6 +471,7 @@ inline void App::update() {
 
 
 	timed_geometry_builder.update(delta_time);
+	timed_text_builder.update(delta_time);
 
 	input_manager.clear_frame();
 }
@@ -549,6 +566,17 @@ inline void App::render(VkCommandBuffer command_buffer) {
 	text_builder_temp.add_text(glm::vec3(0.0f, 10.0f, 0.0f), std::to_string(timestamp));
 	mesh_text_temp.init_resource(ctx, text_builder_temp.build_buffer());
 	mesh_text_temp.draw(command_buffer);
+
+	VertexMesh mesh_text_temp2;
+	timed_text_builder.add_text(glm::vec3(0.0f, 0.0f, 0.0f), "Origin", COLOR_CYAN, 0.0f);
+	timed_text_builder.add_text(VEC3_X * 10.0f, "X", COLOR_CYAN, 0.0f);
+	timed_text_builder.add_text(VEC3_Y * 10.0f, "Y", COLOR_CYAN, 0.0f);
+	timed_text_builder.add_text(VEC3_Z * 10.0f, "Z", COLOR_CYAN, 0.0f);
+
+	mesh_text_temp2.init_resource(ctx, timed_text_builder.build_buffer());
+	model = glm::mat4(1.0f);
+	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
+	mesh_text_temp2.draw(command_buffer);
 
 }
 

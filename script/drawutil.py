@@ -21,3 +21,9 @@ def draw_ground_grid(step=1.0, count=10, color=vmath.Vector3(0.5, 0.5, 0.5), dur
         toy.draw_line(vmath.Vector3(-side, 0.0, current), vmath.Vector3(side, 0.0, current), color, duration)
     toy.draw_line(vmath.Vector3(-side, 0.0, 0.0), vmath.Vector3(side, 0.0, 0.0), vmath.Vector3(1.0, 0.0, 0.0), duration)
     toy.draw_line(vmath.Vector3(0.0, 0.0, -side), vmath.Vector3(0.0, 0.0, side), vmath.Vector3(0.0, 0.0, 1.0), duration)
+
+def draw_text(position, text, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    toy.draw_text(position, text, color, duration)
+
+def draw_screen_text(position, text, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    toy.draw_screen_text(position, text, color, duration)

@@ -16,6 +16,7 @@ public:
 
 private:
 	VulkanContext* m_ctx;
+	bool m_valid{ false };
 	VulkanBuffer m_vertex_buffer{ 0 };
 	std::size_t m_vertex_count{ 0 };
 };
