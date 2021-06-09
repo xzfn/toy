@@ -4,6 +4,13 @@
 #include "camera_controller.h"
 
 
+struct CameraControllerSensitivity {
+	float keyboard_move{ 3.0f };
+	float mouse_pan{ 3.0f };
+	float mouse_rotate{ 1.0f };
+	float wheel_perspective_zoom{ 5.0f };
+	float wheel_orthographic_zoom{ 0.9f };
+};
 
 class CameraManager {
 public:
@@ -27,4 +34,5 @@ private:
 	bool m_is_controlled{ true };
 	Camera m_camera;
 	CameraController m_camera_controller;
+	CameraControllerSensitivity m_camera_controller_sensitivity;
 };

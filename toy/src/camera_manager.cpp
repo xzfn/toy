@@ -40,6 +40,7 @@ void CameraManager::update_controller(float delta_time)
 	float view_width = view_size.x;
 	float view_height = view_size.y;
 	float aspect = view_width / view_height;
+	bool is_ctrl_down = input_manager.get_key(VK_CONTROL);
 
 	// keyboard movement
 	float axis_x = 0.0f;
@@ -65,7 +66,9 @@ void CameraManager::update_controller(float delta_time)
 		if (input_manager.get_key('Q')) {
 			axis_y -= 1.0;
 		}
-		axis_z += wheel_delta * 5.0f;
+		if (!is_ctrl_down) {
+			axis_z += wheel_delta * m_camera_controller_sensitivity.wheel_perspective_zoom;
+		}
 	}
 	else {
 		if (input_manager.get_key('W')) {
@@ -82,18 +85,21 @@ void CameraManager::update_controller(float delta_time)
 		}
 	}
 	glm::vec3 input_movement(-axis_x, axis_y, -axis_z);
-	m_camera_controller.translate(3.0f * delta_time * input_movement);
+	float keyboard_move_coeff = m_camera_controller_sensitivity.keyboard_move;
+	m_camera_controller.translate(keyboard_move_coeff * delta_time * input_movement);
 
 	// mouse rotate
 	float rotate_divide = 300.0f;
+	float mouse_rotate_coeff = m_camera_controller_sensitivity.mouse_rotate;
 	if (input_manager.get_mouse_button(MouseButtonRight)) {
-		m_camera_controller.rotate(-delta_x / rotate_divide, -delta_y / rotate_divide);
+		m_camera_controller.rotate(-delta_x / rotate_divide * mouse_rotate_coeff, -delta_y / rotate_divide * mouse_rotate_coeff);
 	}
 
 	// mouse pan
+	float mouse_pan_coeff = m_camera_controller_sensitivity.mouse_pan;
 	if (input_manager.get_mouse_button(MouseButtonMiddle)) {
 		if (is_perspective) {
-			glm::vec3 pan_movement = 3.0f * 0.01f * glm::vec3(-delta_x, delta_y, 0.0);
+			glm::vec3 pan_movement = mouse_pan_coeff * 0.01f * glm::vec3(-delta_x, delta_y, 0.0);
 			m_camera_controller.translate(pan_movement);
 		}
 		else {
@@ -105,9 +111,9 @@ void CameraManager::update_controller(float delta_time)
 	}
 
 	// wheel zoom when orthographic
-	if (!is_perspective && wheel_delta != 0.0f) {
+	if (!is_perspective && wheel_delta != 0.0f && !is_ctrl_down) {
 		OrthographicData orthographic_data = m_camera.get_orthographic_data();
-		const float ratio = 0.9f;
+		const float ratio = m_camera_controller_sensitivity.wheel_orthographic_zoom;
 		float multiplier = 1.0f;
 		if (wheel_delta > 0.0f) {
 			multiplier = ratio;
@@ -128,6 +134,19 @@ void CameraManager::update_controller(float delta_time)
 		zoom_movement *= (1.0f - multiplier) * half_extent * 2.0f / view_height;
 		m_camera.set_orthographic_data(orthographic_data);
 		m_camera_controller.translate(zoom_movement);
+	}
+
+	// adjust mouse move sensitivity
+	if (wheel_delta != 0.0f && is_ctrl_down) {
+		float multiplier = 1.0f;
+		float sensitivity_change_ratio = 0.9f;
+		if (wheel_delta > 0.0f) {
+			multiplier = 1 / sensitivity_change_ratio;
+		}
+		else {
+			multiplier = sensitivity_change_ratio;
+		}
+		m_camera_controller_sensitivity.keyboard_move *= multiplier;
 	}
 
 	// quick reposition
