@@ -13,5 +13,8 @@ layout(location = 0) out vec4 out_Color;
 void main() {
 	vec4 base_color_coeff = vec4(v_Color, 1.0f);
 	vec4 base_color = texture(u_Texture, v_Texcoord);
+	if (base_color.w == 0.0f) {
+		discard;  // discard is not good, use it for now to avoid sorting
+	}
 	out_Color = base_color * base_color_coeff;
 }
