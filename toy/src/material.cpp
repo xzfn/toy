@@ -2,6 +2,10 @@
 #include "texture.h"
 #include "texture_cubemap.h"
 
+Material::Material()
+{
+}
+
 Material::~Material()
 {
 	destroy();
@@ -59,6 +63,11 @@ void Material::bind(VkCommandBuffer command_buffer)
 	uint32_t first_set = 2;
 	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->get_pipeline_layout(),
 		2, 1, &m_descriptor_set, 0, nullptr);
+}
+
+BasicPipeline* Material::get_pipeline()
+{
+	return m_pipeline;
 }
 
 MaterialUniforms& Material::ref_uniforms()

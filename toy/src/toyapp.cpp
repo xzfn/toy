@@ -268,6 +268,9 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 	mesh_data.set_indices(shape_data.indices);
 	mesh3.init_resource(ctx, mesh_data);
 
+	p_mesh = std::make_shared<Mesh>();
+	p_mesh->init_resource(ctx, mesh_data);
+
 
 	PipelineDescription desc;
 	desc.filename_vert_spv = resource_manager.full_path("shader/basic.vert.spv");
@@ -306,6 +309,8 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 
 	material.init(ctx, pipeline, texture);
 
+	p_material = std::make_shared<Material>();
+	p_material->init(ctx, pipeline, texture);
 
 	imageutil::Image raw_image_ascii = imageutil::load_image_force_channels(resource_manager.full_path("resource/ascii_white.png"), 4);
 	texture_ascii.init(ctx, raw_image_ascii);
@@ -429,6 +434,17 @@ inline void App::update() {
 	
 	camera_manager.get_camera()->set_view_size(extent.width, extent.height);
 
+
+	auto& p_material_uniform = p_material->ref_uniforms();
+	p_material_uniform.base_color = glm::vec3(cos_theta, 1.0f, sin_theta);
+	for (int i = 0; i < 10; ++i) {
+		Transform transform;
+		transform.translation = glm::vec3(0.0f, 5 + i * 4.0f, 0.0f);
+		glm::mat4 matrix = transform_to_mat4(transform);
+		render_manager.add_mesh(p_mesh, matrix, p_material);
+	}
+
+
 	glm::mat4 model = glm::rotate(glm::mat4(1.0), theta / 5.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 model2 = glm::rotate(glm::mat4(1.0), theta, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -499,9 +515,11 @@ inline void App::render(VkCommandBuffer command_buffer) {
 	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline());
 
 	std::vector<VkDescriptorSet> descriptor_sets{
-		descriptor_set_frame, descriptor_set_model
+		descriptor_set_frame
 	};
 	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+	model = glm::mat4(1.0f);
+	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 
 	material.bind(command_buffer);
 	mesh.draw(command_buffer);
@@ -548,12 +566,18 @@ inline void App::render(VkCommandBuffer command_buffer) {
 	temp_mesh.draw(command_buffer);
 
 
+
+	render_manager.render(command_buffer);
+
+
 	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_text.get_pipeline());
 	std::vector<VkDescriptorSet> descriptor_sets4{
 		descriptor_set_frame  //, descriptor_set_model
 	};
 	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets3.size(), descriptor_sets3.data(), 0, nullptr);
 
+
+	// draw text last
 	model = glm::mat4(1.0f) * 0.1f;
 	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 	material_text.bind(command_buffer);
@@ -578,6 +602,7 @@ inline void App::render(VkCommandBuffer command_buffer) {
 	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 	mesh_text_temp2.draw(command_buffer);
 
+
 }
 
 inline void App::on_resize(uint32_t width, uint32_t height) {
@@ -599,6 +624,11 @@ inline void App::on_key_down(uint32_t key) {
 		catch (std::exception& e) {
 			std::cout << "script_on_key_down error" << e.what() << "\n";
 		}
+	}
+
+	if (key == VK_NUMPAD1) {
+		// test reload shader
+		pipeline_text.reload_shader();
 	}
 }
 

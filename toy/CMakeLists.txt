@@ -80,6 +80,11 @@ set(toy_SOURCES
 
 	src/system.h
 	src/system.cpp
+
+	src/render_manager.h
+	src/render_manager.cpp
+
+	src/scope_util.h
 )
 
 set(toy_INCLUDE_DIR src)

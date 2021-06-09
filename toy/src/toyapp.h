@@ -20,6 +20,7 @@
 #include "timer_manager.h"
 #include "input_manager.h"
 #include "camera_manager.h"
+#include "render_manager.h"
 
 
 class App {
@@ -93,7 +94,8 @@ public:
 	Material material;
 	Material material_cubemap;
 	Material material_text;
-
+	std::shared_ptr<Mesh> p_mesh;
+	std::shared_ptr<Material> p_material;
 	glm::vec3 old_translation;
 
 	FrameUniforms frame_uniform;
@@ -110,6 +112,7 @@ public:
 	float delta_time;
 	InputManager input_manager;
 	CameraManager camera_manager;
+	RenderManager render_manager;
 };
 
 

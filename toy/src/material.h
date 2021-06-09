@@ -8,11 +8,17 @@ class TextureCubemap;
 
 class Material {
 public:
+	Material();
+	Material(const Material&) = delete;
+	Material& operator=(const Material&) = delete;
+
 	~Material();
 
 	void init(VulkanContext& ctx, BasicPipeline& pipeline, Texture& texture);
 	void init(VulkanContext& ctx, BasicPipeline& pipeline, TextureCubemap& texture);
 	void bind(VkCommandBuffer command_buffer);
+	BasicPipeline* get_pipeline();
+
 	MaterialUniforms& ref_uniforms();
 
 	void destroy();
