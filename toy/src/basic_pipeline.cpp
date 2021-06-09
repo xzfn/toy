@@ -1,5 +1,7 @@
 #include "basic_pipeline.h"
 
+#include <glm/ext.hpp>
+
 #include "vulkan_util.h"
 #include "vertex_format.h"
 
@@ -50,10 +52,15 @@ VkDescriptorSetLayout create_descriptor_set_layout_material(VkDevice device) {
     return vkutil::create_descriptor_set_layout(device, layout_bindings);
 }
 
+BasicPipeline::BasicPipeline()
+{
+}
+
 void BasicPipeline::init_pipeline(VulkanContext& ctx, PipelineDescription desc)
 {
     m_ctx = &ctx;
     VkDevice device = ctx.basic.device;
+    m_desc = desc;
     m_descriptor_set_layouts.frame = create_descriptor_set_layout_frame(device);
     m_descriptor_set_layouts.model = create_descriptor_set_layout_model(device);
     m_descriptor_set_layouts.material = create_descriptor_set_layout_material(device);
@@ -71,15 +78,18 @@ void BasicPipeline::init_pipeline(VulkanContext& ctx, PipelineDescription desc)
     };
     m_pipeline_layout = vkutil::create_pipeline_layout(device, descriptor_set_layouts, push_constant_ranges);
 
-    m_pipeline = vkutil::create_pipeline(device, ctx.basic.render_pass, ctx.basic.extent.width, ctx.basic.extent.height, desc.filename_vert_spv, desc.filename_frag_spv,
-        generate_vertex_input_state(desc.vertex_format),
-        generate_input_assembly_state(desc.topology),
-        m_pipeline_layout, desc.cull_model_flags);
+    _init_vk_pipeline();
 }
 
 BasicPipeline::~BasicPipeline()
 {
     destroy();
+}
+
+void BasicPipeline::reload_shader()
+{
+    _destroy_vk_pipeline();
+    _init_vk_pipeline();
 }
 
 void BasicPipeline::destroy()
@@ -89,6 +99,30 @@ void BasicPipeline::destroy()
     vkutil::destroy_descriptor_set_layout(device, m_descriptor_set_layouts.model);
     vkutil::destroy_descriptor_set_layout(device, m_descriptor_set_layouts.material);
     vkutil::destroy_pipeline_layout(device, m_pipeline_layout);
+    _destroy_vk_pipeline();
+}
+
+void BasicPipeline::bind(VkCommandBuffer command_buffer)
+{
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, get_pipeline());
+}
+
+void BasicPipeline::_init_vk_pipeline()
+{
+    VulkanContext& ctx = *m_ctx;
+    VkDevice device = ctx.basic.device;
+    auto& desc = m_desc;
+
+    m_pipeline = vkutil::create_pipeline(device, ctx.basic.render_pass, ctx.basic.extent.width, ctx.basic.extent.height, desc.filename_vert_spv, desc.filename_frag_spv,
+        generate_vertex_input_state(desc.vertex_format),
+        generate_input_assembly_state(desc.topology),
+        m_pipeline_layout, desc.cull_model_flags);
+}
+
+void BasicPipeline::_destroy_vk_pipeline()
+{
+    VulkanContext& ctx = *m_ctx;
+    VkDevice device = ctx.basic.device;
     vkutil::destroy_pipeline(device, m_pipeline);
 }
 
@@ -179,6 +213,11 @@ void BasicPipeline::update_descriptor_set_material(VkDescriptorSet descriptor_se
     };
     auto& ctx = *m_ctx;
     vkUpdateDescriptorSets(ctx.basic.device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+}
+
+void BasicPipeline::push_constants_matrix(VkCommandBuffer command_buffer, glm::mat4 matrix)
+{
+    vkCmdPushConstants(command_buffer, get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrix), glm::value_ptr(matrix));
 }
 
 void update_descriptor_set_textures(VkDescriptorSet descriptor_set, VkSampler sampler, VkImageView image_view)

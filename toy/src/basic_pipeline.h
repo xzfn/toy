@@ -44,6 +44,10 @@ struct DescriptorSetLayouts {
 
 class BasicPipeline {
 public:
+	BasicPipeline();
+	BasicPipeline(const BasicPipeline&) = delete;
+	BasicPipeline& operator=(const BasicPipeline&) = delete;
+
 	~BasicPipeline();
 
 	void init_pipeline(VulkanContext& ctx, PipelineDescription desc);
@@ -53,14 +57,24 @@ public:
 	void update_descriptor_set_material(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size,
 		VkSampler sampler, VkImageView image_view
 	);
+	void push_constants_matrix(VkCommandBuffer command_buffer, glm::mat4 matrix);
+
 	VkPipeline get_pipeline();
 	VkPipelineLayout get_pipeline_layout();
 	DescriptorSetLayouts& ref_descriptor_set_layouts();
 
+	void reload_shader();
 	void destroy();
+
+	void bind(VkCommandBuffer command_buffer);
+
+private:
+	void _init_vk_pipeline();
+	void _destroy_vk_pipeline();
 
 private:
 	VulkanContext* m_ctx;
+	PipelineDescription m_desc;
 	DescriptorSetLayouts m_descriptor_set_layouts;
 	VkPipelineLayout m_pipeline_layout;
 	VkPipeline m_pipeline;
