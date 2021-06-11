@@ -16,7 +16,7 @@ class Bullet(Unit):
 		self.direction = param['direction']
 		self.speed = param['speed']
 		self.duration = param.get('duration', 3.0)
-		toy.get_timer_manager().add_timer(self.duration, self.destroy)
+		toy.app.timer_manager.add_timer(self.duration, self.destroy)
 
 	def tick(self, delta_time):
 		velocity = self.direction * self.speed

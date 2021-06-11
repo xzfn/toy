@@ -16,13 +16,13 @@ class Player(Unit):
 		self._fire_countdown = self._fire_cd
 		
 	def tick(self, delta_time):
-		if toy.get_input_manager().get_key(ord('F')):
+		if toy.app.input_manager.get_key(ord('F')):
 			old_translation = self.transform.translation
 			delta_movement = delta_time * vmath.Vector3(0.0, 0.0, 1.0)
 			self.transform.translation = old_translation + delta_movement
 
 		self._fire_countdown -= delta_time
-		if toy.get_input_manager().get_key_down(ord('K')):
+		if toy.app.input_manager.get_key_down(ord('K')):
 			if self._fire_countdown <= 0.0:
 				self._fire_countdown = self._fire_cd
 				param = {

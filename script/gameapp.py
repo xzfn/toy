@@ -28,7 +28,7 @@ class App:
         self.world = None
 
     def startup(self):
-        toy.bind_on_key_down(self.on_key_down)
+        toy.app.bind_key_down(self.on_key_down)
         #toyqt.startup()
         #toyqt.qtwindow.on_shoot = self.on_shoot
         self.world = World()
@@ -49,10 +49,10 @@ class App:
         time.sleep(0.001)
         #toyqt.update()
 
-        mouse_dx, mouse_dy = toy.get_input_manager().get_mouse_move()
-        mouse_wheel = toy.get_input_manager().get_mouse_wheel()
+        mouse_dx, mouse_dy = toy.app.input_manager.get_mouse_move()
+        mouse_wheel = toy.app.input_manager.get_mouse_wheel()
 
-        delta_time = toy.get_delta_time()
+        delta_time = toy.app.delta_time
         self.world.tick(delta_time)
 
         drawutil.draw_ground_grid()
@@ -60,10 +60,10 @@ class App:
         transform.translation = vmath.Vector3(0.0, 0.0, -10.0)
         drawutil.draw_transform(transform)
 
-        mouse_x, mouse_y = toy.get_input_manager().get_mouse_position()
+        mouse_x, mouse_y = toy.app.input_manager.get_mouse_position()
         text = '{:4} {:4}'.format(mouse_x, mouse_y)
         drawutil.draw_screen_text(vmath.Vector3(mouse_x, mouse_y, 0.0), text)
-
+        drawutil.draw_text(vmath.Vector3(5, 5, 5), '(*{}*)'.format(text))
         self.world.render()
 
     def shutdown(self):

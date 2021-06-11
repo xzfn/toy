@@ -14,12 +14,10 @@ namespace py = pybind11;
 #include <glm/ext.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "global_app.h"
 
 #include "wrap/wrap_vmath.h"
 #include "wrap/wrap_toy.h"
-
-
-App* g_app;
 
 
 struct VertexData {
@@ -118,6 +116,7 @@ public:
 PYBIND11_EMBEDDED_MODULE(toy, m) {
 	m.attr("__author__") = "wangyueheng";
 
+
 	m.def("draw_line", [](glm::vec3 start, glm::vec3 end, glm::vec3 color, float duration) {
 		g_app->timed_geometry_builder.add_line(start, end, color, duration);
 	});
@@ -131,71 +130,22 @@ PYBIND11_EMBEDDED_MODULE(toy, m) {
 	});
 
 	wrap_toy(m);
-
-	m.def("bind_on_key_down", [](KeyDownCallback callback) {
-		g_app->script_on_key_down = callback;
-	});
-
-	m.def("get_timer_manager", []() {
-		return &g_app->timer_manager;
+	m.attr("app") = g_app;
+	m.def("get_app", []() {
+		return g_app;
 	}, py::return_value_policy::reference);
-
-	m.def("get_input_manager", []() {
-		return &g_app->input_manager;
-	}, py::return_value_policy::reference);
-
-	m.def("get_delta_time", []() {
-		return g_app->delta_time;
-	});
-
-	m.def("get_camera_manager", []() {
-		return &g_app->camera_manager;
-	}, py::return_value_policy::reference);
-
-	m.def("set_background_color", [](glm::vec3 color) {
-		g_app->set_background_color(color);
-	});
 }
 
 PYBIND11_EMBEDDED_MODULE(vmath, m) {
 	wrap_vmath(m);
 }
 
-int main() {
-	py::scoped_interpreter guard{};
-	py::print("hello world");
-
-	
-	Window window;
-
-	int width = 600;
-	int height = 600;
-
-	window.init(width, height, L"toy");
-
-	HINSTANCE hinstance = window.get_win32_hinstance();
-	HWND hwnd = window.get_win32_hwnd();
-
-	VulkanContext vulkan_context(hinstance, hwnd, width, height);
-
-	App app;
-	g_app = &app;
-	std::cout << "startup\n";
-	app.startup(vulkan_context, &window);
-
-	std::cout << "mainloop\n";
-	window.mainloop();
-
-	std::cout << "shutdown\n";
-	app.shutdown();
-	return 0;
-}
 
 App::App() {
 
 }
 
-inline void App::startup(VulkanContext& ctx, Window* window) {
+void App::startup(VulkanContext& ctx, Window* window) {
 	ctxptr = &ctx;
 	m_window = window;
 
@@ -373,7 +323,7 @@ inline void App::startup(VulkanContext& ctx, Window* window) {
 	}
 }
 
-inline void App::shutdown() {
+void App::shutdown() {
 	try {
 		auto& toyentry = py::module::import("toyentry");
 		toyentry.attr("shutdown")();
@@ -391,7 +341,7 @@ inline void App::shutdown() {
 
 }
 
-inline void App::update() {
+void App::update() {
 	VulkanContext& ctx = *ctxptr;
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	double new_timestamp = std::chrono::duration<double>(now).count();
@@ -492,7 +442,7 @@ inline void App::update() {
 	input_manager.clear_frame();
 }
 
-inline void App::render(VkCommandBuffer command_buffer) {
+void App::render(VkCommandBuffer command_buffer) {
 	VulkanContext& ctx = *ctxptr;
 
 	glm::mat4 model;
@@ -605,7 +555,7 @@ inline void App::render(VkCommandBuffer command_buffer) {
 
 }
 
-inline void App::on_resize(uint32_t width, uint32_t height) {
+void App::on_resize(uint32_t width, uint32_t height) {
 	std::cout << "resize: " << width << " " << height << "\n";
 	if (!(width > 0 && height > 0)) {
 		return;
@@ -615,7 +565,7 @@ inline void App::on_resize(uint32_t width, uint32_t height) {
 }
 
 
-inline void App::on_key_down(uint32_t key) {
+void App::on_key_down(uint32_t key) {
 	input_manager.input_key_down(key);
 	if (script_on_key_down) {
 		try {
@@ -632,23 +582,23 @@ inline void App::on_key_down(uint32_t key) {
 	}
 }
 
-inline void App::on_key_up(uint32_t key) {
+void App::on_key_up(uint32_t key) {
 	input_manager.input_key_up(key);
 }
 
-inline void App::on_mouse_down(uint32_t mouse_button, uint32_t x, uint32_t y) {
+void App::on_mouse_down(uint32_t mouse_button, uint32_t x, uint32_t y) {
 	input_manager.input_mouse_button_down(mouse_button);
 }
 
-inline void App::on_mouse_up(uint32_t mouse_button, uint32_t x, uint32_t y) {
+void App::on_mouse_up(uint32_t mouse_button, uint32_t x, uint32_t y) {
 	input_manager.input_mouse_button_up(mouse_button);
 }
 
-inline void App::on_mouse_move(uint32_t x, uint32_t y) {
+void App::on_mouse_move(uint32_t x, uint32_t y) {
 	input_manager.input_mouse_move(x, y);
 }
 
-inline void App::on_mouse_wheel(float wheel_delta, uint32_t x, uint32_t y) {
+void App::on_mouse_wheel(float wheel_delta, uint32_t x, uint32_t y) {
 	input_manager.input_mouse_wheel(wheel_delta);
 }
 

@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include "window.h"
 #include "vulkan_context.h"
@@ -114,6 +114,3 @@ public:
 	CameraManager camera_manager;
 	RenderManager render_manager;
 };
-
-
-extern App* g_app;

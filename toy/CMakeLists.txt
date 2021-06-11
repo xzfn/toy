@@ -107,6 +107,8 @@ target_link_libraries(toymain PUBLIC toy)
 
 
 set(toyapp_SOURCES
+	src/main_toyapp.cpp
+
 	src/toyapp.h
 	src/toyapp.cpp
 
@@ -130,6 +132,24 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_camera_manager.h
 	src/wrap/wrap_camera_manager.cpp
+
+	src/wrap/wrap_render_manager.h
+	src/wrap/wrap_render_manager.cpp
+
+	src/wrap/wrap_geometry_builder.h
+	src/wrap/wrap_geometry_builder.cpp
+
+	src/wrap/wrap_text_builder.h
+	src/wrap/wrap_text_builder.cpp
+
+	src/wrap/wrap_mesh.h
+	src/wrap/wrap_mesh.cpp
+
+	src/wrap/wrap_material.h
+	src/wrap/wrap_material.cpp
+
+	src/wrap/wrap_app.h
+	src/wrap/wrap_app.cpp
 )
 
 add_executable(toyapp ${toyapp_SOURCES})
