@@ -150,6 +150,9 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_app.h
 	src/wrap/wrap_app.cpp
+
+	src/python_util.h
+	src/python_util.cpp
 )
 
 add_executable(toyapp ${toyapp_SOURCES})

@@ -19,6 +19,8 @@ namespace py = pybind11;
 #include "wrap/wrap_vmath.h"
 #include "wrap/wrap_toy.h"
 
+#include "python_util.h"
+
 
 struct VertexData {
 	float x, y, z, w;
@@ -313,24 +315,17 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	timestamp = std::chrono::duration<double>(now).count();
 
-	try {
-		auto& toyentry = py::module::import("toyentry");
-		toyentry.attr("startup")();
-	}
-	catch (py::error_already_set& e) {
-		std::cout << "py init failed: " << e.what() << "\n";
-		assert(false);
-	}
+	PYUTIL_CHECK_RUN_BEGIN
+	auto& toyentry = py::module::import("toyentry");
+	toyentry.attr("startup")();
+	PYUTIL_CHECK_RUN_END
 }
 
 void App::shutdown() {
-	try {
-		auto& toyentry = py::module::import("toyentry");
-		toyentry.attr("shutdown")();
-	}
-	catch (py::error_already_set& e) {
-		std::cout << "py shutdown failed: " << e.what() << "\n";
-	}
+	PYUTIL_SAFE_RUN_BEGIN
+	auto& toyentry = py::module::import("toyentry");
+	toyentry.attr("shutdown")();
+	PYUTIL_SAFE_RUN_END
 
 	VulkanContext& ctx = *ctxptr;
 	ctx.device_wait_idle();
@@ -356,11 +351,12 @@ void App::update() {
 	}
 	catch (py::error_already_set& e) {
 		if (e.matches(PyExc_SystemExit)) {
-			std::cout << "py update got SystemExit\n";
+			std::cout << "python got SystemExit\n";
 			m_window->set_should_close();
 		}
 		else {
-			std::cout << "py update failed: " << e.what() << "\n";
+			std::cout << "ERROR python update throws: " << e.what() << "\n";
+			pyutil::call_sys_excepthook(e);
 		}
 	}
 
@@ -568,12 +564,9 @@ void App::on_resize(uint32_t width, uint32_t height) {
 void App::on_key_down(uint32_t key) {
 	input_manager.input_key_down(key);
 	if (script_on_key_down) {
-		try {
-			script_on_key_down(key);
-		}
-		catch (std::exception& e) {
-			std::cout << "script_on_key_down error" << e.what() << "\n";
-		}
+		PYUTIL_SAFE_RUN_BEGIN
+		script_on_key_down(key);
+		PYUTIL_SAFE_RUN_END
 	}
 
 	if (key == VK_NUMPAD1) {
