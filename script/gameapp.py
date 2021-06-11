@@ -1,4 +1,5 @@
 
+import os
 import time
 import math
 import sys
@@ -9,12 +10,14 @@ import toy
 import vmath
 
 import remoteconsole.server
+import retroreload
 
 #import toyqt
 from world import World
 import drawutil
 
 from units.player import Player
+import keycodes
 
 
 class App:
@@ -39,10 +42,9 @@ class App:
 
     def on_key_down(self, key):
         print('py on_key_down', key)
-        if key == ord('R'):
-            import retroreload
-            retroreload.retroreload(sys.modules[__name__])
-
+        if key == keycodes.VK_F5:
+            main_script_folder = os.path.dirname(sys.modules[__name__].__file__)
+            retroreload.retroreload_script_folders([main_script_folder])
 
     def update(self):
         self.console_server.service()

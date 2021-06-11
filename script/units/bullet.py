@@ -25,3 +25,4 @@ class Bullet(Unit):
 
 	def render(self):
 		drawutil.draw_transform(self.transform)
+		drawutil.draw_text(self.transform.translation, str(self.unit_id))
