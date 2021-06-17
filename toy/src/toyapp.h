@@ -56,6 +56,8 @@ public:
 
 	void set_background_color(glm::vec3 color);
 
+	VulkanContext& get_ctx();
+
 	glm::vec2 get_view_size();
 
 public:

@@ -1,6 +1,7 @@
 #include "image_util.h"
 
 #include <iostream>
+#include <exception>
 
 #include "stb_image.h"
 
@@ -19,7 +20,7 @@ Image load_image_channels(std::string filename, int channels)
 	);
 	if (data == nullptr) {
 		std::cout << "ERROR load_image failed: " << filename << "\n";
-		std::abort();
+		throw std::runtime_error("FileNotFound");
 	}
 	if (channels == 0) {
 		image.channels = channels_in_file;

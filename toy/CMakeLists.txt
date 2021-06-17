@@ -115,6 +115,9 @@ set(toyapp_SOURCES
 	src/global_app.h
 	src/global_app.cpp
 
+	src/load_helper.h
+	src/load_helper.cpp
+
 	src/wrap/wrap_toy.h
 	src/wrap/wrap_toy.cpp
 
@@ -139,6 +142,9 @@ set(toyapp_SOURCES
 	src/wrap/wrap_geometry_builder.h
 	src/wrap/wrap_geometry_builder.cpp
 
+	src/wrap/wrap_resource_manager.h
+	src/wrap/wrap_resource_manager.cpp
+
 	src/wrap/wrap_text_builder.h
 	src/wrap/wrap_text_builder.cpp
 
@@ -147,6 +153,15 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_material.h
 	src/wrap/wrap_material.cpp
+
+	src/wrap/wrap_texture.h
+	src/wrap/wrap_texture.cpp
+
+	src/wrap/wrap_texture_cubemap.h
+	src/wrap/wrap_texture_cubemap.cpp
+
+	src/wrap/wrap_basic_pipeline.h
+	src/wrap/wrap_basic_pipeline.cpp
 
 	src/wrap/wrap_app.h
 	src/wrap/wrap_app.cpp

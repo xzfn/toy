@@ -11,7 +11,9 @@ public:
 	ResourceManager();
 
 	void add_resource_directory(std::string directory);
-	std::vector<std::string> get_resouce_directories();
+
+	std::vector<std::string> get_resource_directories();
+	void set_resource_directories(std::vector<std::string> directories);
 
 	std::string full_path(std::string path);
 	bool exists(std::string path);

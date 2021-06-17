@@ -18,9 +18,14 @@ void ResourceManager::add_resource_directory(std::string directory)
 	m_resource_directories.push_back(directory);
 }
 
-std::vector<std::string> ResourceManager::get_resouce_directories()
+std::vector<std::string> ResourceManager::get_resource_directories()
 {
 	return m_resource_directories;
+}
+
+void ResourceManager::set_resource_directories(std::vector<std::string> directories)
+{
+	m_resource_directories = directories;
 }
 
 std::string ResourceManager::full_path(std::string path)
@@ -52,12 +57,15 @@ std::ifstream ResourceManager::open_file(std::string path, std::ios_base::openmo
 	for (auto& directory : m_resource_directories) {
 		std::string filename = directory + "/" + path;
 		std::ifstream is(filename, mode);
-		if (is) {
+		if (is.is_open()) {
 			return is;
 		}
 	}
 	std::cout << "WARN open_file failed: " << path << "\n";
-	return std::ifstream();
+
+	std::ifstream fail_is;
+	fail_is.setstate(std::ios::failbit);
+	return fail_is;
 }
 
 std::vector<uint8_t> ResourceManager::read_binary(std::string path)

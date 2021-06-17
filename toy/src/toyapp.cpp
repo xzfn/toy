@@ -605,3 +605,8 @@ glm::vec2 App::get_view_size()
 	VkExtent2D extent = ctxptr->basic.extent;
 	return glm::vec2{ extent.width, extent.height };
 }
+
+VulkanContext& App::get_ctx()
+{
+	return *ctxptr;
+}

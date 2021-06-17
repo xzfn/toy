@@ -12,6 +12,10 @@ namespace py = pybind11;
 #include "wrap_material.h"
 #include "wrap_geometry_builder.h"
 #include "wrap_text_builder.h"
+#include "wrap_texture.h"
+#include "wrap_texture_cubemap.h"
+#include "wrap_resource_manager.h"
+#include "wrap_basic_pipeline.h"
 
 #include "wrap_app.h"
 
@@ -26,6 +30,10 @@ void wrap_toy(py::module_& m) {
 	wrap_material(m);
 	wrap_geometry_builder(m);
 	wrap_text_builder(m);
+	wrap_texture(m);
+	wrap_texture_cubemap(m);
+	wrap_resource_manager(m);
+	wrap_basic_pipeline(m);
 
 	wrap_app(m);
 }
