@@ -51,6 +51,14 @@ void Material::init(VulkanContext& ctx, BasicPipeline& pipeline, TextureCubemap&
 	m_descriptor_set = descriptor_set_material;
 }
 
+void Material::init(VulkanContext& ctx, BasicPipeline& pipeline)
+{
+	m_ctx = &ctx;
+	m_pipeline = &pipeline;
+	// TODO
+
+}
+
 void Material::bind(VkCommandBuffer command_buffer)
 {
 	VulkanContext& ctx = *m_ctx;

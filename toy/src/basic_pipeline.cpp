@@ -88,6 +88,7 @@ BasicPipeline::~BasicPipeline()
 
 void BasicPipeline::reload_shader()
 {
+    m_ctx->device_wait_idle();
     _destroy_vk_pipeline();
     _init_vk_pipeline();
 }

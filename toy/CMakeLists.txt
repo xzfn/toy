@@ -148,6 +148,9 @@ set(toyapp_SOURCES
 	src/wrap/wrap_text_builder.h
 	src/wrap/wrap_text_builder.cpp
 
+	src/wrap/wrap_mesh_data.h
+	src/wrap/wrap_mesh_data.cpp
+
 	src/wrap/wrap_mesh.h
 	src/wrap/wrap_mesh.cpp
 

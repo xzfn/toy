@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 namespace py = pybind11;
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -294,6 +295,17 @@ void wrap_Transform(py::module_& m) {
 	});
 }
 
+void wrap_Vector2(py::module_& m) {
+	py::class_<glm::vec2> t(m, "Vector2");
+
+	t.def(py::init([]() {
+		return glm::vec2(0.0f, 0.0f);
+	}));
+	t.def(py::init<float, float>());
+
+	t.def_readwrite("x", &glm::vec2::x);
+	t.def_readwrite("y", &glm::vec2::y);
+}
 
 void wrap_vmath(pybind11::module_& m)
 {
@@ -301,4 +313,5 @@ void wrap_vmath(pybind11::module_& m)
 	wrap_Quaternion(m);
 	wrap_Matrix4(m);
 	wrap_Transform(m);
+	wrap_Vector2(m);
 }

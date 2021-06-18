@@ -24,7 +24,8 @@ void main() {
 	vec3 normal_color = encode_normal(v_Normal);
 	float intensity = dot(u_frame.sun_light_direction, v_Normal);
 	base_color.xyz = base_color.xyz * intensity * u_material.base_color;
-	
+	//base_color.xyz = u_frame.sun_light_direction;
 	//base_color.xyz = normal_color;
+	//base_color.xyz = u_material.base_color;
 	out_Color = base_color;
 }

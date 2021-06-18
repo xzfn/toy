@@ -20,6 +20,33 @@ from units.player import Player
 import keycodes
 
 
+def build_quad_mesh_data():
+    mesh_data = toy.MeshData()
+    vertices = [
+        vmath.Vector3(0.5, 0.5, 0.0),
+        vmath.Vector3(0.5, -0.5, 0.0),
+        vmath.Vector3(-0.5, 0.5, 0.0),
+        vmath.Vector3(-0.5, -0.5, 0.0),
+    ]
+    normals = [
+        vmath.Vector3(0.0, 0.0, -1.0),
+        vmath.Vector3(0.0, 0.0, -1.0),
+        vmath.Vector3(0.0, 0.0, -1.0),
+        vmath.Vector3(0.0, 0.0, -1.0),
+    ]
+    uvs = [
+        vmath.Vector2(0.0, 0.0),
+        vmath.Vector2(0.0, 1.0),
+        vmath.Vector2(1.0, 0.0),
+        vmath.Vector2(1.0, 1.0),
+    ]
+    indices = [
+        0, 1, 2, 2, 1, 3
+    ]
+    mesh_data.set_vertices_data(vertices, normals, uvs)
+    mesh_data.set_indices(indices)
+    return mesh_data
+
 class App:
     def __init__(self):
         server_address = ('127.0.0.1', 9000)
@@ -36,6 +63,13 @@ class App:
         #toyqt.qtwindow.on_shoot = self.on_shoot
         self.world = World()
         self.world.unit_manager.create_unit(Player)
+
+        self.texture = toy.Texture.create('resource/cube.png')
+        self.pipeline = toy.BasicPipeline.create('shader/basic.vert.spv', 'shader/basic.frag.spv')
+        self.material = toy.Material.create(self.pipeline, self.texture)
+        mesh_data = build_quad_mesh_data()
+        self.mesh = toy.Mesh.create(mesh_data)
+
 
     def on_shoot(self):
         drawutil.draw_line(vmath.Vector3(0.0, 0.0, 0.0), vmath.Vector3(10.0, 10.0, 10.0), vmath.Vector3(1.0, 1.0, 0.0), 5.0)
@@ -67,6 +101,22 @@ class App:
         drawutil.draw_screen_text(vmath.Vector3(mouse_x, mouse_y, 0.0), text)
         drawutil.draw_text(vmath.Vector3(5, 5, 5), '(*{}*)'.format(text))
         self.world.render()
+
+        percent = math.modf(mouse_x / 300.0)[0]
+        self.material.set_base_color(vmath.Vector3(1.0, percent, 1.0))
+        transform.translation = vmath.Vector3(5.0, 5.0, 0.0)
+        matrix = transform.to_matrix4()
+        drawutil.draw_transform(transform)
+        toy.app.render_manager.add_mesh(self.mesh, matrix, self.material)
+        
+        transform.translation = vmath.Vector3(5.0, 10.0, 0.0)
+        transform.scale = vmath.Vector3(2.0, 2.0, 2.0)
+        toy.app.render_manager.add_mesh(self.mesh, transform.to_matrix4(), self.material)
+        
+        transform.translation = vmath.Vector3(5.0, 15.0, 0.0)
+        transform.rotation = vmath.Quaternion.from_angle_axis(mouse_y / 10.0, vmath.Vector3(0.0, 1.0, 0.0))
+        toy.app.render_manager.add_mesh(self.mesh, transform.to_matrix4(), self.material)
+
 
     def shutdown(self):
         self.console_server.shutdown()

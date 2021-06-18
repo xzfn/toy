@@ -513,7 +513,8 @@ void App::render(VkCommandBuffer command_buffer) {
 
 
 
-	render_manager.render(command_buffer);
+	render_manager.render(command_buffer, descriptor_sets);
+
 
 
 	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_text.get_pipeline());

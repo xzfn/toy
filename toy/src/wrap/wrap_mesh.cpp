@@ -4,9 +4,10 @@
 namespace py = pybind11;
 
 #include "mesh.h"
+#include "load_helper.h"
 
 
 void wrap_mesh(pybind11::module_& m) {
-	py::class_<Mesh> t(m, "Mesh");
-	t.def("init_resource", &Mesh::init_resource);
+	py::class_<Mesh, std::shared_ptr<Mesh>> t(m, "Mesh");
+	t.def_static("create", &create_mesh);
 }

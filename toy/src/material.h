@@ -16,6 +16,7 @@ public:
 
 	void init(VulkanContext& ctx, BasicPipeline& pipeline, Texture& texture);
 	void init(VulkanContext& ctx, BasicPipeline& pipeline, TextureCubemap& texture);
+	void init(VulkanContext& ctx, BasicPipeline& pipeline);
 	void bind(VkCommandBuffer command_buffer);
 	BasicPipeline* get_pipeline();
 

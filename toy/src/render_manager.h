@@ -24,7 +24,7 @@ public:
 public:
 	void add_mesh(std::shared_ptr<Mesh> mesh, glm::mat4 matrix, std::shared_ptr<Material> material);
 
-	void render(VkCommandBuffer command_buffer);
+	void render(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet> descriptor_sets);
 
 private:
 	std::vector<MeshRenderCommand> m_mesh_render_commands;

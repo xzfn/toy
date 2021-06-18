@@ -1,0 +1,140 @@
+diff --git a/script/gameapp.py b/script/gameapp.py
+index de902bf..b13eb2e 100644
+--- a/script/gameapp.py
++++ b/script/gameapp.py
+@@ -37,6 +37,11 @@ class App:
+         self.world = World()
+         self.world.unit_manager.create_unit(Player)
+ 
++        self.texture = toy.app.Texture.create('resource/cube.png')
++        self.pipeline = toy.app.BasicPipeline.create('shader/basic.vert.spv', 'shader/basic.frag.spv')
++        self.material = toy.app.Material.create(self.pipeline, self.texture)
++        self.mesh = # TODO
++
+     def on_shoot(self):
+         drawutil.draw_line(vmath.Vector3(0.0, 0.0, 0.0), vmath.Vector3(10.0, 10.0, 10.0), vmath.Vector3(1.0, 1.0, 0.0), 5.0)
+ 
+@@ -68,5 +73,8 @@ class App:
+         drawutil.draw_text(vmath.Vector3(5, 5, 5), '(*{}*)'.format(text))
+         self.world.render()
+ 
++        matrix = transform.to_matrix()
++        toy.app.render_manager.add_mesh(self.mesh, matrix, self.material)
++
+     def shutdown(self):
+         self.console_server.shutdown()
+diff --git a/toy/src/load_helper.cpp b/toy/src/load_helper.cpp
+index 53ddbbd..0137dfc 100644
+--- a/toy/src/load_helper.cpp
++++ b/toy/src/load_helper.cpp
+@@ -30,9 +30,27 @@ std::unique_ptr<TextureCubemap> create_texture_cubemap(std::vector<std::string>
+ 	auto texture = std::make_unique<TextureCubemap>();
+ 	texture->init(app.get_ctx(), raw_images);
+ 	return texture;
+-}
+-
+-std::unique_ptr<Material> create_material()
++}
++
++std::unique_ptr<Material> create_material(std::shared_ptr<BasicPipeline> pipeline, std::shared_ptr<Texture> texture)
+ {
+-	return std::unique_ptr<Material>();
++	App& app = *get_app();
++	auto material = std::make_unique<Material>();
++	material->init(app.get_ctx(), *pipeline.get(), *texture.get());
++	return material;
++}
++
++std::unique_ptr<BasicPipeline> create_basic_pipeline(std::string vert_spv, std::string frag_spv)
++{
++	App& app = *get_app();
++	ResourceManager& resource_manager = app.resource_manager;
++	auto pipeline = std::make_unique<BasicPipeline>();
++	PipelineDescription desc;
++	desc.filename_vert_spv = resource_manager.full_path(vert_spv);
++	desc.filename_frag_spv = resource_manager.full_path(frag_spv);
++	desc.vertex_format = VertexFormat::PositionNormalUv;
++	desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
++	desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
++	pipeline->init_pipeline(app.get_ctx(), desc);
++	return pipeline;
+ }
+diff --git a/toy/src/load_helper.h b/toy/src/load_helper.h
+index 17818aa..aec9b2b 100644
+--- a/toy/src/load_helper.h
++++ b/toy/src/load_helper.h
+@@ -6,8 +6,9 @@
+ #include "texture.h"
+ #include "texture_cubemap.h"
+ #include "material.h"
+-
++#include "basic_pipeline.h"
+ 
+ std::unique_ptr<Texture> create_texture(std::string path);
+ std::unique_ptr<TextureCubemap> create_texture_cubemap(std::vector<std::string> paths);
+-std::unique_ptr<Material> create_material();
++std::unique_ptr<Material> create_material(std::shared_ptr<BasicPipeline> pipeline, std::shared_ptr<Texture> texture);
++std::unique_ptr<BasicPipeline> create_basic_pipeline(std::string vert_spv, std::string frag_spv);
+diff --git a/toy/src/material.cpp b/toy/src/material.cpp
+index 98112b7..9f46e64 100644
+--- a/toy/src/material.cpp
++++ b/toy/src/material.cpp
+@@ -49,6 +49,14 @@ void Material::init(VulkanContext& ctx, BasicPipeline& pipeline, TextureCubemap&
+ 	m_buffer.buffer = material_uniform_buffer;
+ 	m_buffer.memory = material_uniform_memory;
+ 	m_descriptor_set = descriptor_set_material;
++}
++
++void Material::init(VulkanContext& ctx, BasicPipeline& pipeline)
++{
++	m_ctx = &ctx;
++	m_pipeline = &pipeline;
++	// TODO
++
+ }
+ 
+ void Material::bind(VkCommandBuffer command_buffer)
+diff --git a/toy/src/material.h b/toy/src/material.h
+index c2c7be4..7bf7105 100644
+--- a/toy/src/material.h
++++ b/toy/src/material.h
+@@ -16,6 +16,7 @@ public:
+ 
+ 	void init(VulkanContext& ctx, BasicPipeline& pipeline, Texture& texture);
+ 	void init(VulkanContext& ctx, BasicPipeline& pipeline, TextureCubemap& texture);
++	void init(VulkanContext& ctx, BasicPipeline& pipeline);
+ 	void bind(VkCommandBuffer command_buffer);
+ 	BasicPipeline* get_pipeline();
+ 
+diff --git a/toy/src/wrap/wrap_basic_pipeline.cpp b/toy/src/wrap/wrap_basic_pipeline.cpp
+index 8a73cd1..970fadb 100644
+--- a/toy/src/wrap/wrap_basic_pipeline.cpp
++++ b/toy/src/wrap/wrap_basic_pipeline.cpp
+@@ -4,9 +4,11 @@
+ namespace py = pybind11;
+ 
+ #include "basic_pipeline.h"
++#include "load_helper.h"
+ 
+ 
+ void wrap_basic_pipeline(pybind11::module_& m) {
+ 	py::class_<BasicPipeline> t(m, "BasicPipeline");
++	t.def_static("create", &create_basic_pipeline);
+ 	// t.def("init_resource", &BasicPipeline::init_resource);
+ }
+diff --git a/toy/src/wrap/wrap_material.cpp b/toy/src/wrap/wrap_material.cpp
+index d2d00b2..abfd723 100644
+--- a/toy/src/wrap/wrap_material.cpp
++++ b/toy/src/wrap/wrap_material.cpp
+@@ -4,9 +4,11 @@
+ namespace py = pybind11;
+ 
+ #include "material.h"
++#include "load_helper.h"
+ 
+ 
+ void wrap_material(pybind11::module_& m) {
+ 	py::class_<Material> t(m, "Material");
++	t.def_static("create", &create_material);
+ 	// t.def("init", &Material::init);
+ }

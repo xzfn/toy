@@ -19,7 +19,7 @@ void RenderManager::add_mesh(std::shared_ptr<Mesh> mesh, glm::mat4 matrix, std::
 	m_mesh_render_commands.push_back(render_command);
 }
 
-void RenderManager::render(VkCommandBuffer command_buffer)
+void RenderManager::render(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet> descriptor_sets)
 {
 
 	for (auto& render_command : m_mesh_render_commands) {
@@ -29,6 +29,8 @@ void RenderManager::render(VkCommandBuffer command_buffer)
 
 		BasicPipeline& pipeline = *material.get_pipeline();
 		pipeline.bind(command_buffer);
+		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+	
 		material.bind(command_buffer);
 		pipeline.push_constants_matrix(command_buffer, matrix);
 		mesh.draw(command_buffer);

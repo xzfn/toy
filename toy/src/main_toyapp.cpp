@@ -10,8 +10,6 @@ namespace py = pybind11;
 App* g_app;
 
 int main() {
-	py::scoped_interpreter guard{};
-	py::print("hello world");
 
 
 	Window window;
@@ -25,6 +23,9 @@ int main() {
 	HWND hwnd = window.get_win32_hwnd();
 
 	VulkanContext vulkan_context(hinstance, hwnd, width, height);
+
+	py::scoped_interpreter guard{};
+	py::print("hello world");
 
 	App app;
 	g_app = &app;
