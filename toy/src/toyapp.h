@@ -71,6 +71,8 @@ public:
 	BasicPipeline pipeline_skybox;
 	BasicPipeline pipeline_text;
 
+	std::shared_ptr<Material> material_lines;
+
 	double timestamp = 0.0;
 
 	glm::vec3 background_color{ 1.0f, 1.0f, 1.0f };
@@ -91,7 +93,7 @@ public:
 	Texture texture_ascii;
 	Mesh mesh;
 	GeometryMesh mesh2;
-	Mesh mesh3;
+	Mesh mesh_cube;
 	VertexMesh mesh_text;
 	Material material;
 	Material material_cubemap;

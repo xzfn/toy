@@ -56,7 +56,7 @@ void Material::init(VulkanContext& ctx, BasicPipeline& pipeline)
 	m_ctx = &ctx;
 	m_pipeline = &pipeline;
 	// TODO
-
+	assert(false);
 }
 
 void Material::bind(VkCommandBuffer command_buffer)

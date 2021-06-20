@@ -187,7 +187,10 @@ std::vector<ColorLineData> GeometryBuilder::build_buffer()
 	return buffer;
 }
 
-
+GeometryMeshData GeometryBuilder::build_data()
+{
+	return GeometryMeshData{ build_buffer() };
+}
 
 void TimedGeometryBuilder::clear()
 {
@@ -260,4 +263,9 @@ std::vector<ColorLineData> TimedGeometryBuilder::build_buffer()
 		write_sphere_lines(sphere.info, buffer);
 	}
 	return buffer;
+}
+
+GeometryMeshData TimedGeometryBuilder::build_data()
+{
+	return GeometryMeshData{ build_buffer() };
 }

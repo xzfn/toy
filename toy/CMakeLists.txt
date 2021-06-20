@@ -154,6 +154,9 @@ set(toyapp_SOURCES
 	src/wrap/wrap_mesh.h
 	src/wrap/wrap_mesh.cpp
 
+	src/wrap/wrap_geometry_mesh.h
+	src/wrap/wrap_geometry_mesh.cpp
+
 	src/wrap/wrap_material.h
 	src/wrap/wrap_material.cpp
 

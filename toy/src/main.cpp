@@ -91,7 +91,7 @@ public:
 		shape_data = generate_cube();
 		mesh_data.set_vertices_data(shape_data.positions, shape_data.normals, shape_data.uvs);
 		mesh_data.set_indices(shape_data.indices);
-		mesh3.init_resource(ctx, mesh_data);
+		mesh_cube.init_resource(ctx, mesh_data);
 
 
 		PipelineDescription desc;
@@ -291,7 +291,7 @@ public:
 		model = glm::scale(MAT4_IDENTITY, VEC3_ONES * 10000.0f);
 		vkCmdPushConstants(command_buffer, pipeline_skybox.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 		material_cubemap.bind(command_buffer);
-		mesh3.draw(command_buffer);
+		mesh_cube.draw(command_buffer);
 
 
 		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline());
@@ -430,7 +430,7 @@ public:
 	TextureCubemap texture_cubemap;
 	Mesh mesh;
 	GeometryMesh mesh2;
-	Mesh mesh3;
+	Mesh mesh_cube;
 	Material material;
 	Material material_cubemap;
 

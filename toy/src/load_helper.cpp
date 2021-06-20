@@ -62,3 +62,11 @@ std::shared_ptr<Mesh> create_mesh(MeshData& mesh_data)
 	mesh->init_resource(app.get_ctx(), mesh_data);
 	return mesh;
 }
+
+std::shared_ptr<GeometryMesh> create_geometry_mesh(GeometryMeshData& mesh_data)
+{
+	App& app = *get_app();
+	auto mesh = std::make_unique<GeometryMesh>();
+	mesh->init_resource(app.get_ctx(), mesh_data);
+	return mesh;
+}

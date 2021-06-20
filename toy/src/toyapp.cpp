@@ -218,7 +218,7 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	shape_data = generate_cube();
 	mesh_data.set_vertices_data(shape_data.positions, shape_data.normals, shape_data.uvs);
 	mesh_data.set_indices(shape_data.indices);
-	mesh3.init_resource(ctx, mesh_data);
+	mesh_cube.init_resource(ctx, mesh_data);
 
 	p_mesh = std::make_shared<Mesh>();
 	p_mesh->init_resource(ctx, mesh_data);
@@ -240,7 +240,6 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
 	pipeline_lines.init_pipeline(ctx, desc);
 
-
 	desc.filename_vert_spv = resource_manager.full_path("shader/skybox.vert.spv");
 	desc.filename_frag_spv = resource_manager.full_path("shader/skybox.frag.spv");
 	desc.vertex_format = VertexFormat::PositionNormalUv;
@@ -258,6 +257,9 @@ void App::startup(VulkanContext& ctx, Window* window) {
 
 	imageutil::Image raw_image = imageutil::load_image_force_channels(resource_manager.full_path("resource/cube.png"), 4);
 	texture.init(ctx, raw_image);
+
+	material_lines = std::make_shared<Material>();
+	material_lines->init(ctx, pipeline_lines, texture);
 
 	material.init(ctx, pipeline, texture);
 
@@ -443,17 +445,18 @@ void App::render(VkCommandBuffer command_buffer) {
 
 	glm::mat4 model;
 
-	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_skybox.get_pipeline());
-	std::vector<VkDescriptorSet> descriptor_sets3{
-		descriptor_set_frame  //, descriptor_set_model
+	std::vector<VkDescriptorSet> descriptor_sets_frame{
+		descriptor_set_frame
 	};
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets3.size(), descriptor_sets3.data(), 0, nullptr);
 
+	// skybox
 	if (camera_manager.get_camera()->is_perspective()) {
 		model = glm::scale(MAT4_IDENTITY, VEC3_ONES * 10000.0f);
-		vkCmdPushConstants(command_buffer, pipeline_skybox.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
+		material_cubemap.get_pipeline()->bind(command_buffer);
+		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_skybox.get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
 		material_cubemap.bind(command_buffer);
-		mesh3.draw(command_buffer);
+		material_cubemap.get_pipeline()->push_constants_matrix(command_buffer, model);
+		mesh_cube.draw(command_buffer);
 	}
 
 
@@ -521,7 +524,7 @@ void App::render(VkCommandBuffer command_buffer) {
 	std::vector<VkDescriptorSet> descriptor_sets4{
 		descriptor_set_frame  //, descriptor_set_model
 	};
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets3.size(), descriptor_sets3.data(), 0, nullptr);
+	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
 
 
 	// draw text last

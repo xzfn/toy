@@ -9,4 +9,5 @@ namespace py = pybind11;
 void wrap_render_manager(pybind11::module_& m) {
 	py::class_<RenderManager> t(m, "RenderManager");
 	t.def("add_mesh", &RenderManager::add_mesh);
+	t.def("add_geometry_mesh", &RenderManager::add_geometry_mesh);
 }

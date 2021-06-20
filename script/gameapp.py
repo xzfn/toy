@@ -8,6 +8,7 @@ import numpy as np
 
 import toy
 import vmath
+from vmathlib import vcolors
 
 import remoteconsole.server
 import retroreload
@@ -70,6 +71,11 @@ class App:
         mesh_data = build_quad_mesh_data()
         self.mesh = toy.Mesh.create(mesh_data)
 
+        builder = toy.GeometryBuilder()
+        builder.add_cube(vmath.Vector3(), 3.0, vcolors.cyan)
+        builder.add_cube(vmath.Vector3(1.0, 0.0, 0.0), 0.5, vcolors.magenta)
+        geometry_mesh_data = builder.build_data()
+        self.geometry_mesh = toy.GeometryMesh.create(geometry_mesh_data)
 
     def on_shoot(self):
         drawutil.draw_line(vmath.Vector3(0.0, 0.0, 0.0), vmath.Vector3(10.0, 10.0, 10.0), vmath.Vector3(1.0, 1.0, 0.0), 5.0)
@@ -117,6 +123,12 @@ class App:
         transform.rotation = vmath.Quaternion.from_angle_axis(mouse_y / 10.0, vmath.Vector3(0.0, 1.0, 0.0))
         toy.app.render_manager.add_mesh(self.mesh, transform.to_matrix4(), self.material)
 
+        transform.translation = vmath.Vector3(0.0, 3.0, 0.0)
+        transform.rotation = vmath.Quaternion.from_angle_axis(self.world.game_time, vmath.Vector3(0.0, 0.0, 1.0))
+        toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
+        transform.translation = vmath.Vector3(0.0, 10.0, 0.0)
+        transform.scale = vmath.Vector3(1.0, 1.0, 1.0) * math.modf(self.world.game_time)[0] + vmath.Vector3(1, 1, 1)
+        toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
 
     def shutdown(self):
         self.console_server.shutdown()

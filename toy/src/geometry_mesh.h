@@ -11,6 +11,7 @@ public:
 	~GeometryMesh();
 
 	void init_resource(VulkanContext& ctx, std::vector<ColorLineData> data);
+	void init_resource(VulkanContext& ctx, GeometryMeshData data);
 	void draw(VkCommandBuffer command_buffer);
 	void destroy();
 

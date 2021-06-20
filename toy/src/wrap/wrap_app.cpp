@@ -19,6 +19,8 @@ void wrap_app(pybind11::module_& m) {
 	t.def_readonly("resource_manager", &App::resource_manager);
 	t.def_readonly("render_manager", &App::render_manager);
 
+	t.def_readonly("material_lines", &App::material_lines);
+
 	t.def("set_background_color", &App::set_background_color);
 	t.def("bind_key_down", [](App* this_, KeyDownCallback callback) {
 		this_->script_on_key_down = callback;

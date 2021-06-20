@@ -27,6 +27,11 @@ void GeometryMesh::init_resource(VulkanContext& ctx, std::vector<ColorLineData> 
 	m_valid = true;
 }
 
+void GeometryMesh::init_resource(VulkanContext& ctx, GeometryMeshData data)
+{
+	init_resource(ctx, data.data);
+}
+
 void GeometryMesh::draw(VkCommandBuffer command_buffer)
 {
 	if (!m_valid) {

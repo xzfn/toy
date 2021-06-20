@@ -50,6 +50,10 @@ struct ColorLineData {
 	glm::vec3 color1;
 };
 
+struct GeometryMeshData {
+	std::vector<ColorLineData> data;
+};
+
 constexpr glm::vec3 GEOMETRY_DEFAULT_COLOR = COLOR_RED;
 
 class GeometryBuilder {
@@ -61,6 +65,7 @@ public:
 	void add_sphere(glm::vec3 position, float radius, glm::vec3 color=GEOMETRY_DEFAULT_COLOR);
 
 	std::vector<ColorLineData> build_buffer();
+	GeometryMeshData build_data();
 
 private:
 	std::vector<LineInfo> m_lines;
@@ -79,6 +84,7 @@ public:
 	void update(float delta_time);
 
 	std::vector<ColorLineData> build_buffer();
+	GeometryMeshData build_data();
 
 private:
 	std::vector<timedinfo::TimedInfo<LineInfo>> m_lines;
