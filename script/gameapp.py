@@ -8,7 +8,7 @@ import numpy as np
 
 import toy
 import vmath
-from vmathlib import vcolors
+from vmathlib import vcolors, vutil
 
 import remoteconsole.server
 import retroreload
@@ -98,6 +98,12 @@ class App:
         self.world.tick(delta_time)
 
         drawutil.draw_ground_grid()
+        length = 10.0
+        drawutil.draw_text(vutil.VEC3_X * length, 'X', color=vcolors.red)
+        drawutil.draw_text(vutil.VEC3_Z * length, 'Z', color=vcolors.blue)
+        drawutil.draw_text(-vutil.VEC3_X * length, '-X', color=vcolors.red)
+        drawutil.draw_text(-vutil.VEC3_Z * length, '-Z', color=vcolors.blue)
+
         transform = vmath.Transform()
         transform.translation = vmath.Vector3(0.0, 0.0, -10.0)
         drawutil.draw_transform(transform)

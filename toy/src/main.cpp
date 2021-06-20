@@ -248,6 +248,14 @@ public:
 		frame_uniform.sun_light_direction = glm::vec3(cos_theta, 0.5f, sin_theta);
 		model_uniform.model = model;
 
+		void* memory_pointer;
+		int frame_uniform_data_size = sizeof(frame_uniform);
+		void* frame_uniform_data = &frame_uniform;
+		vkMapMemory(ctx.basic.device, frame_uniform_memory, 0,
+			frame_uniform_data_size, 0, &memory_pointer);
+		memcpy(memory_pointer, frame_uniform_data, frame_uniform_data_size);
+		vkUnmapMemory(ctx.basic.device, frame_uniform_memory);
+
 		MaterialUniforms& material_uniform = material.ref_uniforms();
 		material_uniform.base_color = glm::vec3(cos_theta, 1.0f, sin_theta);
 
@@ -260,16 +268,6 @@ public:
 		};
 
 		ctx.render(clear_color,
-			pipeline.get_pipeline(), pipeline.get_pipeline_layout(),
-			pipeline_lines.get_pipeline(), pipeline_lines.get_pipeline_layout(),
-			descriptor_sets,
-			descriptor_sets2,
-			mesh,
-			mesh2,
-			material,
-			frame_uniform_memory, (uint8_t*)&frame_uniform, sizeof(frame_uniform),
-			model_uniform_memory, (uint8_t*)&model_uniform, sizeof(model_uniform),
-			model2,
 			[this](VkCommandBuffer command_buffer) { this->render(command_buffer); }
 		);
 

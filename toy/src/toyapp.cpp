@@ -187,42 +187,12 @@ void App::startup(VulkanContext& ctx, Window* window) {
 		this->on_mouse_wheel(wheel_delta, x, y);
 	});
 
-	float axis_length = 5.0f;
-	geometry_builder.add_line(VEC3_ZERO, VEC3_X * axis_length, COLOR_RED);
-	geometry_builder.add_line(VEC3_ZERO, VEC3_Y * axis_length, COLOR_GREEN);
-	geometry_builder.add_line(VEC3_ZERO, VEC3_Z * axis_length, COLOR_BLUE);
-	geometry_builder.add_cube(VEC3_X * axis_length, 1.0f, COLOR_RED);
-	geometry_builder.add_cube(VEC3_Y * axis_length, 1.0f, COLOR_GREEN);
-	geometry_builder.add_cube(VEC3_Z * axis_length, 1.0f, COLOR_BLUE);
-	geometry_builder.add_sphere(VEC3_X * 4.0f, 2.0f, COLOR_GRAY);
-	geometry_builder.add_sphere(VEC3_X * 10.0f, 2.0f, COLOR_GRAY);
-
-	mesh2.init_resource(ctx, geometry_builder.build_buffer());
-
-
-	text_builder.add_screen_text(VEC3_ZERO + glm::vec3(0.0f, 20.0f, 0.0f), "ABCDEFG!@#$%^&abcdefg", COLOR_BLUE);
-
-	text_builder.add_screen_text(glm::vec3(0.0f, 300.0f, 0.0f), "(_+|)", COLOR_YELLOW);
-
-	text_builder.add_screen_text(glm::vec3(300.0f, 300.0f, 0.0f), "(_+|)", COLOR_YELLOW);
-
-	//text_builder.add_text(glm::vec3(0.0f, 5.0f, 0.0f), "this is test text2", COLOR_BLUE);
-	mesh_text.init_resource(ctx, text_builder.build_buffer());
-
-	ShapeData shape_data = generate_unit_cube();
+	ShapeData shape_data;
 	MeshData mesh_data;
-	mesh_data.set_vertices_data(shape_data.positions, shape_data.normals, shape_data.uvs);
-	mesh_data.set_indices(shape_data.indices);
-	mesh.init_resource(ctx, mesh_data);
-
 	shape_data = generate_cube();
 	mesh_data.set_vertices_data(shape_data.positions, shape_data.normals, shape_data.uvs);
 	mesh_data.set_indices(shape_data.indices);
 	mesh_cube.init_resource(ctx, mesh_data);
-
-	p_mesh = std::make_shared<Mesh>();
-	p_mesh->init_resource(ctx, mesh_data);
-
 
 	PipelineDescription desc;
 	desc.filename_vert_spv = resource_manager.full_path("shader/basic.vert.spv");
@@ -261,11 +231,6 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	material_lines = std::make_shared<Material>();
 	material_lines->init(ctx, pipeline_lines, texture);
 
-	material.init(ctx, pipeline, texture);
-
-	p_material = std::make_shared<Material>();
-	p_material->init(ctx, pipeline, texture);
-
 	imageutil::Image raw_image_ascii = imageutil::load_image_force_channels(resource_manager.full_path("resource/ascii_white.png"), 4);
 	texture_ascii.init(ctx, raw_image_ascii);
 
@@ -290,29 +255,12 @@ void App::startup(VulkanContext& ctx, Window* window) {
 
 	DescriptorSetLayouts pipeline_descriptor_set_layouts = pipeline.ref_descriptor_set_layouts();
 
-
 	descriptor_set_frame = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.model);
 	auto frame_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(
 		nullptr, sizeof(FrameUniforms));
 	frame_uniform_buffer = frame_uniform_buffer_and_memory.first;
 	frame_uniform_memory = frame_uniform_buffer_and_memory.second;
 	pipeline.update_descriptor_set_frame(descriptor_set_frame, frame_uniform_buffer, sizeof(FrameUniforms));
-
-	descriptor_set_frame2 = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.model);
-	frame_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(
-		nullptr, sizeof(FrameUniforms));
-	frame_uniform_buffer2 = frame_uniform_buffer_and_memory.first;
-	frame_uniform_memory2 = frame_uniform_buffer_and_memory.second;
-	pipeline.update_descriptor_set_frame(descriptor_set_frame2, frame_uniform_buffer2, sizeof(FrameUniforms));
-
-
-	descriptor_set_model = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.model);
-	auto model_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(
-		nullptr, sizeof(ModelUniforms));
-	model_uniform_buffer = model_uniform_buffer_and_memory.first;
-	model_uniform_memory = model_uniform_buffer_and_memory.second;
-	pipeline.update_descriptor_set_model(descriptor_set_model, model_uniform_buffer, sizeof(ModelUniforms));
-
 
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	timestamp = std::chrono::duration<double>(now).count();
@@ -332,10 +280,7 @@ void App::shutdown() {
 	VulkanContext& ctx = *ctxptr;
 	ctx.device_wait_idle();
 
-	ctx.destroy_buffer_and_memory(model_uniform_buffer, model_uniform_memory);
 	ctx.destroy_buffer_and_memory(frame_uniform_buffer, frame_uniform_memory);
-	ctx.destroy_buffer_and_memory(frame_uniform_buffer2, frame_uniform_memory2);
-
 }
 
 void App::update() {
@@ -362,8 +307,6 @@ void App::update() {
 		}
 	}
 
-
-
 	double integral;
 	float fractional = std::modf(timestamp / 10.0f, &integral);
 	VkClearColorValue clear_color;
@@ -382,21 +325,6 @@ void App::update() {
 	
 	camera_manager.get_camera()->set_view_size(extent.width, extent.height);
 
-
-	auto& p_material_uniform = p_material->ref_uniforms();
-	p_material_uniform.base_color = glm::vec3(cos_theta, 1.0f, sin_theta);
-	for (int i = 0; i < 10; ++i) {
-		Transform transform;
-		transform.translation = glm::vec3(0.0f, 5 + i * 4.0f, 0.0f);
-		glm::mat4 matrix = transform_to_mat4(transform);
-		render_manager.add_mesh(p_mesh, matrix, p_material);
-	}
-
-
-	glm::mat4 model = glm::rotate(glm::mat4(1.0), theta / 5.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-	glm::mat4 model2 = glm::rotate(glm::mat4(1.0), theta, glm::vec3(0.0f, 1.0f, 0.0f));
-
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
 	frame_uniform.view_projection = camera_view_projection;
 	theta = timestamp * 3.0f;
@@ -406,33 +334,17 @@ void App::update() {
 	frame_uniform.screen_width = ctx.basic.extent.width;
 	frame_uniform.screen_height = ctx.basic.extent.height;
 
-	model_uniform.model = model;
-
-	MaterialUniforms& material_uniform = material.ref_uniforms();
-	material_uniform.base_color = glm::vec3(cos_theta, 1.0f, sin_theta);
-
-	std::vector<VkDescriptorSet> descriptor_sets{
-		descriptor_set_frame, descriptor_set_model
-	};
-
-	std::vector<VkDescriptorSet> descriptor_sets2{
-		descriptor_set_frame  //, descriptor_set_model
-	};
+	void* memory_pointer;
+	int frame_uniform_data_size = sizeof(frame_uniform);
+	void* frame_uniform_data = &frame_uniform;
+	vkMapMemory(ctx.basic.device, frame_uniform_memory, 0,
+		frame_uniform_data_size, 0, &memory_pointer);
+	memcpy(memory_pointer, frame_uniform_data, frame_uniform_data_size);
+	vkUnmapMemory(ctx.basic.device, frame_uniform_memory);
 
 	ctx.render(clear_color,
-		pipeline.get_pipeline(), pipeline.get_pipeline_layout(),
-		pipeline_lines.get_pipeline(), pipeline_lines.get_pipeline_layout(),
-		descriptor_sets,
-		descriptor_sets2,
-		mesh,
-		mesh2,
-		material,
-		frame_uniform_memory, (uint8_t*)&frame_uniform, sizeof(frame_uniform),
-		model_uniform_memory, (uint8_t*)&model_uniform, sizeof(model_uniform),
-		model2,
 		[this](VkCommandBuffer command_buffer) { this->render(command_buffer); }
 	);
-
 
 	timed_geometry_builder.update(delta_time);
 	timed_text_builder.update(delta_time);
@@ -459,99 +371,31 @@ void App::render(VkCommandBuffer command_buffer) {
 		mesh_cube.draw(command_buffer);
 	}
 
+	// global timed lines
+	material_lines->get_pipeline()->bind(command_buffer);
 
+	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material_lines->get_pipeline()->get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
 
-	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline());
-
-	std::vector<VkDescriptorSet> descriptor_sets{
-		descriptor_set_frame
-	};
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+	GeometryMesh transient_geometry_mesh;
+	transient_geometry_mesh.init_resource(ctx, timed_geometry_builder.build_buffer());
 	model = glm::mat4(1.0f);
-	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
+	material_lines->get_pipeline()->push_constants_matrix(command_buffer, model);
+	transient_geometry_mesh.draw(command_buffer);
 
-	material.bind(command_buffer);
-	mesh.draw(command_buffer);
+	// render_manager
+	render_manager.render(command_buffer, descriptor_sets_frame);
 
+	// global timed text
+	material_text.get_pipeline()->bind(command_buffer);
 
-	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline());
+	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material_text.get_pipeline()->get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
 
-	//vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-	//vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-	std::vector<VkDescriptorSet> descriptor_sets2{
-		descriptor_set_frame  //, descriptor_set_model
-	};
-
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets2.size(), descriptor_sets2.data(), 0, nullptr);
-
-	float angle = timestamp;
-	model = glm::rotate(glm::mat4(1.0f), angle * 4.0f, VEC3_Z);
-
-	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
-
-	mesh2.draw(command_buffer);
-
-	float angle2 = timestamp;
-	model = glm::rotate(glm::mat4(1.0f), angle2 * 2.0f, VEC3_Z);
-
-	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
-
-	mesh2.draw(command_buffer);
-
-	float angle3 = timestamp;
-	model = glm::rotate(glm::mat4(1.0f), angle3 * 1.0f, VEC3_X);
-	model = model * glm::scale(glm::mat4(1.0f), VEC3_ONES * 0.3f);
-	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
-
-	mesh2.draw(command_buffer);
-
-	float length = std::fmodf(timestamp, 10.0f);
-	timed_geometry_builder.add_cube(VEC3_ZERO, length, COLOR_RED, 0.2f);
-	GeometryMesh temp_mesh;
-	temp_mesh.init_resource(ctx, timed_geometry_builder.build_buffer());
+	VertexMesh transient_mesh_text;
+	transient_mesh_text.init_resource(ctx, timed_text_builder.build_buffer());
 	model = glm::mat4(1.0f);
-	vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
-	temp_mesh.draw(command_buffer);
-
-
-
-	render_manager.render(command_buffer, descriptor_sets);
-
-
-
-	vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_text.get_pipeline());
-	std::vector<VkDescriptorSet> descriptor_sets4{
-		descriptor_set_frame  //, descriptor_set_model
-	};
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
-
-
-	// draw text last
-	model = glm::mat4(1.0f) * 0.1f;
-	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 	material_text.bind(command_buffer);
-	mesh_text.draw(command_buffer);
-	
-	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
-	material_text.bind(command_buffer);
-	VertexMesh mesh_text_temp;
-	TextBuilder text_builder_temp;
-	text_builder_temp.add_text(glm::vec3(0.0f, 10.0f, 0.0f), std::to_string(timestamp));
-	mesh_text_temp.init_resource(ctx, text_builder_temp.build_buffer());
-	mesh_text_temp.draw(command_buffer);
-
-	VertexMesh mesh_text_temp2;
-	timed_text_builder.add_text(glm::vec3(0.0f, 0.0f, 0.0f), "Origin", COLOR_CYAN, 0.0f);
-	timed_text_builder.add_text(VEC3_X * 10.0f, "X", COLOR_CYAN, 0.0f);
-	timed_text_builder.add_text(VEC3_Y * 10.0f, "Y", COLOR_CYAN, 0.0f);
-	timed_text_builder.add_text(VEC3_Z * 10.0f, "Z", COLOR_CYAN, 0.0f);
-
-	mesh_text_temp2.init_resource(ctx, timed_text_builder.build_buffer());
-	model = glm::mat4(1.0f);
-	vkCmdPushConstants(command_buffer, pipeline_text.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
-	mesh_text_temp2.draw(command_buffer);
-
+	material_text.get_pipeline()->push_constants_matrix(command_buffer, model);
+	transient_mesh_text.draw(command_buffer);
 
 }
 

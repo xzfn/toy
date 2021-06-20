@@ -77,34 +77,20 @@ public:
 
 	glm::vec3 background_color{ 1.0f, 1.0f, 1.0f };
 
-	VkDescriptorSet descriptor_set_model;
-	VkBuffer model_uniform_buffer;
-	VkDeviceMemory model_uniform_memory;
-
 	VkDescriptorSet descriptor_set_frame;
-	VkDescriptorSet descriptor_set_frame2;
 	VkBuffer frame_uniform_buffer;
 	VkDeviceMemory frame_uniform_memory;
-	VkBuffer frame_uniform_buffer2;
-	VkDeviceMemory frame_uniform_memory2;
 
 	Texture texture;
 	TextureCubemap texture_cubemap;
 	Texture texture_ascii;
-	Mesh mesh;
-	GeometryMesh mesh2;
+
 	Mesh mesh_cube;
-	VertexMesh mesh_text;
-	Material material;
 	Material material_cubemap;
 	Material material_text;
-	std::shared_ptr<Mesh> p_mesh;
-	std::shared_ptr<Material> p_material;
 	glm::vec3 old_translation;
 
 	FrameUniforms frame_uniform;
-	FrameUniforms frame_uniform2;
-	ModelUniforms model_uniform;
 
 	GeometryBuilder geometry_builder;
 	TimedGeometryBuilder timed_geometry_builder;

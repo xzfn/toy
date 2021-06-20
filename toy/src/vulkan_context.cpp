@@ -10,8 +10,6 @@
 #include "vulkan_util.h"
 #include "vertex_format.h"
 
-#include "mesh.h"
-#include "geometry_mesh.h"
 #include "material.h"
 
 
@@ -191,16 +189,6 @@ void VulkanContext::free_descriptor_sets(const std::vector<VkDescriptorSet>& des
 }
 
 void VulkanContext::render(VkClearColorValue clear_color,
-	VkPipeline pipeline, VkPipelineLayout pipeline_layout,
-		VkPipeline pipeline2, VkPipelineLayout pipeline_layout2,
-	std::vector<VkDescriptorSet> descriptor_sets,
-	std::vector<VkDescriptorSet> descriptor_sets2,
-	Mesh& mesh,
-	GeometryMesh& mesh2,
-	Material& material,
-	VkDeviceMemory frame_uniform_memory, uint8_t* frame_uniform_data, std::size_t frame_uniform_data_size,
-	VkDeviceMemory model_uniform_memory, uint8_t* model_uniform_data, std::size_t model_uniform_data_size,
-	glm::mat4 mesh2_model_matrix,
 	std::function<void(VkCommandBuffer command_buffer)> render_callback
 )
 {
@@ -247,17 +235,6 @@ void VulkanContext::render(VkClearColorValue clear_color,
 	}
 
 	VulkanSwapImage swap_image = swap_images[image_index];
-
-	void* memory_pointer;
-	vkMapMemory(basic.device, frame_uniform_memory, 0,
-		frame_uniform_data_size, 0, &memory_pointer);
-	memcpy(memory_pointer, frame_uniform_data, frame_uniform_data_size);
-	vkUnmapMemory(basic.device, frame_uniform_memory);
-
-	vkMapMemory(basic.device, model_uniform_memory, 0,
-		model_uniform_data_size, 0, &memory_pointer);
-	memcpy(memory_pointer, model_uniform_data, model_uniform_data_size);
-	vkUnmapMemory(basic.device, model_uniform_memory);
 
 	// render
 	VkCommandBuffer command_buffer = swap_image.command_buffer;

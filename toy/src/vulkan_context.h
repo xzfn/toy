@@ -96,16 +96,6 @@ public:
 	void update_descriptor_set(VkDescriptorSet descriptor_set, VkSampler sampler, VkImageView image_view, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void free_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets);
 	void render(VkClearColorValue clear_color,
-		VkPipeline pipeline, VkPipelineLayout pipeline_layout,
-		VkPipeline pipeline2, VkPipelineLayout pipeline_layout2,
-		std::vector<VkDescriptorSet> descriptor_sets,
-		std::vector<VkDescriptorSet> descriptor_sets2,
-		Mesh& mesh,
-		GeometryMesh& mesh2,
-		Material& material,
-		VkDeviceMemory frame_uniform_memory, uint8_t* frame_uniform_data, std::size_t frame_uniform_data_size,
-		VkDeviceMemory model_uniform_memory, uint8_t* model_uniform_data, std::size_t model_uniform_data_size,
-		glm::mat4 mesh2_model_matrix,
 		std::function<void(VkCommandBuffer command_buffer)> render_callback
 		);
 	void device_wait_idle();
