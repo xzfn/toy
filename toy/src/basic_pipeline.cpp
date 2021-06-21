@@ -113,6 +113,11 @@ void BasicPipeline::bind(VkCommandBuffer command_buffer)
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, get_pipeline());
 }
 
+void BasicPipeline::bind_descriptor_sets(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet>& descriptor_sets)
+{
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+}
+
 void BasicPipeline::_init_vk_pipeline()
 {
     VulkanContext& ctx = *m_ctx;

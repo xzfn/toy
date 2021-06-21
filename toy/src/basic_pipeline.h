@@ -68,6 +68,7 @@ public:
 	void destroy();
 
 	void bind(VkCommandBuffer command_buffer);
+	void bind_descriptor_sets(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet>& descriptor_sets);
 
 private:
 	void _init_vk_pipeline();

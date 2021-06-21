@@ -37,8 +37,8 @@ void RenderManager::render(VkCommandBuffer command_buffer, std::vector<VkDescrip
 
 		BasicPipeline& pipeline = *material.get_pipeline();
 		pipeline.bind(command_buffer);
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
-	
+		pipeline.bind_descriptor_sets(command_buffer, descriptor_sets);
+
 		material.bind(command_buffer);
 		pipeline.push_constants_matrix(command_buffer, matrix);
 		mesh.draw(command_buffer);
@@ -51,7 +51,7 @@ void RenderManager::render(VkCommandBuffer command_buffer, std::vector<VkDescrip
 
 		BasicPipeline& pipeline = *material.get_pipeline();
 		pipeline.bind(command_buffer);
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+		pipeline.bind_descriptor_sets(command_buffer, descriptor_sets);
 
 		material.bind(command_buffer);
 		pipeline.push_constants_matrix(command_buffer, matrix);

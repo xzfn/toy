@@ -365,7 +365,7 @@ void App::render(VkCommandBuffer command_buffer) {
 	if (camera_manager.get_camera()->is_perspective()) {
 		model = glm::scale(MAT4_IDENTITY, VEC3_ONES * 10000.0f);
 		material_cubemap.get_pipeline()->bind(command_buffer);
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_skybox.get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
+		material_cubemap.get_pipeline()->bind_descriptor_sets(command_buffer, descriptor_sets_frame);
 		material_cubemap.bind(command_buffer);
 		material_cubemap.get_pipeline()->push_constants_matrix(command_buffer, model);
 		mesh_cube.draw(command_buffer);
@@ -373,8 +373,7 @@ void App::render(VkCommandBuffer command_buffer) {
 
 	// global timed lines
 	material_lines->get_pipeline()->bind(command_buffer);
-
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material_lines->get_pipeline()->get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
+	material_lines->get_pipeline()->bind_descriptor_sets(command_buffer, descriptor_sets_frame);
 
 	GeometryMesh transient_geometry_mesh;
 	transient_geometry_mesh.init_resource(ctx, timed_geometry_builder.build_buffer());
@@ -387,8 +386,7 @@ void App::render(VkCommandBuffer command_buffer) {
 
 	// global timed text
 	material_text.get_pipeline()->bind(command_buffer);
-
-	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material_text.get_pipeline()->get_pipeline_layout(), 0, descriptor_sets_frame.size(), descriptor_sets_frame.data(), 0, nullptr);
+	material_text.get_pipeline()->bind_descriptor_sets(command_buffer, descriptor_sets_frame);
 
 	VertexMesh transient_mesh_text;
 	transient_mesh_text.init_resource(ctx, timed_text_builder.build_buffer());
