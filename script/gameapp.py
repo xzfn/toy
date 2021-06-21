@@ -16,6 +16,7 @@ import retroreload
 #import toyqt
 from world import World
 import drawutil
+import shaderutil
 
 from units.player import Player
 import keycodes
@@ -83,8 +84,13 @@ class App:
     def on_key_down(self, key):
         print('py on_key_down', key)
         if key == keycodes.VK_F5:
-            main_script_folder = os.path.dirname(sys.modules[__name__].__file__)
-            retroreload.retroreload_script_folders([main_script_folder])
+            if toy.app.input_manager.get_key(keycodes.VK_CONTROL):
+                print('reload shader')
+                shaderutil.reload_pipelines([self.pipeline])
+            else:
+                print('reload script')
+                main_script_folder = os.path.dirname(sys.modules[__name__].__file__)
+                retroreload.retroreload_script_folders([main_script_folder])
 
     def update(self):
         self.console_server.service()
@@ -95,6 +101,7 @@ class App:
         mouse_wheel = toy.app.input_manager.get_mouse_wheel()
 
         delta_time = toy.app.delta_time
+        drawutil.draw_screen_text(vmath.Vector3(100, 100, 0), '{:10.4f}'.format(delta_time), color=vcolors.white)
         self.world.tick(delta_time)
 
         drawutil.draw_ground_grid()

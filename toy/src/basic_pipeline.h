@@ -51,6 +51,7 @@ public:
 	~BasicPipeline();
 
 	void init_pipeline(VulkanContext& ctx, PipelineDescription desc);
+	std::vector<std::string> get_shader_spvs();
 
 	void update_descriptor_set_frame(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void update_descriptor_set_model(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);

@@ -81,6 +81,11 @@ void BasicPipeline::init_pipeline(VulkanContext& ctx, PipelineDescription desc)
     _init_vk_pipeline();
 }
 
+std::vector<std::string> BasicPipeline::get_shader_spvs()
+{
+    return { m_desc.filename_vert_spv, m_desc.filename_frag_spv };
+}
+
 BasicPipeline::~BasicPipeline()
 {
     destroy();
