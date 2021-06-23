@@ -21,6 +21,7 @@
 #include "input_manager.h"
 #include "camera_manager.h"
 #include "render_manager.h"
+#include "light_manager.h"
 
 
 class App {
@@ -81,6 +82,10 @@ public:
 	VkBuffer frame_uniform_buffer;
 	VkDeviceMemory frame_uniform_memory;
 
+	VkDescriptorSet descriptor_set_light;
+	VkBuffer light_uniform_buffer;
+	VkDeviceMemory light_uniform_memory;
+
 	Texture texture;
 	TextureCubemap texture_cubemap;
 	Texture texture_ascii;
@@ -103,4 +108,5 @@ public:
 	InputManager input_manager;
 	CameraManager camera_manager;
 	RenderManager render_manager;
+	LightManager light_manager;
 };

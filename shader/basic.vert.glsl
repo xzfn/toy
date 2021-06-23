@@ -12,11 +12,13 @@ out gl_PerVertex {
 	vec4 gl_Position;
 };
 
-layout(location = 0) out vec3 v_Normal;
-layout(location = 1) out vec2 v_Texcoord;
+layout(location = 0) out vec3 v_WorldPosition;
+layout(location = 1) out vec3 v_WorldNormal;
+layout(location = 2) out vec2 v_Texcoord;
 
 void main() {
+	v_WorldPosition = (u_push.model * vec4(in_Position, 1.0f)).xyz;
+	v_WorldNormal = (u_push.model * vec4(in_Normal, 0.0f)).xyz;
 	gl_Position = u_frame.view_projection * u_push.model * vec4(in_Position, 1.0f);
 	v_Texcoord = in_Texcoord;
-	v_Normal = in_Normal;
 }

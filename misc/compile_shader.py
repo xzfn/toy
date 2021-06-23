@@ -9,6 +9,8 @@ GLSLC_EXECUTABLE = 'glslc'
 INPUT_FOLDER = '../shader'
 OUTPUT_FOLDER = '../../toy_generated/shader'
 
+# TODO should test outdated based on #include dependencies.
+FORCE_RECOMPILE = True
 
 def glob_endswith(folder, end):
 	return glob.glob(os.path.join(folder, '*' + end))
@@ -22,7 +24,7 @@ def is_file_outdated(src_filename, dst_filename):
 	return True
 
 def compile_glsl(filename, output_filename):
-	if not is_file_outdated(filename, output_filename):
+	if not is_file_outdated(filename, output_filename) and not FORCE_RECOMPILE:
 		print('skip', filename)
 		return
 

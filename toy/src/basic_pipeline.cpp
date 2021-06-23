@@ -19,6 +19,19 @@ VkDescriptorSetLayout create_descriptor_set_layout_frame(VkDevice device) {
     return vkutil::create_descriptor_set_layout(device, layout_bindings);
 }
 
+VkDescriptorSetLayout create_descriptor_set_layout_light(VkDevice device) {
+	std::vector<VkDescriptorSetLayoutBinding> layout_bindings = {
+        {
+            0,  // binding;
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  // descriptorType;
+            1,  // descriptorCount;
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,  // stageFlags;
+            nullptr  // pImmutableSamplers;
+        }
+	};
+    return vkutil::create_descriptor_set_layout(device, layout_bindings);
+}
+
 VkDescriptorSetLayout create_descriptor_set_layout_model(VkDevice device) {
     std::vector<VkDescriptorSetLayoutBinding> layout_bindings = {
         {
@@ -62,10 +75,12 @@ void BasicPipeline::init_pipeline(VulkanContext& ctx, PipelineDescription desc)
     VkDevice device = ctx.basic.device;
     m_desc = desc;
     m_descriptor_set_layouts.frame = create_descriptor_set_layout_frame(device);
+    m_descriptor_set_layouts.light = create_descriptor_set_layout_light(device);
     m_descriptor_set_layouts.model = create_descriptor_set_layout_model(device);
     m_descriptor_set_layouts.material = create_descriptor_set_layout_material(device);
     std::vector<VkDescriptorSetLayout> descriptor_set_layouts = {
         m_descriptor_set_layouts.frame,
+        m_descriptor_set_layouts.light,
         m_descriptor_set_layouts.model,
         m_descriptor_set_layouts.material
     };
@@ -102,6 +117,7 @@ void BasicPipeline::destroy()
 {
     VkDevice device = m_ctx->basic.device;
     vkutil::destroy_descriptor_set_layout(device, m_descriptor_set_layouts.frame);
+    vkutil::destroy_descriptor_set_layout(device, m_descriptor_set_layouts.light);
     vkutil::destroy_descriptor_set_layout(device, m_descriptor_set_layouts.model);
     vkutil::destroy_descriptor_set_layout(device, m_descriptor_set_layouts.material);
     vkutil::destroy_pipeline_layout(device, m_pipeline_layout);
@@ -143,6 +159,29 @@ void BasicPipeline::update_descriptor_set_frame(VkDescriptorSet descriptor_set, 
         uniform_buffer,  // buffer;
         0,  // offset;
         uniform_buffer_size  // range;
+    };
+    VkWriteDescriptorSet descriptor_write = {
+        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,  // sType;
+        nullptr,  // pNext;
+        descriptor_set,  // dstSet;
+        0,  // dstBinding;
+        0,  // dstArrayElement;
+        1,  // descriptorCount;
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  // descriptorType;
+        nullptr,  // pImageInfo;
+        &uniform_buffer_info,  // pBufferInfo;
+        nullptr  // pTexelBufferView;
+    };
+    auto& ctx = *m_ctx;
+    vkUpdateDescriptorSets(ctx.basic.device, 1, &descriptor_write, 0, nullptr);
+}
+
+void BasicPipeline::update_descriptor_set_light(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size)
+{
+    VkDescriptorBufferInfo uniform_buffer_info = {
+       uniform_buffer,  // buffer;
+       0,  // offset;
+       uniform_buffer_size  // range;
     };
     VkWriteDescriptorSet descriptor_write = {
         VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,  // sType;

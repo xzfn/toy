@@ -4,6 +4,7 @@
 namespace py = pybind11;
 
 #include "mesh_data.h"
+#include "mesh_data_helper.h"
 
 
 void wrap_VerticesData(py::module_& m) {
@@ -20,6 +21,9 @@ void wrap_MeshData(py::module_& m) {
 	t.def("get_vertices_data", &MeshData::get_vertices_data);
 	t.def("set_indices", &MeshData::set_indices);
 	t.def("get_indices", &MeshData::get_indices);
+
+	t.def_static("create_unit_cube", &create_mesh_data_unit_cube);
+	t.def_static("create_unit_quad", &create_mesh_data_unit_quad);
 }
 
 void wrap_mesh_data(pybind11::module_& m) {

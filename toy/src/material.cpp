@@ -68,9 +68,9 @@ void Material::bind(VkCommandBuffer command_buffer)
 	memcpy(memory_pointer, &m_material_uniforms, sizeof(MaterialUniforms));
 	vkUnmapMemory(ctx.basic.device, m_buffer.memory);
 
-	uint32_t first_set = 2;
+	uint32_t first_set = 3;  // FIXME from shader material set
 	vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->get_pipeline_layout(),
-		2, 1, &m_descriptor_set, 0, nullptr);
+		first_set, 1, &m_descriptor_set, 0, nullptr);
 }
 
 BasicPipeline* Material::get_pipeline()

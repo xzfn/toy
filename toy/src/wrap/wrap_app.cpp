@@ -18,6 +18,7 @@ void wrap_app(pybind11::module_& m) {
 	t.def_readonly("camera_manager", &App::camera_manager);
 	t.def_readonly("resource_manager", &App::resource_manager);
 	t.def_readonly("render_manager", &App::render_manager);
+	t.def_readonly("light_manager", &App::light_manager);
 
 	t.def_readonly("material_lines", &App::material_lines);
 

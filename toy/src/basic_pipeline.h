@@ -8,7 +8,7 @@
 
 #include "vulkan_context.h"
 #include "pipeline_util.h"
-
+#include "light_manager.h"
 
 struct FrameUniforms {
 	glm::mat4 view_projection;
@@ -27,6 +27,8 @@ struct FrameUniforms {
 	float padding_3;
 };
 
+
+
 struct ModelUniforms {
 	glm::mat4 model;
 };
@@ -38,6 +40,7 @@ struct MaterialUniforms {
 
 struct DescriptorSetLayouts {
 	VkDescriptorSetLayout frame;
+	VkDescriptorSetLayout light;
 	VkDescriptorSetLayout model;
 	VkDescriptorSetLayout material;
 };
@@ -54,6 +57,7 @@ public:
 	std::vector<std::string> get_shader_spvs();
 
 	void update_descriptor_set_frame(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
+	void update_descriptor_set_light(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void update_descriptor_set_model(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void update_descriptor_set_material(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size,
 		VkSampler sampler, VkImageView image_view

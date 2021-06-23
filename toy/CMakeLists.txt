@@ -84,6 +84,12 @@ set(toy_SOURCES
 	src/render_manager.h
 	src/render_manager.cpp
 
+	src/light.h
+	src/light.cpp
+
+	src/light_manager.h
+	src/light_manager.cpp
+
 	src/scope_util.h
 )
 
@@ -117,6 +123,9 @@ set(toyapp_SOURCES
 
 	src/load_helper.h
 	src/load_helper.cpp
+
+	src/mesh_data_helper.h
+	src/mesh_data_helper.cpp
 
 	src/wrap/wrap_toy.h
 	src/wrap/wrap_toy.cpp
@@ -168,6 +177,12 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_basic_pipeline.h
 	src/wrap/wrap_basic_pipeline.cpp
+
+	src/wrap/wrap_light.h
+	src/wrap/wrap_light.cpp
+
+	src/wrap/wrap_light_manager.h
+	src/wrap/wrap_light_manager.cpp
 
 	src/wrap/wrap_app.h
 	src/wrap/wrap_app.cpp

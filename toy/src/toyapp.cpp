@@ -262,6 +262,25 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	frame_uniform_memory = frame_uniform_buffer_and_memory.second;
 	pipeline.update_descriptor_set_frame(descriptor_set_frame, frame_uniform_buffer, sizeof(FrameUniforms));
 
+	descriptor_set_light = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.light);
+	auto light_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(
+		nullptr, sizeof(LightUniforms));
+	light_uniform_buffer = light_uniform_buffer_and_memory.first;
+	light_uniform_memory = light_uniform_buffer_and_memory.second;
+	pipeline.update_descriptor_set_light(descriptor_set_light, light_uniform_buffer, sizeof(LightUniforms));
+
+	auto light1 = std::make_shared<Light>();
+	light1->set_type(LightType::Point);
+	light1->set_position(glm::vec3(5.0f, 5.0f, 5.0f));
+	light1->set_color(glm::vec3(1.0f, 1.0f, 0.5f));
+	light_manager.add_light(light1);
+	
+	auto light2 = std::make_shared<Light>();
+	light2->set_type(LightType::Point);
+	light2->set_position(glm::vec3(5.0f, 5.0f, -5.0f));
+	light2->set_color(glm::vec3(1.0f, 0.0f, 0.5f));
+	light_manager.add_light(light2);
+
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	timestamp = std::chrono::duration<double>(now).count();
 
@@ -281,6 +300,8 @@ void App::shutdown() {
 	ctx.device_wait_idle();
 
 	ctx.destroy_buffer_and_memory(frame_uniform_buffer, frame_uniform_memory);
+	ctx.destroy_buffer_and_memory(light_uniform_buffer, light_uniform_memory);
+
 }
 
 void App::update() {
@@ -327,6 +348,7 @@ void App::update() {
 
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
 	frame_uniform.view_projection = camera_view_projection;
+	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
 	theta = timestamp * 3.0f;
 	cos_theta = cosf(theta);
 	sin_theta = sinf(theta);
@@ -341,6 +363,16 @@ void App::update() {
 		frame_uniform_data_size, 0, &memory_pointer);
 	memcpy(memory_pointer, frame_uniform_data, frame_uniform_data_size);
 	vkUnmapMemory(ctx.basic.device, frame_uniform_memory);
+
+
+	LightUniforms light_uniform = light_manager.build_light_uniform();
+
+	int light_uniform_data_size = sizeof(light_uniform);
+	void* light_uniform_data = &light_uniform;
+	vkMapMemory(ctx.basic.device, light_uniform_memory, 0,
+		light_uniform_data_size, 0, &memory_pointer);
+	memcpy(memory_pointer, light_uniform_data, light_uniform_data_size);
+	vkUnmapMemory(ctx.basic.device, light_uniform_memory);
 
 	ctx.render(clear_color,
 		[this](VkCommandBuffer command_buffer) { this->render(command_buffer); }
@@ -358,7 +390,8 @@ void App::render(VkCommandBuffer command_buffer) {
 	glm::mat4 model;
 
 	std::vector<VkDescriptorSet> descriptor_sets_frame{
-		descriptor_set_frame
+		descriptor_set_frame,
+		descriptor_set_light
 	};
 
 	// skybox

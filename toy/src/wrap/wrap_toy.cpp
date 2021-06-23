@@ -18,6 +18,8 @@ namespace py = pybind11;
 #include "wrap_basic_pipeline.h"
 #include "wrap_mesh_data.h"
 #include "wrap_geometry_mesh.h"
+#include "wrap_light.h"
+#include "wrap_light_manager.h"
 
 
 #include "wrap_app.h"
@@ -39,6 +41,8 @@ void wrap_toy(py::module_& m) {
 	wrap_basic_pipeline(m);
 	wrap_mesh_data(m);
 	wrap_geometry_mesh(m);
+	wrap_light(m);
+	wrap_light_manager(m);
 
 	wrap_app(m);
 }

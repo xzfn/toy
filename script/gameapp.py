@@ -8,7 +8,7 @@ import numpy as np
 
 import toy
 import vmath
-from vmathlib import vcolors, vutil
+from vmathlib import vcolors, vutil, vcolor
 
 import remoteconsole.server
 import retroreload
@@ -19,6 +19,7 @@ import drawutil
 import shaderutil
 
 from units.player import Player
+from units.enemy import Enemy
 import keycodes
 
 
@@ -64,7 +65,6 @@ class App:
         #toyqt.startup()
         #toyqt.qtwindow.on_shoot = self.on_shoot
         self.world = World()
-        self.world.unit_manager.create_unit(Player)
 
         self.texture = toy.Texture.create('resource/cube.png')
         self.pipeline = toy.BasicPipeline.create('shader/basic.vert.spv', 'shader/basic.frag.spv')
@@ -77,6 +77,14 @@ class App:
         builder.add_cube(vmath.Vector3(1.0, 0.0, 0.0), 0.5, vcolors.magenta)
         geometry_mesh_data = builder.build_data()
         self.geometry_mesh = toy.GeometryMesh.create(geometry_mesh_data)
+
+        self.light = toy.Light()
+        self.light.set_type(toy.LightType.Point)
+        self.light.set_position(vmath.Vector3(5.0, 5.0, -5.0))
+        toy.app.light_manager.add_light(self.light)
+
+        self.world.unit_manager.create_unit(Player)
+        self.world.unit_manager.create_unit(Enemy)
 
     def on_shoot(self):
         drawutil.draw_line(vmath.Vector3(0.0, 0.0, 0.0), vmath.Vector3(10.0, 10.0, 10.0), vmath.Vector3(1.0, 1.0, 0.0), 5.0)
@@ -143,5 +151,10 @@ class App:
         transform.scale = vmath.Vector3(1.0, 1.0, 1.0) * math.modf(self.world.game_time)[0] + vmath.Vector3(1, 1, 1)
         toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
 
+        drawutil.draw_sphere(self.light.get_position())
+        alpha = math.modf(self.world.game_time * 0.4)[0]
+        c = vcolor.bounce(vcolors.red, vcolors.lime, alpha)
+        self.light.set_color(vcolor.bounce(vcolors.red, vcolors.lime, alpha))
+        
     def shutdown(self):
         self.console_server.shutdown()

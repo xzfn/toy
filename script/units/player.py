@@ -1,6 +1,9 @@
 import toy
 import vmath
 
+import toyentry
+import keycodes
+
 import drawutil
 from unit_manager import Unit
 
@@ -12,9 +15,12 @@ class Player(Unit):
 		super().__init__(world, unit_id, param)
 
 		self.transform = vmath.Transform()
+		self.speed = 3.0
+		self.mesh = toy.Mesh.create(toy.MeshData.create_unit_cube())
+		self.material = toyentry.app.material
 		self._fire_cd = 0.2
 		self._fire_countdown = self._fire_cd
-		
+
 	def tick(self, delta_time):
 		if toy.app.input_manager.get_key(ord('F')):
 			old_translation = self.transform.translation
@@ -33,6 +39,21 @@ class Player(Unit):
 				print('fire bullet')
 				self.world.unit_manager.create_unit(Bullet, param)
 
+		axis_x = 0.0
+		axis_y = 0.0
+		if toy.app.input_manager.get_key(keycodes.VK_UP):
+			axis_y += 1.0
+		if toy.app.input_manager.get_key(keycodes.VK_DOWN):
+			axis_y += -1.0
+		if toy.app.input_manager.get_key(keycodes.VK_LEFT):
+			axis_x += 1.0
+		if toy.app.input_manager.get_key(keycodes.VK_RIGHT):
+			axis_x += -1.0
+		movement_input = vmath.Vector3(axis_x, 0.0, axis_y)
+		if movement_input.length() > 1.0:
+			movement_input.normalize_self()
+		self.transform.translation += movement_input * delta_time * self.speed
 
 	def render(self):
 		drawutil.draw_transform(self.transform)
+		toy.app.render_manager.add_mesh(self.mesh, self.transform.to_matrix4(), self.material)

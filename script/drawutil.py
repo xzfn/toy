@@ -29,3 +29,9 @@ def draw_text(position, text, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
 
 def draw_screen_text(position, text, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
     toy.app.timed_text_builder.add_screen_text(position, text, color, duration)
+
+def draw_sphere(position, radius=1.0, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    toy.app.timed_geometry_builder.add_sphere(position, radius, color, duration)
+
+def draw_cube(position, length=1.0, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    toy.app.timed_geometry_builder.add_cube(position, length, color, duration)
