@@ -1,52 +1,21 @@
 
-import subprocess
 import os
 import glob
 import traceback
+
+import sys
+sys.path.insert(0, '../script')
+import shadercompiler
 
 
 GLSLC_EXECUTABLE = 'glslc'
 INPUT_FOLDER = '../shader'
 OUTPUT_FOLDER = '../../toy_generated/shader'
 
-# TODO should test outdated based on #include dependencies.
-FORCE_RECOMPILE = True
+
 
 def glob_endswith(folder, end):
 	return glob.glob(os.path.join(folder, '*' + end))
-
-def is_file_outdated(src_filename, dst_filename):
-	if os.path.isfile(dst_filename):
-		src_modified = os.path.getmtime(src_filename)
-		dst_modified = os.path.getmtime(dst_filename)
-		if src_modified < dst_modified:
-			return False
-	return True
-
-def compile_glsl(filename, output_filename):
-	if not is_file_outdated(filename, output_filename) and not FORCE_RECOMPILE:
-		print('skip', filename)
-		return
-
-	if filename.endswith('vert.glsl'):
-		stage = 'vertex'
-	elif filename.endswith('frag.glsl'):
-		stage = 'fragment'
-	else:
-		print('unknown shader stage', filename)
-		assert False
-
-	cmd = [
-		GLSLC_EXECUTABLE,
-		'-fshader-stage={}'.format(stage),
-		'-o', output_filename,
-		filename
-	]
-	print('run', cmd)
-	try:
-		subprocess.run(cmd, check=True)
-	except subprocess.CalledProcessError:
-		traceback.print_exc()
 
 def compile_folder(folder, output_folder):
 	os.makedirs(output_folder, exist_ok=True)
@@ -58,7 +27,8 @@ def compile_folder(folder, output_folder):
 		basename = shader_file[len(folder) + 1:]
 		spvname = basename[:-5] + '.spv'
 		output_filename = os.path.join(output_folder, spvname)
-		compile_glsl(shader_file, output_filename)
+		if shadercompiler.is_shader_outdated(shader_file, output_filename):
+			shadercompiler.compile_glsl(shader_file, output_filename)
 		output_spvnames.append(spvname)
 	return output_spvnames
 
