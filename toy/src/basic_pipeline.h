@@ -38,9 +38,20 @@ struct MaterialUniforms {
 	float padding_0;
 };
 
+constexpr int MAX_SHADOWS = 8;
+
+struct ShadowLayer {
+	glm::mat4 light_matrix;
+};
+
+struct ShadowUniforms {
+	ShadowLayer layers[MAX_SHADOWS];
+};
+
 struct DescriptorSetLayouts {
 	VkDescriptorSetLayout frame;
 	VkDescriptorSetLayout light;
+	VkDescriptorSetLayout shadow;
 	VkDescriptorSetLayout model;
 	VkDescriptorSetLayout material;
 };
@@ -58,10 +69,13 @@ public:
 
 	void update_descriptor_set_frame(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void update_descriptor_set_light(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
+	void update_descriptor_set_shadow(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size, VkSampler sampler, VkImageView image_view);
 	void update_descriptor_set_model(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void update_descriptor_set_material(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size,
 		VkSampler sampler, VkImageView image_view
 	);
+
+
 	void push_constants_matrix(VkCommandBuffer command_buffer, glm::mat4 matrix);
 
 	VkPipeline get_pipeline();
@@ -72,6 +86,7 @@ public:
 	void destroy();
 
 	void bind(VkCommandBuffer command_buffer);
+	// NOTE MUST first n sets sequencially
 	void bind_descriptor_sets(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet>& descriptor_sets);
 
 private:

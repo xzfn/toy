@@ -51,6 +51,7 @@ std::shared_ptr<BasicPipeline> create_basic_pipeline(std::string vert_spv, std::
 	desc.vertex_format = VertexFormat::PositionNormalUv;
 	desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
+	desc.render_pass = app.get_ctx().basic.render_pass;
 	pipeline->init_pipeline(app.get_ctx(), desc);
 	return pipeline;
 }

@@ -37,6 +37,8 @@ public:
 
 	void update();
 
+	void depth_pass(VkCommandBuffer command_buffer);
+
 	void render(VkCommandBuffer command_buffer);
 
 	void on_resize(uint32_t width, uint32_t height);
@@ -71,6 +73,7 @@ public:
 	BasicPipeline pipeline_lines;
 	BasicPipeline pipeline_skybox;
 	BasicPipeline pipeline_text;
+	BasicPipeline pipeline_depth;
 
 	std::shared_ptr<Material> material_lines;
 
@@ -85,6 +88,10 @@ public:
 	VkDescriptorSet descriptor_set_light;
 	VkBuffer light_uniform_buffer;
 	VkDeviceMemory light_uniform_memory;
+
+	VkDescriptorSet descriptor_set_shadow;
+	VkBuffer shadow_uniform_buffer;
+	VkDeviceMemory shadow_uniform_memory;
 
 	Texture texture;
 	TextureCubemap texture_cubemap;
@@ -109,4 +116,13 @@ public:
 	CameraManager camera_manager;
 	RenderManager render_manager;
 	LightManager light_manager;
+
+	// shadow
+	uint32_t depth_width;
+	uint32_t depth_height;
+	VkImage depth_image;
+	VkDeviceMemory depth_image_memory;
+	VkImageView depth_image_view;
+	VkSampler depth_sampler;
+	VkFramebuffer depth_framebuffer;
 };

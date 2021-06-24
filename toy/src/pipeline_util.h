@@ -12,6 +12,7 @@ struct PipelineDescription {
 	VertexFormat vertex_format;
 	VkPrimitiveTopology topology;
 	VkCullModeFlags cull_model_flags;
+	VkRenderPass render_pass;
 };
 
 

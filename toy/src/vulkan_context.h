@@ -36,6 +36,7 @@ struct VulkanBasic {
 	VkCommandBuffer work_command_buffer;
 	VkDescriptorPool descriptor_pool;
 	VkRenderPass render_pass;
+	VkRenderPass depth_render_pass;
 	uint32_t image_count;
 	uint32_t frame_index;
 };
@@ -76,11 +77,12 @@ public:
 		uint8_t* buffer_data, std::size_t buffer_size);
 	std::pair<VkImage, VkDeviceMemory> create_texture_cubemap(uint32_t width, uint32_t height,
 		uint8_t* buffer_data, std::size_t buffer_size);
-	std::pair<VkImage, VkDeviceMemory> create_texture_depth(uint32_t width, uint32_t height);
+	std::pair<VkImage, VkDeviceMemory> create_texture_depth(uint32_t width, uint32_t height, bool sampled);
 	VkImageView create_image_view_texture(VkImage image);
 	VkImageView create_image_view_texture_cubemap(VkImage image);
-	VkImageView create_image_view_texture_depth(VkImage image);
+	VkImageView create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil);
 	VkSampler create_sampler();
+	VkSampler create_depth_sampler();
 	void destroy_buffer(VkBuffer buffer);
 	void free_memory(VkDeviceMemory memory);
 	void destroy_buffer_and_memory(VkBuffer buffer, VkDeviceMemory memory);
@@ -90,12 +92,15 @@ public:
 	void destroy_image(VkImage image);
 	void destroy_vulkan_image(VulkanImage vulkan_image);
 	void destroy_sampler(VkSampler sampler);
+	VkFramebuffer create_framebuffer(uint32_t width, uint32_t height,
+		VkRenderPass render_pass, std::vector<VkImageView>& image_views);
 	std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer(uint8_t* buffer_data, std::size_t buffer_size);
 	std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer_coherent(uint8_t* buffer_data, std::size_t buffer_size);
 	VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout descriptor_set_layout);
 	void update_descriptor_set(VkDescriptorSet descriptor_set, VkSampler sampler, VkImageView image_view, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void free_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets);
 	void render(VkClearColorValue clear_color,
+		std::function<void(VkCommandBuffer command_buffer)> depth_pass_callback,
 		std::function<void(VkCommandBuffer command_buffer)> render_callback
 		);
 	void device_wait_idle();
@@ -113,6 +118,7 @@ private:
 	void init_surface_format();
 	void init_depth_format();
 	void init_depth();
+	void init_depth_render_pass();
 	void init_render_pass();
 	void init_frames();
 	void init_swapchain(uint32_t width, uint32_t height);

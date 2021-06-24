@@ -100,6 +100,7 @@ public:
 		desc.vertex_format = VertexFormat::PositionNormalUv;
 		desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
+		desc.render_pass = ctx.basic.render_pass;
 		pipeline.init_pipeline(ctx, desc);
 
 		
@@ -268,6 +269,7 @@ public:
 		};
 
 		ctx.render(clear_color,
+			[](VkCommandBuffer command_buffer) {},
 			[this](VkCommandBuffer command_buffer) { this->render(command_buffer); }
 		);
 

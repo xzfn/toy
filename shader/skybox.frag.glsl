@@ -1,7 +1,7 @@
 #version 450
 
-// FIXME 3 is material
-layout(set = 3, binding = 1) uniform samplerCube u_Texture;
+// FIXME 4 is material
+layout(set = 4, binding = 1) uniform samplerCube u_Texture;
 
 layout(location = 0) in vec3 v_Texcoord;
 

@@ -623,6 +623,82 @@ VkRenderPass create_render_pass(VkDevice device, VkSurfaceFormatKHR surface_form
     return render_pass;
 }
 
+VkRenderPass create_depth_render_pass(VkDevice device, VkFormat depth_format)
+{
+    // from SaschaWillems examples/shadowmapping
+    VkResult vkres;
+    std::vector<VkAttachmentDescription> attachment_descriptions{
+        {
+            0,  // flags;
+            depth_format,  // format;
+            VK_SAMPLE_COUNT_1_BIT,  // samples;
+            VK_ATTACHMENT_LOAD_OP_CLEAR,  // loadOp;
+            VK_ATTACHMENT_STORE_OP_STORE,  // storeOp;
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,  // stencilLoadOp;
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,  // stencilStoreOp;
+            VK_IMAGE_LAYOUT_UNDEFINED,  // initialLayout;
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL  // finalLayout;
+        }
+    };
+    VkAttachmentReference depth_attachment_references[1] = {
+        {
+            0,  // attachment
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL  // layout;
+        }
+    };
+    VkSubpassDescription subpass_descriptions[1] = {
+        {
+            0,  // flags;
+            VK_PIPELINE_BIND_POINT_GRAPHICS,  // pipelineBindPoint;
+            0,  // inputAttachmentCount;
+            nullptr,  // pInputAttachments;
+            0,  // colorAttachmentCount;
+            nullptr,  // pColorAttachments;
+            nullptr,  // pResolveAttachments;
+            depth_attachment_references,  // pDepthStencilAttachment;
+            0,  // preserveAttachmentCount;
+            nullptr  // pPreserveAttachments;
+        }
+    };
+
+    std::vector<VkSubpassDependency> dependencies = {
+        {
+            VK_SUBPASS_EXTERNAL,  // srcSubpass;
+            0,  // dstSubpass;
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,  // srcStageMask;
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,  // dstStageMask;
+            VK_ACCESS_SHADER_READ_BIT,  // srcAccessMask;
+            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,  // dstAccessMask;
+            VK_DEPENDENCY_BY_REGION_BIT  // dependencyFlags;
+        },
+        {
+            0,  // srcSubpass;
+            VK_SUBPASS_EXTERNAL,  // dstSubpass;
+            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,  // srcStageMask;
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,  // dstStageMask;
+            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,  // srcAccessMask;
+            VK_ACCESS_SHADER_READ_BIT,  // dstAccessMask;
+            VK_DEPENDENCY_BY_REGION_BIT  // dependencyFlags;
+        }
+    };
+
+    VkRenderPassCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,  // sType;
+        nullptr,  // pNext;
+        0,  // flags;
+        (uint32_t)attachment_descriptions.size(),  // attachmentCount;
+        attachment_descriptions.data(),  // pAttachments;
+        1,  // subpassCount;
+        subpass_descriptions,  // pSubpasses;
+        (uint32_t)dependencies.size(),  // dependencyCount;
+        dependencies.data()  // pDependencies;
+    };
+    VkRenderPass render_pass = VK_NULL_HANDLE;
+    vkres = vkCreateRenderPass(device, &create_info, vulkan_allocator, &render_pass);
+    assert(vkres == VK_SUCCESS);
+
+    return render_pass;
+}
 
 VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device) {
     VkResult vkres;
@@ -743,198 +819,6 @@ VkPipelineLayout create_pipeline_layout(VkDevice device, VkDescriptorSetLayout d
     vkres = vkCreatePipelineLayout(device, &create_info, vulkan_allocator, &pipeline_layout);
     assert(vkres == VK_SUCCESS);
     return pipeline_layout;
-}
-
-std::pair<VkPipeline, VkPipelineLayout> create_pipeline(VkDevice device, VkRenderPass render_pass, uint32_t width, uint32_t height, std::string filename_vert_spv, std::string filename_frag_spv, 
-    VkPipelineVertexInputStateCreateInfo vertex_input_state,
-    VkDescriptorSetLayout descriptor_set_layout) {
-
-    VkResult vkres;
-    VkShaderModule vertex_shader_module = create_shader_module(device, filename_vert_spv);
-    VkShaderModule fragment_shader_module = create_shader_module(device, filename_frag_spv);
-
-
-    std::vector<VkPipelineShaderStageCreateInfo> stage_create_infos = {
-        { // Vertex
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,  // sType;
-            nullptr,  // pNext;
-            0,  // flags;
-            VK_SHADER_STAGE_VERTEX_BIT,  // stage;
-            vertex_shader_module, // module;
-            "main",  // pName;
-            nullptr  // pSpecializationInfo;
-        },
-        { // Fragment
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,  // sType;
-            nullptr,  // pNext;
-            0,  // flags;
-            VK_SHADER_STAGE_FRAGMENT_BIT,  // stage;
-            fragment_shader_module,  // module;
-            "main",  // pName;
-            nullptr  // pSpecializationInfo;
-        }
-    };
-
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = {
-        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,  // topology;
-        VK_FALSE  // primitiveRestartEnable;
-    };
-
-    VkViewport viewport = {
-        0.0f,  // x;
-        0.0f,  // y;
-        (float)width,  // width;
-        (float)height,  // height;
-        0.0f,  // minDepth;
-        1.0f  // maxDepth;
-    };
-    VkRect2D scissor = {
-        { // offset
-            0,
-            0
-        },
-        { // extent
-            width,
-            height
-        }
-    };
-    VkPipelineViewportStateCreateInfo viewport_state = {
-        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        1,  // viewportCount;
-        nullptr,  // pViewports;
-        1,  // scissorCount;
-        nullptr  // pScissors;
-    };
-
-    std::vector<VkDynamicState> dynamic_states = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-    };
-    VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {
-        VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        (uint32_t)dynamic_states.size(),  // dynamicStateCount;
-        dynamic_states.data()  // pDynamicStates;
-    };
-
-    VkPipelineRasterizationStateCreateInfo rasterization_state = {
-        VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        VK_FALSE,  // depthClampEnable;
-        VK_FALSE,  // rasterizerDiscardEnable;
-        VK_POLYGON_MODE_FILL,  // polygonMode;
-        VK_CULL_MODE_BACK_BIT,  // cullMode;
-        VK_FRONT_FACE_COUNTER_CLOCKWISE,  // frontFace;
-        VK_FALSE,  // depthBiasEnable;
-        0.0f,  // depthBiasConstantFactor;
-        0.0f,  // depthBiasClamp;
-        0.0f,  // depthBiasSlopeFactor;
-        1.0f  // lineWidth;
-    };
-
-    VkPipelineMultisampleStateCreateInfo multisample_state = {
-        VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        VK_SAMPLE_COUNT_1_BIT,  // rasterizationSamples;
-        VK_FALSE,  // sampleShadingEnable;
-        1.0f,  // minSampleShading;
-        nullptr,  // pSampleMask;
-        VK_FALSE,  // alphaToCoverageEnable;
-        VK_FALSE  // alphaToOneEnable;
-    };
-
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {
-        VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        VK_TRUE,  // depthTestEnable;
-        VK_TRUE,  // depthWriteEnable;
-        VK_COMPARE_OP_LESS_OR_EQUAL,  // depthCompareOp;
-        VK_FALSE,  // depthBoundsTestEnable;
-        VK_FALSE,  // stencilTestEnable;
-        {
-            // failOp;
-            // passOp;
-            // depthFailOp;
-            // compareOp;
-            // compareMask;
-            // writeMask;
-            // reference;
-        },  // front;
-        {
-            // failOp;
-            // passOp;
-            // depthFailOp;
-            // compareOp;
-            // compareMask;
-            // writeMask;
-            // reference;
-        },  // back;
-        0.0f,  // minDepthBounds;
-        0.0f  // maxDepthBounds;
-    };
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment_state = {
-        VK_TRUE,  // blendEnable;
-        VK_BLEND_FACTOR_SRC_ALPHA,  // srcColorBlendFactor;
-        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // dstColorBlendFactor;
-        VK_BLEND_OP_ADD,  // colorBlendOp;
-        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcAlphaBlendFactor;
-        VK_BLEND_FACTOR_ZERO,  // dstAlphaBlendFactor;
-        VK_BLEND_OP_ADD,  // alphaBlendOp;
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT  // colorWriteMask;
-    };
-    VkPipelineColorBlendStateCreateInfo color_blend_state = {
-        VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        VK_FALSE,  // logicOpEnable;
-        VK_LOGIC_OP_COPY,  // logicOp;
-        1,  // attachmentCount;
-        &color_blend_attachment_state,  // pAttachments;
-        {0.0f, 0.0f, 0.0f, 0.0f}  // blendConstants[4];
-    };
-
-    VkPipelineLayout pipeline_layout = create_pipeline_layout(device, descriptor_set_layout);
-
-    VkGraphicsPipelineCreateInfo create_info = {
-        VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,  // sType;
-        nullptr,  // pNext;
-        0,  // flags;
-        (uint32_t)stage_create_infos.size(),  // stageCount;
-        stage_create_infos.data(),  // pStages;
-        &vertex_input_state,  // pVertexInputState;
-        &input_assembly_state,  // pInputAssemblyState;
-        nullptr,  // pTessellationState;
-        &viewport_state,  // pViewportState;
-        &rasterization_state,  // pRasterizationState;
-        &multisample_state,  // pMultisampleState;
-        &depth_stencil_state,  // pDepthStencilState;
-        &color_blend_state,  // pColorBlendState;
-        &dynamic_state_create_info,  // pDynamicState;
-        pipeline_layout,  // layout;
-        render_pass,  // renderPass;
-        0,  // subpass;
-        VK_NULL_HANDLE,  // basePipelineHandle;
-        -1  // basePipelineIndex;
-    };
-
-    VkPipeline pipeline = VK_NULL_HANDLE;
-    vkres = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &create_info, vulkan_allocator, &pipeline);
-    assert(vkres == VK_SUCCESS);
-
-    // vkDestroyPipelineLayout(device, pipeline_layout, vulkan_allocator);
-    vkDestroyShaderModule(device, vertex_shader_module, vulkan_allocator);
-    vkDestroyShaderModule(device, fragment_shader_module, vulkan_allocator);
-    return std::make_pair(pipeline, pipeline_layout);
 }
 
 void destroy_pipeline(VkDevice device, VkPipeline pipeline)
@@ -1198,10 +1082,14 @@ VkImage create_image(VkDevice device, uint32_t width, uint32_t height) {
     return image;
 }
 
-VkImage create_image_depth(VkDevice device, VkFormat format, uint32_t width, uint32_t height) {
+VkImage create_image_depth(VkDevice device, VkFormat format, uint32_t width, uint32_t height, bool sampled) {
     VkExtent3D extent = {
         width, height, 1
     };
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    if (sampled) {
+        usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    }
     VkImageCreateInfo create_info = {
         VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,  // sType;
         nullptr,  // pNext;
@@ -1213,7 +1101,7 @@ VkImage create_image_depth(VkDevice device, VkFormat format, uint32_t width, uin
         1,  // arrayLayers;
         VK_SAMPLE_COUNT_1_BIT,  // samples;
         VK_IMAGE_TILING_OPTIMAL,  // tiling;
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,  // usage;
+        usage,  // usage;
         VK_SHARING_MODE_EXCLUSIVE,  // sharingMode;
         0,  // queueFamilyIndexCount;
         nullptr,  // pQueueFamilyIndices;
@@ -1420,6 +1308,34 @@ VkSampler create_sampler(VkDevice device) {
     return sampler;
 }
 
+VkSampler create_depth_sampler(VkDevice device) {
+    VkResult vkres;
+    VkSamplerCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,  // sType;
+        nullptr,  // pNext;
+        0,  // flags;
+        VK_FILTER_LINEAR,  // magFilter;
+        VK_FILTER_LINEAR,  // minFilter;
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,  // mipmapMode;
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,  // addressModeU;
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,  // addressModeV;
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,  // addressModeW;
+        0.0f,  // mipLodBias;
+        VK_FALSE,  // anisotropyEnable;
+        1.0f,  // maxAnisotropy;
+        VK_FALSE,  // compareEnable;
+        VK_COMPARE_OP_ALWAYS,  // compareOp;
+        0.0f,  // minLod;
+        1.0f,  // maxLod;
+        VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,  // borderColor;
+        VK_FALSE  // unnormalizedCoordinates;
+    };
+    VkSampler sampler = VK_NULL_HANDLE;
+    vkres = vkCreateSampler(device, &create_info, vulkan_allocator, &sampler);
+    check_vk_result(vkres);
+    return sampler;
+}
+
 VkImage create_image_cubemap(VkDevice device, uint32_t width, uint32_t height)
 {
     VkExtent3D extent = {
@@ -1589,18 +1505,25 @@ VkImageView create_image_view_texture_cubemap(VkDevice device, VkImage image)
     return image_view;
 }
 
-std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height)
+std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height, bool sampled)
 {
     VkResult vkres;
-    VkImage image = create_image_depth(device, format, width, height);
+    VkImage image = create_image_depth(device, format, width, height, sampled);
     VkDeviceMemory memory = create_image_memory(memory_properties, device, image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkres = vkBindImageMemory(device, image, memory, 0);
     assert(vkres == VK_SUCCESS);
     return std::make_pair(image, memory);
 }
 
-VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFormat format)
+VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFormat format, bool use_depth, bool use_stencil)
 {
+    VkImageAspectFlags image_aspect_flags = 0;
+    if (use_depth) {
+        image_aspect_flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
+    if (use_stencil) {
+        image_aspect_flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
     VkImageViewCreateInfo create_info = {
         VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,  // sType;
         nullptr,  // pNext;
@@ -1615,7 +1538,7 @@ VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFo
             VK_COMPONENT_SWIZZLE_IDENTITY
         },  // components;
         {
-            VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+            image_aspect_flags,
             0,
             1,
             0,

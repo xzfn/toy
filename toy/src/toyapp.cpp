@@ -21,6 +21,8 @@ namespace py = pybind11;
 
 #include "python_util.h"
 
+#include "vulkan_util.h"
+
 
 struct VertexData {
 	float x, y, z, w;
@@ -200,6 +202,7 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	desc.vertex_format = VertexFormat::PositionNormalUv;
 	desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
+	desc.render_pass = ctx.basic.render_pass;
 	pipeline.init_pipeline(ctx, desc);
 
 
@@ -223,6 +226,16 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
 	pipeline_text.init_pipeline(ctx, desc);
+
+	// shadow
+	PipelineDescription depth_desc;
+	depth_desc.filename_vert_spv = resource_manager.full_path("shader/depth.vert.spv");
+	depth_desc.filename_frag_spv = resource_manager.full_path("shader/depth.frag.spv");
+	depth_desc.vertex_format = VertexFormat::PositionNormalUv;
+	depth_desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	depth_desc.cull_model_flags = VK_CULL_MODE_BACK_BIT;
+	depth_desc.render_pass = ctx.basic.depth_render_pass;
+	pipeline_depth.init_pipeline(ctx, depth_desc);
 
 
 	imageutil::Image raw_image = imageutil::load_image_force_channels(resource_manager.full_path("resource/cube.png"), 4);
@@ -269,6 +282,23 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	light_uniform_memory = light_uniform_buffer_and_memory.second;
 	pipeline.update_descriptor_set_light(descriptor_set_light, light_uniform_buffer, sizeof(LightUniforms));
 
+	descriptor_set_shadow = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.shadow);
+	auto shadow_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(nullptr, sizeof(ShadowUniforms));
+	shadow_uniform_buffer = shadow_uniform_buffer_and_memory.first;
+	shadow_uniform_memory = shadow_uniform_buffer_and_memory.second;
+	// shadow depth texture
+	depth_width = 512;
+	depth_height = 512;
+	auto depth_image_and_memory = ctx.create_texture_depth(depth_width, depth_height, true);
+	depth_image = depth_image_and_memory.first;
+	depth_image_memory = depth_image_and_memory.second;
+	depth_image_view = ctx.create_image_view_texture_depth(depth_image, true, false);
+	depth_sampler = ctx.create_depth_sampler();
+	std::vector<VkImageView> depth_image_views{ depth_image_view };
+	depth_framebuffer = ctx.create_framebuffer(depth_width, depth_height, ctx.basic.depth_render_pass, depth_image_views);
+
+	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, shadow_uniform_buffer, sizeof(ShadowUniforms), depth_sampler, depth_image_view);
+
 	auto light1 = std::make_shared<Light>();
 	light1->set_type(LightType::Point);
 	light1->set_position(glm::vec3(5.0f, 5.0f, 5.0f));
@@ -280,6 +310,9 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	light2->set_position(glm::vec3(5.0f, 5.0f, -5.0f));
 	light2->set_color(glm::vec3(1.0f, 0.0f, 0.5f));
 	light_manager.add_light(light2);
+
+
+
 
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	timestamp = std::chrono::duration<double>(now).count();
@@ -374,7 +407,20 @@ void App::update() {
 	memcpy(memory_pointer, light_uniform_data, light_uniform_data_size);
 	vkUnmapMemory(ctx.basic.device, light_uniform_memory);
 
+
+	// shadow
+	ShadowUniforms shadow_uniform;
+	int shadow_uniform_data_size = sizeof(shadow_uniform);
+	void* shadow_uniform_data = &shadow_uniform;
+	vkMapMemory(ctx.basic.device, shadow_uniform_memory, 0,
+		shadow_uniform_data_size, 0, &memory_pointer);
+	memcpy(memory_pointer, shadow_uniform_data, shadow_uniform_data_size);
+	vkUnmapMemory(ctx.basic.device, shadow_uniform_memory);
+
+
 	ctx.render(clear_color,
+		[this](VkCommandBuffer command_buffer) {
+		this->depth_pass(command_buffer);},
 		[this](VkCommandBuffer command_buffer) { this->render(command_buffer); }
 	);
 
@@ -384,15 +430,84 @@ void App::update() {
 	input_manager.clear_frame();
 }
 
-void App::render(VkCommandBuffer command_buffer) {
+void App::depth_pass(VkCommandBuffer command_buffer)
+{
 	VulkanContext& ctx = *ctxptr;
+	// shadow
+	VkRect2D render_area = {
+	{
+		0, 0
+	},
+	{
+		depth_width, depth_height
+	}
+	};
 
-	glm::mat4 model;
+	VkClearDepthStencilValue clear_depth_value{
+		1.0f,
+		0
+	};
 
+	std::array<VkClearValue, 1> clear_values;
+	clear_values[0].depthStencil = clear_depth_value;
+
+	VkFramebuffer framebuffer = depth_framebuffer;
+	VkRenderPassBeginInfo render_pass_begin_info = {
+		VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,  // sType;
+		nullptr,  // pNext;
+		ctx.basic.depth_render_pass,  // renderPass;
+		framebuffer,  // framebuffer;
+		render_area,  // renderArea;
+		clear_values.size(),  // clearValueCount;
+		clear_values.data()  // pClearValues;
+	};
+	vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+
+	VkViewport viewport = {
+		0.0f, 0.0f, (float)depth_width, (float)depth_height, 0.0f, 1.0f
+	};
+	vkutil::flip_viewport(viewport);
+
+	VkRect2D scissor = {
+		{
+			0, 0
+		},
+		{
+			depth_width, depth_height
+		}
+	};
+	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+	// render depth
 	std::vector<VkDescriptorSet> descriptor_sets_frame{
 		descriptor_set_frame,
 		descriptor_set_light
 	};
+
+	glm::mat4 model(1.0f);
+	pipeline_depth.bind(command_buffer);
+	pipeline_depth.bind_descriptor_sets(command_buffer, descriptor_sets_frame);
+	pipeline_depth.push_constants_matrix(command_buffer, model);
+	mesh_cube.draw(command_buffer);
+
+	// -----
+	vkCmdEndRenderPass(command_buffer);
+}
+
+void App::render(VkCommandBuffer command_buffer) {
+	//return;
+	VulkanContext& ctx = *ctxptr;
+
+	glm::mat4 model(1.0f);
+
+	std::vector<VkDescriptorSet> descriptor_sets_frame{
+		descriptor_set_frame,
+		descriptor_set_light,
+		descriptor_set_shadow
+	};
+
 
 	// skybox
 	if (camera_manager.get_camera()->is_perspective()) {

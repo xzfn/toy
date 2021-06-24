@@ -2,14 +2,17 @@
 
 #include "frame_uniforms.glsl"
 #include "light_uniforms.glsl"
+#include "shadow_uniforms.glsl"
 
-// FIXME 3 is material
-layout(set = 3, binding = 0) uniform MaterialUniforms {
+layout(set = 2, binding = 1) uniform sampler2D u_ShadowMap;
+
+// FIXME 4 is material
+layout(set = 4, binding = 0) uniform MaterialUniforms {
 	vec3 base_color;
 }u_material;
 
-layout(set = 3, binding = 1) uniform sampler2D u_Texture;
-// layout(set = 3, binding = 2) uniform sampler2D u_Bump;
+layout(set = 4, binding = 1) uniform sampler2D u_Texture;
+// layout(set = 4, binding = 2) uniform sampler2D u_Bump;
 
 layout(location = 0) in vec3 v_WorldPosition;
 layout(location = 1) in vec3 v_WorldNormal;
@@ -22,7 +25,10 @@ vec3 encode_normal(vec3 normal) {
 }
 
 void main() {
-	vec3 base_color = texture(u_Texture, v_Texcoord).xyz;
+	vec3 base_color = texture(u_ShadowMap, v_Texcoord).xxx;
+	out_Color = vec4(base_color, 1.0);
+	return;
+
 	//float intensity = max(dot(u_frame.sun_light_direction, v_Normal), 0.0f);
 	vec3 result_color = vec3(0.0f);
 

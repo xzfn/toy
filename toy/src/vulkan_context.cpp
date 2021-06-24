@@ -78,7 +78,7 @@ std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_cubemap(uint32_
 	);
 }
 
-std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_depth(uint32_t width, uint32_t height)
+std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_depth(uint32_t width, uint32_t height, bool sampled)
 {
 	return vkutil::create_texture_depth(
 		feature.memory_properties,
@@ -86,7 +86,8 @@ std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_depth(uint32_t 
 		basic.queue,
 		basic.work_command_buffer,
 		basic.depth_format,
-		width, height
+		width, height,
+		sampled
 	);
 }
 
@@ -100,16 +101,21 @@ VkImageView VulkanContext::create_image_view_texture_cubemap(VkImage image)
 	return vkutil::create_image_view_texture_cubemap(basic.device, image);
 }
 
-VkImageView VulkanContext::create_image_view_texture_depth(VkImage image)
+VkImageView VulkanContext::create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil)
 {
 	return vkutil::create_image_view_texture_depth(
-		basic.device, image, basic.depth_format
+		basic.device, image, basic.depth_format, use_depth, use_stencil
 	);
 }
 
 VkSampler VulkanContext::create_sampler()
 {
 	return vkutil::create_sampler(basic.device);
+}
+
+VkSampler VulkanContext::create_depth_sampler()
+{
+	return vkutil::create_depth_sampler(basic.device);
 }
 
 void VulkanContext::destroy_buffer(VkBuffer buffer)
@@ -160,6 +166,17 @@ void VulkanContext::destroy_sampler(VkSampler sampler)
 	vkDestroySampler(basic.device, sampler, vkutil::vulkan_allocator);
 }
 
+VkFramebuffer VulkanContext::create_framebuffer(uint32_t width, uint32_t height, VkRenderPass render_pass, std::vector<VkImageView>& image_views)
+{
+	return vkutil::create_framebuffer(
+		basic.device,
+		width,
+		height,
+		render_pass,
+		image_views
+	);
+}
+
 std::pair<VkBuffer, VkDeviceMemory> VulkanContext::create_uniform_buffer(uint8_t* buffer_data, std::size_t buffer_size)
 {
 	return vkutil::create_uniform_buffer(
@@ -189,6 +206,7 @@ void VulkanContext::free_descriptor_sets(const std::vector<VkDescriptorSet>& des
 }
 
 void VulkanContext::render(VkClearColorValue clear_color,
+	std::function<void(VkCommandBuffer command_buffer)> depth_pass_callback,
 	std::function<void(VkCommandBuffer command_buffer)> render_callback
 )
 {
@@ -249,15 +267,10 @@ void VulkanContext::render(VkClearColorValue clear_color,
 	};
 	vkBeginCommandBuffer(command_buffer, &begin_info);
 
-	VkImageSubresourceRange image_subresource_range = {
-		VK_IMAGE_ASPECT_COLOR_BIT,  // aspectMask;
-		0,  // baseMipLevel;
-		1,  // levelCount;
-		0,  // baseArrayLayer;
-		1  // layerCount;
-	};
+	// shadow
+	depth_pass_callback(command_buffer);
 
-	VkImage swapchain_image = swap_image.image;
+	// render
 	VkRect2D render_area = {
 	{
 		0, 0
@@ -408,6 +421,8 @@ void VulkanContext::init_vulkan(HINSTANCE hinstance, HWND hwnd, uint32_t width, 
 
 	init_depth();
 
+	init_depth_render_pass();
+
 	init_render_pass();
 
 	init_command_pool();
@@ -499,12 +514,17 @@ void VulkanContext::init_depth()
 		vkFreeMemory(basic.device, basic.depth_memory, vkutil::vulkan_allocator);
 	}
 	
-	std::pair<VkImage, VkDeviceMemory> image_and_memory = create_texture_depth(basic.window_extent.width, basic.window_extent.height);
+	std::pair<VkImage, VkDeviceMemory> image_and_memory = create_texture_depth(basic.window_extent.width, basic.window_extent.height, false);
 	VkImage depth_image = image_and_memory.first;
-	VkImageView depth_image_view = create_image_view_texture_depth(depth_image);
+	VkImageView depth_image_view = create_image_view_texture_depth(depth_image, true, true);
 	basic.depth_image = depth_image;
 	basic.depth_image_view = depth_image_view;
 	basic.depth_memory = image_and_memory.second;
+}
+
+void VulkanContext::init_depth_render_pass()
+{
+	basic.depth_render_pass = vkutil::create_depth_render_pass(basic.device, basic.depth_format);
 }
 
 void VulkanContext::init_render_pass()
