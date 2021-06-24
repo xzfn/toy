@@ -72,6 +72,8 @@ class App:
         mesh_data = build_quad_mesh_data()
         self.mesh = toy.Mesh.create(mesh_data)
 
+        self.cube_mesh = toy.Mesh.create(toy.MeshData.create_unit_cube())
+
         builder = toy.GeometryBuilder()
         builder.add_cube(vmath.Vector3(), 3.0, vcolors.cyan)
         builder.add_cube(vmath.Vector3(1.0, 0.0, 0.0), 0.5, vcolors.magenta)
@@ -90,7 +92,6 @@ class App:
         drawutil.draw_line(vmath.Vector3(0.0, 0.0, 0.0), vmath.Vector3(10.0, 10.0, 10.0), vmath.Vector3(1.0, 1.0, 0.0), 5.0)
 
     def on_key_down(self, key):
-        print('py on_key_down', key)
         if key == keycodes.VK_F5:
             if toy.app.input_manager.get_key(keycodes.VK_CONTROL):
                 print('reload shader')
@@ -109,7 +110,7 @@ class App:
         mouse_wheel = toy.app.input_manager.get_mouse_wheel()
 
         delta_time = toy.app.delta_time
-        drawutil.draw_screen_text(vmath.Vector3(100, 100, 0), '{:10.4f}'.format(delta_time), color=vcolors.white)
+        drawutil.draw_screen_text(vmath.Vector3(0, 20, 0), 'dt {:6.4f}'.format(delta_time), color=vcolors.white)
         self.world.tick(delta_time)
 
         drawutil.draw_ground_grid()
@@ -124,10 +125,14 @@ class App:
         drawutil.draw_transform(transform)
 
         mouse_x, mouse_y = toy.app.input_manager.get_mouse_position()
-        text = '{:4} {:4}'.format(mouse_x, mouse_y)
-        drawutil.draw_screen_text(vmath.Vector3(mouse_x, mouse_y, 0.0), text)
-        drawutil.draw_text(vmath.Vector3(5, 5, 5), '(*{}*)'.format(text))
+
         self.world.render()
+
+        ground_transform = vmath.Transform()
+        ground_transform.translation = vmath.Vector3(0.0, -0.01, 0.0)
+        ground_transform.scale = vmath.Vector3(20.0, 20.0, 20.0)
+        ground_transform.rotation = vmath.Quaternion.from_angle_axis(math.pi / 2.0, vutil.VEC3_X)
+        toy.app.render_manager.add_mesh(self.mesh, ground_transform.to_matrix4(), self.material)
 
         percent = math.modf(mouse_x / 300.0)[0]
         self.material.set_base_color(vmath.Vector3(1.0, percent, 1.0))
@@ -144,17 +149,39 @@ class App:
         transform.rotation = vmath.Quaternion.from_angle_axis(mouse_y / 10.0, vmath.Vector3(0.0, 1.0, 0.0))
         toy.app.render_manager.add_mesh(self.mesh, transform.to_matrix4(), self.material)
 
-        transform.translation = vmath.Vector3(0.0, 3.0, 0.0)
-        transform.rotation = vmath.Quaternion.from_angle_axis(self.world.game_time, vmath.Vector3(0.0, 0.0, 1.0))
-        toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
-        transform.translation = vmath.Vector3(0.0, 10.0, 0.0)
-        transform.scale = vmath.Vector3(1.0, 1.0, 1.0) * math.modf(self.world.game_time)[0] + vmath.Vector3(1, 1, 1)
-        toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
 
-        drawutil.draw_sphere(self.light.get_position())
+        transform = vmath.Transform()
+        for i in range(3):
+            for j in range(3):
+                transform.translation = vmath.Vector3(i * 3, 2.0, j * 3)
+                angle = (i * 3 + j) * self.world.game_time
+                rotation = vmath.Quaternion.from_euler_angles(vmath.Vector3(0.0, angle, angle * 0.3))
+                transform.rotation = rotation
+                toy.app.render_manager.add_mesh(self.cube_mesh, transform.to_matrix4(), self.material)
+
+        if False:
+            transform.translation = vmath.Vector3(0.0, 3.0, 0.0)
+            transform.rotation = vmath.Quaternion.from_angle_axis(self.world.game_time, vmath.Vector3(0.0, 0.0, 1.0))
+            toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
+            transform.translation = vmath.Vector3(0.0, 10.0, 0.0)
+            transform.scale = vmath.Vector3(1.0, 1.0, 1.0) * math.modf(self.world.game_time)[0] + vmath.Vector3(1, 1, 1)
+            toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
+
+        #drawutil.draw_sphere(self.light.get_position())
         alpha = math.modf(self.world.game_time * 0.4)[0]
         c = vcolor.bounce(vcolors.red, vcolors.lime, alpha)
         self.light.set_color(vcolor.bounce(vcolors.red, vcolors.lime, alpha))
         
+        sun_direction = vmath.Vector3(math.cos(self.world.game_time), -1.0, math.sin(self.world.game_time)).normalize()
+        toy.app.sun_direction = sun_direction
+        sun_origin = vmath.Vector3(0.0, 5.0, 0.0)
+        drawutil.draw_line(sun_origin, sun_origin + sun_direction)
+        transform = vmath.Transform()
+        transform.translation = sun_origin + vmath.Vector3(0.0, sun_direction.y, 0.0)
+        radius = vmath.Vector3(sun_direction.x, 0.0, sun_direction.z).length()
+        transform.scale = vmath.Vector3(radius, radius, radius)
+        drawutil.draw_circle(transform, color=vcolor.GRAY)
+        drawutil.draw_line(sun_origin, transform.translation, color=vcolor.GREEN)
+
     def shutdown(self):
         self.console_server.shutdown()

@@ -754,7 +754,7 @@ VkDescriptorPool create_descriptor_pool(VkDevice device) {
     VkDescriptorPoolCreateInfo create_info = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,  // sType;
         nullptr,  // pNext;
-        0,  // flags;
+        VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,  // flags;  // TODO not good for performance, may need per frame transient pool
         descriptor_max_count * (uint32_t)pool_sizes.size(),  // maxSets;
         pool_sizes.size(),  // poolSizeCount;
         pool_sizes.data()  // pPoolSizes;
@@ -785,6 +785,9 @@ VkDescriptorSet create_descriptor_set(VkDevice device,
 
 void free_descriptor_sets(VkDevice device, VkDescriptorPool descriptor_pool, const std::vector<VkDescriptorSet>& descriptor_sets)
 {
+    if (descriptor_sets.empty()) {
+        return;
+    }
     vkFreeDescriptorSets(device, descriptor_pool, (uint32_t)descriptor_sets.size(), descriptor_sets.data());
 }
 

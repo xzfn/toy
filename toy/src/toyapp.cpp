@@ -334,7 +334,14 @@ void App::shutdown() {
 
 	ctx.destroy_buffer_and_memory(frame_uniform_buffer, frame_uniform_memory);
 	ctx.destroy_buffer_and_memory(light_uniform_buffer, light_uniform_memory);
+	ctx.destroy_buffer_and_memory(shadow_uniform_buffer, shadow_uniform_memory);
 
+	// shadow
+	ctx.destroy_image(depth_image);
+	ctx.destroy_image_view(depth_image_view);
+	ctx.free_memory(depth_image_memory);
+	ctx.destroy_sampler(depth_sampler);
+	vkDestroyFramebuffer(ctx.basic.device, depth_framebuffer, vkutil::vulkan_allocator);
 }
 
 void App::update() {
@@ -369,10 +376,6 @@ void App::update() {
 	clear_color.float32[2] = background_color.z;
 	clear_color.float32[3] = 1.0f;
 
-	float theta = timestamp;
-	float cos_theta = cosf(theta);
-	float sin_theta = sinf(theta);
-
 	camera_manager.update(delta_time);
 
 	auto extent = ctx.basic.window_extent;
@@ -382,10 +385,7 @@ void App::update() {
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
 	frame_uniform.view_projection = camera_view_projection;
 	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
-	theta = timestamp * 3.0f;
-	cos_theta = cosf(theta);
-	sin_theta = sinf(theta);
-	frame_uniform.sun_light_direction = glm::vec3(cos_theta, 0.5f, sin_theta);
+	frame_uniform.sun_light_direction = sun_direction;
 	frame_uniform.screen_width = ctx.basic.extent.width;
 	frame_uniform.screen_height = ctx.basic.extent.height;
 
@@ -409,7 +409,15 @@ void App::update() {
 
 
 	// shadow
+	glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
+	Transform light_model = Transform();
+	light_model.rotation = look_rotation_to_quat(sun_direction, VEC3_Y);
+	glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
+	glm::mat4 light_view_projection = projection * light_view;
+
 	ShadowUniforms shadow_uniform;
+	shadow_uniform.layers[0].light_matrix = light_view_projection;
+
 	int shadow_uniform_data_size = sizeof(shadow_uniform);
 	void* shadow_uniform_data = &shadow_uniform;
 	vkMapMemory(ctx.basic.device, shadow_uniform_memory, 0,
@@ -480,9 +488,28 @@ void App::depth_pass(VkCommandBuffer command_buffer)
 	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
+	// frame descriptor set, need view_projection when light as camera
+	glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
+
+	Transform light_model = Transform();
+	light_model.rotation = look_rotation_to_quat(sun_direction, VEC3_Y);
+	glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
+	glm::mat4 light_view_projection = projection * light_view;
+
+	FrameUniforms light_frame_uniforms;
+	light_frame_uniforms.view_projection = light_view_projection;
+
+	VkDescriptorSet light_frame_descriptor_set = ctx.create_descriptor_set(pipeline_depth.ref_descriptor_set_layouts().frame);
+	auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_frame_uniforms, sizeof(light_frame_uniforms));
+	pipeline_depth.update_descriptor_set_frame(light_frame_descriptor_set, buffer_and_memory.first, sizeof(light_frame_uniforms));
+
+	std::vector<VkDescriptorSet> sets{ light_frame_descriptor_set };
+	ctx.destroy_vulkan_descriptor_sets(sets);
+	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
+
 	// render depth
 	std::vector<VkDescriptorSet> descriptor_sets_frame{
-		descriptor_set_frame,
+		light_frame_descriptor_set,
 		descriptor_set_light
 	};
 
@@ -490,7 +517,8 @@ void App::depth_pass(VkCommandBuffer command_buffer)
 	pipeline_depth.bind(command_buffer);
 	pipeline_depth.bind_descriptor_sets(command_buffer, descriptor_sets_frame);
 	pipeline_depth.push_constants_matrix(command_buffer, model);
-	mesh_cube.draw(command_buffer);
+
+	render_manager.render_depth(command_buffer, pipeline_depth);
 
 	// -----
 	vkCmdEndRenderPass(command_buffer);

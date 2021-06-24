@@ -31,6 +31,7 @@ class Enemy(Unit):
 		self.color = vcolor.hue(alpha)
 
 	def render(self):
+		return
 		position = self.transform.translation
 		drawutil.draw_line(position, position + vutil.VEC3_Y, self.color)
 		toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, self.transform.to_matrix4(), toy.app.material_lines)

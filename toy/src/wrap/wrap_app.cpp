@@ -26,4 +26,6 @@ void wrap_app(pybind11::module_& m) {
 	t.def("bind_key_down", [](App* this_, KeyDownCallback callback) {
 		this_->script_on_key_down = callback;
 	});
+
+	t.def_readwrite("sun_direction", &App::sun_direction);
 }

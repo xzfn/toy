@@ -86,7 +86,7 @@ glm::mat4 Camera::get_projection()
         );
     }
     else {
-        projection = glm::ortho(
+        projection = glm::orthoRH_ZO(
             m_orthographic_data.left, m_orthographic_data.right,
             m_orthographic_data.bottom, m_orthographic_data.top,
             m_orthographic_data.z_near, m_orthographic_data.z_far

@@ -46,6 +46,7 @@ struct VulkanFrame {
 	VkSemaphore rendering_finished_semaphore;
 	VkFence fence;
 	std::vector<VulkanBuffer> vulkan_buffers;
+	std::vector<VkDescriptorSet> vulkan_descriptor_sets;
 };
 
 struct VulkanSwapImage {
@@ -88,6 +89,7 @@ public:
 	void destroy_buffer_and_memory(VkBuffer buffer, VkDeviceMemory memory);
 	void destroy_vulkan_buffer(VulkanBuffer vulkan_buffer);
 	void destroy_vulkan_buffer_immediately(VulkanBuffer vulkan_buffer);
+	void destroy_vulkan_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets);
 	void destroy_image_view(VkImageView image_view);
 	void destroy_image(VkImage image);
 	void destroy_vulkan_image(VulkanImage vulkan_image);

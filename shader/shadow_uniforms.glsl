@@ -5,6 +5,7 @@ struct ShadowLayer {
 	mat4 light_matrix;
 };
 
-layout(set = 4, binding = 0) uniform ShadowUniforms {
-	ShadowLayer shadows[MAX_SHADOWS];
+// FIXME shadow set index
+layout(set = 2, binding = 0) uniform ShadowUniforms {
+	ShadowLayer layers[MAX_SHADOWS];
 } u_shadow;

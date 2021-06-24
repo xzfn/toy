@@ -205,6 +205,13 @@ void VulkanContext::free_descriptor_sets(const std::vector<VkDescriptorSet>& des
 	vkutil::free_descriptor_sets(basic.device, basic.descriptor_pool, descriptor_sets);
 }
 
+void VulkanContext::destroy_vulkan_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets)
+{
+	auto& frame = frames[basic.frame_index];
+	auto& v = frame.vulkan_descriptor_sets;
+	v.insert(v.end(), descriptor_sets.begin(), descriptor_sets.end());
+}
+
 void VulkanContext::render(VkClearColorValue clear_color,
 	std::function<void(VkCommandBuffer command_buffer)> depth_pass_callback,
 	std::function<void(VkCommandBuffer command_buffer)> render_callback
@@ -227,7 +234,8 @@ void VulkanContext::render(VkClearColorValue clear_color,
 		destroy_vulkan_buffer_immediately(vulkan_buffer);
 	}
 	frame.vulkan_buffers.clear();
-
+	free_descriptor_sets(frame.vulkan_descriptor_sets);
+	frame.vulkan_descriptor_sets.clear();
 
 	vkres = vkAcquireNextImageKHR(
 		basic.device,
@@ -643,6 +651,8 @@ void VulkanContext::destroy_vulkan()
 			destroy_vulkan_buffer_immediately(vulkan_buffer);
 		}
 		frame.vulkan_buffers.clear();
+		free_descriptor_sets(frame.vulkan_descriptor_sets);
+		frame.vulkan_descriptor_sets.clear();
 	}
 
 	for (uint32_t i = 0; i < swap_images.size(); ++i) {
@@ -661,6 +671,7 @@ void VulkanContext::destroy_vulkan()
 
 	vkDestroyDescriptorPool(device, basic.descriptor_pool, vulkan_allocator);
 	vkDestroyRenderPass(device, basic.render_pass, vulkan_allocator);
+	vkDestroyRenderPass(device, basic.depth_render_pass, vulkan_allocator);
 
 	vkDestroySwapchainKHR(device, basic.swapchain, vulkan_allocator);
 	vkDestroyDevice(device, vulkan_allocator);

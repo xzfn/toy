@@ -1,3 +1,5 @@
+import math
+
 import toy
 import vmath
 
@@ -35,3 +37,27 @@ def draw_sphere(position, radius=1.0, color=vmath.Vector3(1.0, 0.0, 0.0), durati
 
 def draw_cube(position, length=1.0, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
     toy.app.timed_geometry_builder.add_cube(position, length, color, duration)
+
+def generate_unit_circle_points(segments):
+    points = []
+    delta_angle = math.pi * 2.0 / segments
+    for i in range(segments):
+        theta = delta_angle * i
+        x = math.cos(theta)
+        z = math.sin(theta)
+        points.append(vmath.Vector3(x, 0.0, z))
+    return points
+
+def connect_points_loop(points):
+    lines = []
+    point_count = len(points)
+    for i in range(point_count):
+        lines.append((points[i], points[(i + 1) % point_count]))
+    return lines
+
+def draw_circle(transform, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    points = generate_unit_circle_points(16)
+    points = [transform.transform_point(point) for point in points]
+    lines = connect_points_loop(points)
+    for line in lines:
+        draw_line(line[0], line[1], color, duration)

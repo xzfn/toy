@@ -1,3 +1,4 @@
+from vmathlib import vutil
 import toy
 import vmath
 
@@ -50,9 +51,17 @@ class Player(Unit):
 		if toy.app.input_manager.get_key(keycodes.VK_RIGHT):
 			axis_x += -1.0
 		movement_input = vmath.Vector3(axis_x, 0.0, axis_y)
+		turn_input = 0.0
+		if toy.app.input_manager.get_key(keycodes.VK_NUMPAD0):
+			turn_input += 1.0
+
 		if movement_input.length() > 1.0:
 			movement_input.normalize_self()
-		self.transform.translation += movement_input * delta_time * self.speed
+		if movement_input.length() > 0.0:
+			self.transform.translation += movement_input * delta_time * self.speed
+		if turn_input != 0.0:
+			rotate = vmath.Quaternion.from_angle_axis(turn_input * delta_time, vutil.VEC3_Y)
+			self.transform.rotation *= rotate
 
 	def render(self):
 		drawutil.draw_transform(self.transform)

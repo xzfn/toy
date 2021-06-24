@@ -125,4 +125,6 @@ public:
 	VkImageView depth_image_view;
 	VkSampler depth_sampler;
 	VkFramebuffer depth_framebuffer;
+
+	glm::vec3 sun_direction{ 0.0, -1.0, 0.0 };
 };

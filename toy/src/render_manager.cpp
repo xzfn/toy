@@ -61,3 +61,12 @@ void RenderManager::render(VkCommandBuffer command_buffer, std::vector<VkDescrip
 	m_mesh_render_commands.clear();
 	m_geometry_mesh_render_commands.clear();
 }
+
+void RenderManager::render_depth(VkCommandBuffer command_buffer, BasicPipeline& pipeline) {
+	for (auto& render_command : m_mesh_render_commands) {
+		Mesh& mesh = *render_command.mesh;
+		glm::mat4& matrix = render_command.matrix;
+		pipeline.push_constants_matrix(command_buffer, matrix);
+		mesh.draw(command_buffer);
+	}
+}

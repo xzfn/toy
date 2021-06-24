@@ -33,6 +33,7 @@ public:
 	void add_geometry_mesh(std::shared_ptr<GeometryMesh> mesh, glm::mat4 matrix, std::shared_ptr<Material> material);
 
 	void render(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet> descriptor_sets);
+	void render_depth(VkCommandBuffer command_buffer, BasicPipeline& pipeline);
 
 private:
 	std::vector<MeshRenderCommand> m_mesh_render_commands;
