@@ -1068,7 +1068,7 @@ VkImage create_image(VkDevice device, uint32_t width, uint32_t height) {
         nullptr,  // pNext;
         0,  // flags;
         VK_IMAGE_TYPE_2D,  // imageType;
-        VK_FORMAT_R8G8B8A8_UNORM,  // format;
+        VK_FORMAT_R8G8B8A8_UNORM,  // format;  // TODO different format
         extent,  // extent;
         1,  // mipLevels;
         1,  // arrayLayers;

@@ -17,7 +17,7 @@ struct Image {
 
 Image load_image(std::string filename);
 Image load_image_force_channels(std::string filename, int force_channels);
-
+Image create_color_image(int width, int height, int channels, uint32_t pixel);
 
 
 

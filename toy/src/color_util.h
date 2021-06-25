@@ -17,3 +17,7 @@ constexpr glm::vec3 COLOR_BLUE{ 0.0, 0.0, 1.0 };
 constexpr glm::vec3 COLOR_YELLOW{ 1.0, 1.0, 0.0 };
 constexpr glm::vec3 COLOR_MAGENTA{ 1.0, 0.0, 1.0 };
 constexpr glm::vec3 COLOR_CYAN{ 0.0, 1.0, 1.0 };
+
+
+uint8_t color_component_to_byte(float c);
+uint32_t rgb_to_hex(glm::vec3 color);

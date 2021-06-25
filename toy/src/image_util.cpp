@@ -46,5 +46,22 @@ Image load_image_force_channels(std::string filename, int force_channels) {
 	return image;
 }
 
-
+Image create_color_image(int width, int height, int channels, uint32_t pixel) {
+	// pixel is 0xAABBGGRR
+	Image image;
+	image.width = width;
+	image.height = height;
+	image.channels = channels;
+	std::size_t pixel_count = width * height;
+	image.data.resize(pixel_count * channels);
+	for (std::size_t ipixel = 0; ipixel < pixel_count; ++ipixel) {
+		uint8_t* p = &image.data[ipixel * channels];
+		for (int icomp = 0; icomp < channels; ++icomp) {
+			// data should be R, G, B, A
+			p[icomp] = (pixel >> ((icomp) * 8)) & 0xff;
+		}
+	}
+	return image;
 }
+
+} // namespace imageutil

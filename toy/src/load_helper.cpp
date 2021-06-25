@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "color_util.h"
+
 #include "global_app.h"
 
 
@@ -10,6 +12,16 @@ std::shared_ptr<Texture> create_texture(std::string path)
 	App& app = *get_app();
 	std::string real_path = app.resource_manager.full_path(path);
 	imageutil::Image raw_image = imageutil::load_image_force_channels(real_path, 4);
+	auto texture = std::make_unique<Texture>();
+	texture->init(app.get_ctx(), raw_image);
+	return texture;
+}
+
+std::shared_ptr<Texture> create_color_texture(glm::vec3 color) {
+	// single color, 2x2, RGB image
+	App& app = *get_app();
+	uint32_t pixel = rgb_to_hex(color);
+	imageutil::Image raw_image = imageutil::create_color_image(2, 2, 4, pixel);  // TODO change 4 to 3 when supported
 	auto texture = std::make_unique<Texture>();
 	texture->init(app.get_ctx(), raw_image);
 	return texture;

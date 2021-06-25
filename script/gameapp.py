@@ -88,6 +88,14 @@ class App:
         self.world.unit_manager.create_unit(Player)
         self.world.unit_manager.create_unit(Enemy)
 
+        self.red_texture = toy.Texture.create_color(vcolor.RED)
+        self.green_texture = toy.Texture.create_color(vcolor.GREEN)
+        self.blue_texture = toy.Texture.create_color(vcolor.BLUE)
+        self.red_material = toy.Material.create(self.pipeline, self.red_texture)
+        self.green_material = toy.Material.create(self.pipeline, self.green_texture)
+        self.blue_material = toy.Material.create(self.pipeline, self.blue_texture)
+        self.rgb_materials = [self.red_material, self.green_material, self.blue_material]
+
     def on_shoot(self):
         drawutil.draw_line(vmath.Vector3(0.0, 0.0, 0.0), vmath.Vector3(10.0, 10.0, 10.0), vmath.Vector3(1.0, 1.0, 0.0), 5.0)
 
@@ -166,6 +174,12 @@ class App:
             transform.translation = vmath.Vector3(0.0, 10.0, 0.0)
             transform.scale = vmath.Vector3(1.0, 1.0, 1.0) * math.modf(self.world.game_time)[0] + vmath.Vector3(1, 1, 1)
             toy.app.render_manager.add_geometry_mesh(self.geometry_mesh, transform.to_matrix4(), toy.app.material_lines)
+
+        transform = vmath.Transform()
+        for i in range(3):
+            transform.translation = vmath.Vector3(-5.0, i * 2.0, -5.0)
+            material = self.rgb_materials[i]
+            toy.app.render_manager.add_mesh(self.cube_mesh, transform.to_matrix4(), material)
 
         #drawutil.draw_sphere(self.light.get_position())
         alpha = math.modf(self.world.game_time * 0.4)[0]
