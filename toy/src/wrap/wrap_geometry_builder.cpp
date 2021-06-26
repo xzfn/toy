@@ -18,6 +18,7 @@ void wrap_GeometryBuilder(py::module_& m) {
 	t.def("add_line", &GeometryBuilder::add_line);
 	t.def("add_sphere", &GeometryBuilder::add_sphere);
 	t.def("add_cube", &GeometryBuilder::add_cube);
+	t.def("add_raw_line", &GeometryBuilder::add_raw_line);
 	t.def("build_data", &GeometryBuilder::build_data);
 }
 
@@ -27,6 +28,7 @@ void wrap_TimedGeometryBuilder(py::module_& m) {
 	t.def("add_line", &TimedGeometryBuilder::add_line);
 	t.def("add_sphere", &TimedGeometryBuilder::add_sphere);
 	t.def("add_cube", &TimedGeometryBuilder::add_cube);
+	t.def("add_raw_line", &TimedGeometryBuilder::add_raw_line);
 	t.def("build_data", &TimedGeometryBuilder::build_data);
 }
 

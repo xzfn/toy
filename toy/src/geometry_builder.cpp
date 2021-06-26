@@ -55,12 +55,33 @@ void GeometryBuilder::add_sphere(glm::vec3 position, float radius, glm::vec3 col
 	m_spheres.push_back(info);
 }
 
+void GeometryBuilder::add_raw_line(glm::vec3 position0, glm::vec3 color0, glm::vec3 position1, glm::vec3 color1)
+{
+	RawLineInfo info{
+		position0,
+		color0,
+		position1,
+		color1
+	};
+	m_raw_lines.push_back(info);
+}
+
 void write_line_lines(LineInfo line, std::vector<ColorLineData>& buffer) {
 	ColorLineData line_data{
 		line.position0,
 		line.color,
 		line.position1,
 		line.color
+	};
+	buffer.push_back(line_data);
+}
+
+void write_raw_line_lines(RawLineInfo raw_line, std::vector<ColorLineData>& buffer) {
+	ColorLineData line_data{
+		raw_line.position0,
+		raw_line.color0,
+		raw_line.position1,
+		raw_line.color1
 	};
 	buffer.push_back(line_data);
 }
@@ -184,6 +205,11 @@ std::vector<ColorLineData> GeometryBuilder::build_buffer()
 	for (auto& sphere : m_spheres) {
 		write_sphere_lines(sphere, buffer);
 	}
+
+	for(auto& raw_line : m_raw_lines) {
+		write_raw_line_lines(raw_line, buffer);
+	}
+
 	return buffer;
 }
 
@@ -197,6 +223,7 @@ void TimedGeometryBuilder::clear()
 	m_lines.clear();
 	m_cubes.clear();
 	m_spheres.clear();
+	m_raw_lines.clear();
 }
 
 void TimedGeometryBuilder::add_line(glm::vec3 position0, glm::vec3 position1, glm::vec3 color, float duration)
@@ -241,11 +268,28 @@ void TimedGeometryBuilder::add_sphere(glm::vec3 position, float radius, glm::vec
 	m_spheres.push_back(timed_info);
 }
 
+void TimedGeometryBuilder::add_raw_line(glm::vec3 position0, glm::vec3 color0, glm::vec3 position1, glm::vec3 color1, float duration)
+{
+	RawLineInfo info{
+		position0,
+		color0,
+		position1,
+		color1
+	};
+	timedinfo::TimedInfo<RawLineInfo> timed_info{
+		info,
+		duration
+	};
+	m_raw_lines.push_back(timed_info);
+}
+
+
 void TimedGeometryBuilder::update(float delta_time)
 {
 	timedinfo::process_timed_info(m_lines, delta_time);
 	timedinfo::process_timed_info(m_cubes, delta_time);
 	timedinfo::process_timed_info(m_spheres, delta_time);
+	timedinfo::process_timed_info(m_raw_lines, delta_time);
 }
 
 std::vector<ColorLineData> TimedGeometryBuilder::build_buffer()
@@ -262,6 +306,11 @@ std::vector<ColorLineData> TimedGeometryBuilder::build_buffer()
 	for (auto& sphere : m_spheres) {
 		write_sphere_lines(sphere.info, buffer);
 	}
+
+	for (auto& raw_line : m_raw_lines) {
+		write_raw_line_lines(raw_line.info, buffer);
+	}
+
 	return buffer;
 }
 

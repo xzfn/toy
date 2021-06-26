@@ -2,6 +2,7 @@
 import os
 import time
 import math
+import random
 import sys
 
 import numpy as np
@@ -194,8 +195,14 @@ class App:
         transform.translation = sun_origin + vmath.Vector3(0.0, sun_direction.y, 0.0)
         radius = vmath.Vector3(sun_direction.x, 0.0, sun_direction.z).length()
         transform.scale = vmath.Vector3(radius, radius, radius)
-        drawutil.draw_circle(transform, color=vcolor.GRAY)
+        drawutil.draw_circle(transform, color=vcolor.BLUE)
         drawutil.draw_line(sun_origin, transform.translation, color=vcolor.GREEN)
+
+        t = math.modf(self.world.game_time * 0.2)[0]
+        #t = vutil.ping_pong(t)
+        drawutil.draw_split_line(vmath.Vector3(-10, 1, -10), vmath.Vector3(-10, 1, 10), vcolor.GRAY, vcolor.RED, t)
+        drawutil.draw_travel_line(vmath.Vector3(-10, 2, -10), vmath.Vector3(-10, 2, 10), vcolor.GRAY, vcolor.RED, t)
+        drawutil.draw_travel_line(vmath.Vector3(-10, 3, -10), vmath.Vector3(-10, 3, 10), vcolor.GRAY, vcolor.GREEN, t)
 
     def shutdown(self):
         self.console_server.shutdown()
