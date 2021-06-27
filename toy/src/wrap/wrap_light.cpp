@@ -29,6 +29,15 @@ void wrap_Light(py::module_& m) {
 
 	t.def("get_direction", &Light::get_direction);
 	t.def("set_direction", &Light::set_direction);
+
+	t.def("get_range", &Light::get_range);
+	t.def("set_range", &Light::set_range);
+
+	t.def("get_spot_inner_angle", &Light::get_spot_inner_angle);
+	t.def("set_spot_inner_angle", &Light::set_spot_inner_angle);
+
+	t.def("get_spot_outer_angle", &Light::get_spot_outer_angle);
+	t.def("set_spot_outer_angle", &Light::set_spot_outer_angle);
 }
 
 void wrap_light(pybind11::module_& m) {

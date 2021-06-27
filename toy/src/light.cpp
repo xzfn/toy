@@ -43,3 +43,27 @@ void Light::set_direction(glm::vec3 direction)
 {
 	data.direction = direction;
 }
+
+float Light::get_range() {
+	return data.range;
+}
+
+void Light::set_range(float range) {
+	data.range = range;
+}
+
+float Light::get_spot_outer_angle() {
+	return data.spot_outer_angle;
+}
+
+void Light::set_spot_outer_angle(float angle) {
+	data.spot_outer_angle = angle;
+}
+
+float Light::get_spot_inner_angle() {
+	return data.spot_inner_angle;
+}
+
+void Light::set_spot_inner_angle(float angle) {
+	data.spot_inner_angle = angle;
+}

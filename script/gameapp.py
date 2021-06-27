@@ -86,6 +86,15 @@ class App:
         self.light.set_position(vmath.Vector3(5.0, 5.0, -5.0))
         toy.app.light_manager.add_light(self.light)
 
+        self.spot_light = toy.Light()
+        self.spot_light.set_type(toy.LightType.Spot)
+        self.spot_light.set_color(vcolor.WHITE * 0.5)
+        self.spot_light.set_position(vmath.Vector3(0.0, 10.0, 0.0))
+        self.spot_light.set_spot_inner_angle(math.radians(30))
+        self.spot_light.set_spot_outer_angle(math.radians(40))
+        self.spot_light.set_direction(vmath.Vector3(0.0, -1.0, 0.5).normalize())
+        toy.app.light_manager.add_light(self.spot_light)
+
         self.world.unit_manager.create_unit(Player)
         self.world.unit_manager.create_unit(Enemy)
 

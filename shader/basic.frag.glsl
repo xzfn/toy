@@ -42,6 +42,10 @@ vec3 shade_sun_light(vec3 base_color, vec3 view_dir, vec3 frag_normal, float vis
 	return (ambient_strength + (diffuse_strength + specular_strength) * visibility) * sun_light_color * base_color;
 }
 
+float calc_spot_angle_attenuation(float cos_theta, float cos_inner, float cos_outer) {
+	return clamp((cos_theta - cos_outer) / (cos_inner - cos_outer), 0.0, 1.0);
+}
+
 void main() {
 	vec3 base_color = texture(u_Texture, v_Texcoord).xyz;
 
@@ -58,16 +62,16 @@ void main() {
 	float visibility = step(0.0, shadow_delta);
 
 	//out_Color = vec4(base_color * visibility, 1.0);
-	vec3 shaded_color = shade_sun_light(base_color, view_dir, frag_normal, visibility);
-	out_Color = vec4(shaded_color, 1.0);
-	return;
+	vec3 shaded_color = 0.5 * shade_sun_light(base_color, view_dir, frag_normal, visibility);
+	//out_Color = vec4(shaded_color, 1.0);
+	//return;
 
 	//float intensity = max(dot(u_frame.sun_light_direction, v_Normal), 0.0f);
 	vec3 result_color = vec3(0.0f);
 
 	for (int i = 0; i < u_light.light_count; ++i) {
 		Light light = u_light.lights[i];
-		if (light.type == 1) {
+		if (light.type == LightType_Point) {
 			vec3 light_dir = normalize(light.position - v_WorldPosition);
 			float diffuse_strength = max(dot(frag_normal, light_dir), 0.0);
 			vec3 diffuse_color = diffuse_strength * base_color;
@@ -79,10 +83,24 @@ void main() {
 			result_color += specular_color * light.color;
 			//result_color = encode_normal(frag_normal);
 		}
+		else if (light.type == LightType_Spot) {
+			vec3 spot_dir = light.direction;
+
+			vec3 light_dir = normalize(light.position - v_WorldPosition);
+
+			float cos_theta = dot(spot_dir, -light_dir);
+			float spot_attenuation = calc_spot_angle_attenuation(cos_theta, light.spot_inner, light.spot_outer);
+
+			float diffuse_strength = max(dot(frag_normal, light_dir), 0.0);
+			vec3 diffuse_color = diffuse_strength * base_color;
+			result_color += diffuse_color * light.color * spot_attenuation;
+
+			vec3 reflect_dir = reflect(-light_dir, frag_normal);
+			float specular_strength = pow(max(dot(reflect_dir, view_dir), 0.0f), 60);
+			vec3 specular_color = specular_strength * base_color;
+			result_color += specular_color * light.color * spot_attenuation;
+		}
 	}
 
-	//base_color.xyz = u_frame.sun_light_direction;
-	//base_color.xyz = normal_color;
-	//base_color.xyz = u_material.base_color;
-	out_Color = vec4(result_color * visibility, 1.0);
+	out_Color = vec4(shaded_color + 0.5 * result_color, 1.0);
 }

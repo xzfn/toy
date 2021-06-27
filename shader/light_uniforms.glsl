@@ -1,6 +1,13 @@
 
 #define MAX_LIGHTS 8
 
+
+const int LightType_Empty = 0;
+const int LightType_Point = 1;
+const int LightType_Spot = 2;
+const int LightType_Directional = 3;
+
+
 struct Light {
 	int type;
 	float padding_0;
@@ -15,6 +22,11 @@ struct Light {
 
 	vec3 direction;
 	float padding_5;
+
+	float range;
+	float spot_inner;
+	float spot_outer;
+	float padding_6;
 };
 
 

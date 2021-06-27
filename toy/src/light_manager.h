@@ -23,6 +23,11 @@ struct LightUniform {
 
 	glm::vec3 direction;
 	float padding_5;
+
+	float range;
+	float spot_inner;
+	float spot_outer;
+	float padding_6;
 };
 
 struct LightUniforms {

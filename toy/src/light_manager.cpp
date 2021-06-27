@@ -1,5 +1,8 @@
-#include <algorithm>
+
 #include "light_manager.h"
+
+#include <cmath>
+#include <algorithm>
 
 
 LightManager::LightManager()
@@ -8,6 +11,10 @@ LightManager::LightManager()
 
 void LightManager::add_light(std::shared_ptr<Light> light)
 {
+	auto it = std::find(m_lights.begin(), m_lights.end(), light);
+	if (it != m_lights.end()) {
+		return;
+	}
 	m_lights.push_back(light);
 }
 
@@ -32,12 +39,16 @@ LightUniforms LightManager::build_light_uniform()
 		if (actual_index >= MAX_LIGHTS) {
 			break;
 		}
-		
+		LightData& light_data = light.data;
 		LightUniform uniform;
-		uniform.type = light.data.type;
-		uniform.color = light.data.color;
-		uniform.position = light.data.position;
-		uniform.direction = light.data.direction;
+		uniform.type = light_data.type;
+		uniform.color = light_data.color;
+		uniform.position = light_data.position;
+		uniform.direction = light_data.direction;
+		uniform.range = light_data.range;
+		uniform.spot_inner = std::cos(light_data.spot_inner_angle * 0.5f);
+		uniform.spot_outer = std::cos(light_data.spot_outer_angle * 0.5f);
+
 		light_uniforms.lights[actual_index] = uniform;
 		++actual_index;
 	}
