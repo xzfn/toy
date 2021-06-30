@@ -47,11 +47,16 @@ public:
 	LightManager& operator=(const LightManager&) = delete;
 
 public:
+	void set_sun(std::shared_ptr<Light> light);
+	std::shared_ptr<Light> get_sun();
+
 	void add_light(std::shared_ptr<Light> light);
 	void remove_light(std::shared_ptr<Light> light);
 
 	LightUniforms build_light_uniform();
+	std::vector<std::shared_ptr<Light>>& ref_lights();
 
 public:
+	std::shared_ptr<Light> m_sun;
 	std::vector<std::shared_ptr<Light>> m_lights;
 };

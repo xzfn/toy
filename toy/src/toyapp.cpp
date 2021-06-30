@@ -21,8 +21,7 @@ namespace py = pybind11;
 
 #include "python_util.h"
 
-#include "vulkan_util.h"
-
+#include "vulkan_helper.h"
 
 struct VertexData {
 	float x, y, z, w;
@@ -155,6 +154,9 @@ void App::startup(VulkanContext& ctx, Window* window) {
 
 	resource_manager.add_resource_directory("../../toy");
 	resource_manager.add_resource_directory("../../toy_generated");
+
+	shadow_manager.init(ctx);
+
 	py::module sys = py::module::import("sys");
 	py::list sys_path = sys.attr("path");
 	sys_path.append("../../toy/script");
@@ -286,21 +288,10 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	auto shadow_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(nullptr, sizeof(ShadowUniforms));
 	shadow_uniform_buffer = shadow_uniform_buffer_and_memory.first;
 	shadow_uniform_memory = shadow_uniform_buffer_and_memory.second;
-	// shadow depth texture
-	depth_width = 512;
-	depth_height = 512;
-	auto depth_image_and_memory = ctx.create_texture_depth(depth_width, depth_height, 2, true);
-	depth_image = depth_image_and_memory.first;
-	depth_image_memory = depth_image_and_memory.second;
-	depth_image_view = ctx.create_image_view_texture_depth(depth_image, true, false, 0, 1);
-	depth_image_view2 = ctx.create_image_view_texture_depth(depth_image, true, false, 1, 1);
-	depth_image_view_array = ctx.create_image_view_texture_depth(depth_image, true, false, 0, 2);
-	depth_sampler = ctx.create_depth_sampler();
-	std::vector<VkImageView> depth_image_views{ depth_image_view };
-	depth_framebuffer = ctx.create_framebuffer(depth_width, depth_height, ctx.basic.depth_render_pass, depth_image_views);
-	std::vector<VkImageView> depth_image_views2{ depth_image_view2 };
-	depth_framebuffer2 = ctx.create_framebuffer(depth_width, depth_height, ctx.basic.depth_render_pass, depth_image_views2);
 
+	// shadow
+	VkSampler depth_sampler = shadow_manager.get_depth_sampler();
+	VkImageView depth_image_view_array = shadow_manager.get_depth_image_view_array();
 	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, shadow_uniform_buffer, sizeof(ShadowUniforms), depth_sampler, depth_image_view_array);
 
 	auto light1 = std::make_shared<Light>();
@@ -314,8 +305,6 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	light2->set_position(glm::vec3(5.0f, 5.0f, -5.0f));
 	light2->set_color(glm::vec3(1.0f, 0.0f, 0.5f));
 	light_manager.add_light(light2);
-
-
 
 
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
@@ -340,15 +329,7 @@ void App::shutdown() {
 	ctx.destroy_buffer_and_memory(light_uniform_buffer, light_uniform_memory);
 	ctx.destroy_buffer_and_memory(shadow_uniform_buffer, shadow_uniform_memory);
 
-	// shadow
-	ctx.destroy_image(depth_image);
-	ctx.destroy_image_view(depth_image_view);
-	ctx.destroy_image_view(depth_image_view2);
-	ctx.destroy_image_view(depth_image_view_array);
-	ctx.free_memory(depth_image_memory);
-	ctx.destroy_sampler(depth_sampler);
-	vkDestroyFramebuffer(ctx.basic.device, depth_framebuffer, vkutil::vulkan_allocator);
-	vkDestroyFramebuffer(ctx.basic.device, depth_framebuffer2, vkutil::vulkan_allocator);
+	shadow_manager.destroy();
 
 }
 
@@ -393,7 +374,7 @@ void App::update() {
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
 	frame_uniform.view_projection = camera_view_projection;
 	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
-	frame_uniform.sun_light_direction = sun_direction;
+	frame_uniform.sun_light_direction = light_manager.get_sun()->get_direction();
 	frame_uniform.screen_width = ctx.basic.extent.width;
 	frame_uniform.screen_height = ctx.basic.extent.height;
 
@@ -415,11 +396,8 @@ void App::update() {
 	memcpy(memory_pointer, light_uniform_data, light_uniform_data_size);
 	vkUnmapMemory(ctx.basic.device, light_uniform_memory);
 
-
 	// shadow
-	ShadowUniforms shadow_uniform;
-	shadow_uniform.layers[0].light_matrix = light_view_projections[0];
-	shadow_uniform.layers[1].light_matrix = light_view_projections[1];
+	ShadowUniforms shadow_uniform = shadow_manager.build_shadow_uniform();
 
 	int shadow_uniform_data_size = sizeof(shadow_uniform);
 	void* shadow_uniform_data = &shadow_uniform;
@@ -443,117 +421,7 @@ void App::update() {
 
 void App::depth_pass(VkCommandBuffer command_buffer)
 {
-	VulkanContext& ctx = *ctxptr;
-	// shadow
-	VkRect2D render_area = {
-	{
-		0, 0
-	},
-	{
-		depth_width, depth_height
-	}
-	};
-
-	VkClearDepthStencilValue clear_depth_value{
-		1.0f,
-		0
-	};
-
-	std::array<VkClearValue, 1> clear_values;
-	clear_values[0].depthStencil = clear_depth_value;
-
-	VkFramebuffer framebuffers[] = {depth_framebuffer, depth_framebuffer2};
-
-	// light 1, sun
-	glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
-	Transform light_model = Transform();
-	light_model.rotation = look_rotation_to_quat(sun_direction, VEC3_Y);
-	glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
-	glm::mat4 sun_light_view_projection = projection * light_view;
-
-	// light 2, spotlight	
-	glm::mat4 spot_light_view_projection(1.0f);
-	for (auto& light : light_manager.m_lights) {
-		if (light->get_type() == LightType::Spot) {
-			glm::vec3 spot_position = light->get_position();
-			glm::vec3 spot_direction = light->get_direction();
-			light_model.translation = spot_position;
-			glm::vec3 up = VEC3_Y;
-			if (abs(glm::dot(spot_direction, up)) > 0.99) {
-				up = VEC3_Z;
-			}
-			light_model.rotation = look_rotation_to_quat(spot_direction, up);
-			glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
-			float spot_outer_angle = light->get_spot_outer_angle();
-			projection = glm::perspective(spot_outer_angle, 1.0f, 0.1f, 20.0f);
-			spot_light_view_projection = projection * light_view;
-			break;
-		}
-	}
-
-	light_view_projections[0] = sun_light_view_projection;
-	light_view_projections[1] = spot_light_view_projection;
-
-
-	for (int shadow_index = 0; shadow_index < 2; ++shadow_index) {
-		VkFramebuffer framebuffer = framebuffers[shadow_index];
-		glm::mat4 light_view_projection = light_view_projections[shadow_index];
-		VkRenderPassBeginInfo render_pass_begin_info = {
-			VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,  // sType;
-			nullptr,  // pNext;
-			ctx.basic.depth_render_pass,  // renderPass;
-			framebuffer,  // framebuffer;
-			render_area,  // renderArea;
-			clear_values.size(),  // clearValueCount;
-			clear_values.data()  // pClearValues;
-		};
-		vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-
-		VkViewport viewport = {
-			0.0f, 0.0f, (float)depth_width, (float)depth_height, 0.0f, 1.0f
-		};
-		vkutil::flip_viewport(viewport);
-
-		VkRect2D scissor = {
-			{
-				0, 0
-			},
-			{
-				depth_width, depth_height
-			}
-		};
-		vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-		// frame descriptor set, need view_projection when light as camera
-
-		FrameUniforms light_frame_uniforms;
-		light_frame_uniforms.view_projection = light_view_projection;
-
-		VkDescriptorSet light_frame_descriptor_set = ctx.create_descriptor_set(pipeline_depth.ref_descriptor_set_layouts().frame);
-		auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_frame_uniforms, sizeof(light_frame_uniforms));
-		pipeline_depth.update_descriptor_set_frame(light_frame_descriptor_set, buffer_and_memory.first, sizeof(light_frame_uniforms));
-
-		std::vector<VkDescriptorSet> sets{ light_frame_descriptor_set };
-		ctx.destroy_vulkan_descriptor_sets(sets);
-		ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
-
-		// render depth
-		std::vector<VkDescriptorSet> descriptor_sets_frame{
-			light_frame_descriptor_set
-		};
-
-		glm::mat4 model(1.0f);
-		pipeline_depth.bind(command_buffer);
-		pipeline_depth.bind_descriptor_sets(command_buffer, descriptor_sets_frame);
-		pipeline_depth.push_constants_matrix(command_buffer, model);
-
-		render_manager.render_depth(command_buffer, pipeline_depth);
-
-		// -----
-		vkCmdEndRenderPass(command_buffer);
-	}
+	shadow_manager.render_depth_pass(command_buffer, pipeline_depth, light_manager, render_manager);
 }
 
 void App::render(VkCommandBuffer command_buffer) {

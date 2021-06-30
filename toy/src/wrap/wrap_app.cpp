@@ -27,5 +27,4 @@ void wrap_app(pybind11::module_& m) {
 		this_->script_on_key_down = callback;
 	});
 
-	t.def_readwrite("sun_direction", &App::sun_direction);
 }

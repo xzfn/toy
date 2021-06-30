@@ -13,7 +13,6 @@ extern VkAllocationCallbacks* vulkan_allocator;
 void check_vk_result(VkResult vkres);
 std::string version_to_string(uint32_t version);
 VkInstance create_vulkan_instance();
-void flip_viewport(VkViewport& viewport);
 std::vector<VkPhysicalDevice> get_physical_devices(VkInstance instance);
 void dump_physical_device(VkPhysicalDevice physical_device);
 VkPhysicalDeviceMemoryProperties get_physical_device_memory_properties(VkPhysicalDevice physical_device);
@@ -38,6 +37,7 @@ VkSemaphore create_semaphore(VkDevice device);
 VkFence create_fence(VkDevice device);
 VkFramebuffer create_framebuffer(VkDevice device, uint32_t width, uint32_t height,
 	VkRenderPass render_pass, std::vector<VkImageView>& image_views);
+void destroy_framebuffer(VkDevice device, VkFramebuffer framebuffer);
 VkRenderPass create_render_pass(VkDevice device, VkSurfaceFormatKHR surface_format, VkFormat depth_format);
 VkRenderPass create_depth_render_pass(VkDevice device, VkFormat depth_format);
 VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device);

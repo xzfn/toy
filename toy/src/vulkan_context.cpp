@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "vulkan_util.h"
+#include "vulkan_helper.h"
 #include "vertex_format.h"
 
 #include "material.h"
@@ -178,6 +179,14 @@ VkFramebuffer VulkanContext::create_framebuffer(uint32_t width, uint32_t height,
 	);
 }
 
+void VulkanContext::destroy_framebuffer(VkFramebuffer framebuffer)
+{
+	return vkutil::destroy_framebuffer(
+		basic.device,
+		framebuffer
+	);
+}
+
 std::pair<VkBuffer, VkDeviceMemory> VulkanContext::create_uniform_buffer(uint8_t* buffer_data, std::size_t buffer_size)
 {
 	return vkutil::create_uniform_buffer(
@@ -314,7 +323,7 @@ void VulkanContext::render(VkClearColorValue clear_color,
 	VkViewport viewport = {
 		0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f
 	};
-	vkutil::flip_viewport(viewport);
+	vkhelper::flip_viewport(viewport);
 
 	VkRect2D scissor = {
 		{
@@ -590,7 +599,7 @@ void VulkanContext::init_swapchain_images()
 	if (swap_images.size() > 0) {
 		for (uint32_t i = 0; i < swap_images.size(); ++i) {
 			VulkanSwapImage& swap_image = swap_images[i];
-			vkDestroyFramebuffer(device, swap_image.framebuffer, vulkan_allocator);
+			destroy_framebuffer(swap_image.framebuffer);
 			vkFreeCommandBuffers(device, basic.command_pool, 1, &swap_image.command_buffer);
 			destroy_image_view(swap_image.image_view);
 			//destroy_image(swap_image.image);  // image belong to swapchain
@@ -658,7 +667,7 @@ void VulkanContext::destroy_vulkan()
 
 	for (uint32_t i = 0; i < swap_images.size(); ++i) {
 		VulkanSwapImage& swap_image = swap_images[i];
-		vkDestroyFramebuffer(device, swap_image.framebuffer, vulkan_allocator);
+		destroy_framebuffer(swap_image.framebuffer);
 		vkFreeCommandBuffers(device, basic.command_pool, 1, &swap_image.command_buffer);
 		destroy_image_view(swap_image.image_view);
 		//destroy_image(swap_image.image);  // image belong to swapchain

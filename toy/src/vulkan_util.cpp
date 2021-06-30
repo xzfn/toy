@@ -63,12 +63,6 @@ VkInstance create_vulkan_instance() {
     return instance;
 }
 
-void flip_viewport(VkViewport& viewport)
-{
-    viewport.y = viewport.height;
-    viewport.height = -viewport.height;
-}
-
 std::vector<VkPhysicalDevice> get_physical_devices(VkInstance instance)
 {
     VkResult vkres;
@@ -537,6 +531,11 @@ VkFramebuffer create_framebuffer(VkDevice device, uint32_t width, uint32_t heigh
     vkres = vkCreateFramebuffer(device, &create_info, vulkan_allocator, &framebuffer);
     assert(vkres == VK_SUCCESS);
     return framebuffer;
+}
+
+void destroy_framebuffer(VkDevice device, VkFramebuffer framebuffer)
+{
+    vkDestroyFramebuffer(device, framebuffer, vulkan_allocator);
 }
 
 VkRenderPass create_render_pass(VkDevice device, VkSurfaceFormatKHR surface_format, VkFormat depth_format)

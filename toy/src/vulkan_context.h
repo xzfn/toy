@@ -96,6 +96,7 @@ public:
 	void destroy_sampler(VkSampler sampler);
 	VkFramebuffer create_framebuffer(uint32_t width, uint32_t height,
 		VkRenderPass render_pass, std::vector<VkImageView>& image_views);
+	void destroy_framebuffer(VkFramebuffer framebuffer);
 	std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer(uint8_t* buffer_data, std::size_t buffer_size);
 	std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer_coherent(uint8_t* buffer_data, std::size_t buffer_size);
 	VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout descriptor_set_layout);

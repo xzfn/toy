@@ -2,6 +2,8 @@
 set(toy_SOURCES
 	src/vulkan_util.h
 	src/vulkan_util.cpp
+	src/vulkan_helper.h
+	src/vulkan_helper.cpp
 	src/vulkan_resources.h
 	src/vulkan_resources.cpp
 	src/vulkan_context.h
@@ -89,6 +91,10 @@ set(toy_SOURCES
 
 	src/light_manager.h
 	src/light_manager.cpp
+
+	src/shadow_config.h
+	src/shadow_manager.h
+	src/shadow_manager.cpp
 
 	src/scope_util.h
 )

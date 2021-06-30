@@ -4,9 +4,25 @@
 #include <cmath>
 #include <algorithm>
 
+#include <glm/glm.hpp>
+
 
 LightManager::LightManager()
 {
+	auto sun = std::make_shared<Light>();
+	sun->set_direction(glm::normalize(glm::vec3(0.0f, -1.0f, 0.5f)));
+	sun->set_color(glm::vec3(1.0f, 1.0f, 1.0f));
+	set_sun(sun);
+}
+
+void LightManager::set_sun(std::shared_ptr<Light> light)
+{
+	m_sun = light;
+}
+
+std::shared_ptr<Light> LightManager::get_sun()
+{
+	return m_sun;
 }
 
 void LightManager::add_light(std::shared_ptr<Light> light)
@@ -54,4 +70,9 @@ LightUniforms LightManager::build_light_uniform()
 	}
 	light_uniforms.light_count = actual_index;
 	return light_uniforms;
+}
+
+std::vector<std::shared_ptr<Light>>& LightManager::ref_lights()
+{
+	return m_lights;
 }

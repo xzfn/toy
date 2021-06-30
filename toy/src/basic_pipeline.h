@@ -9,6 +9,8 @@
 #include "vulkan_context.h"
 #include "pipeline_util.h"
 #include "light_manager.h"
+#include "shadow_config.h"
+
 
 struct FrameUniforms {
 	glm::mat4 view_projection;
@@ -37,8 +39,6 @@ struct MaterialUniforms {
 	glm::vec3 base_color;
 	float padding_0;
 };
-
-constexpr int MAX_SHADOWS = 8;
 
 struct ShadowLayer {
 	glm::mat4 light_matrix;

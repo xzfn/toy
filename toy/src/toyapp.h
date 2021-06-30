@@ -22,6 +22,7 @@
 #include "camera_manager.h"
 #include "render_manager.h"
 #include "light_manager.h"
+#include "shadow_manager.h"
 
 
 class App {
@@ -68,6 +69,7 @@ public:
 	Window* m_window;
 
 	ResourceManager resource_manager;
+	ShadowManager shadow_manager;
 
 	BasicPipeline pipeline;
 	BasicPipeline pipeline_lines;
@@ -100,7 +102,6 @@ public:
 	Mesh mesh_cube;
 	Material material_cubemap;
 	Material material_text;
-	glm::vec3 old_translation;
 
 	FrameUniforms frame_uniform;
 
@@ -117,18 +118,4 @@ public:
 	RenderManager render_manager;
 	LightManager light_manager;
 
-	// shadow
-	uint32_t depth_width;
-	uint32_t depth_height;
-	VkImage depth_image;
-	VkDeviceMemory depth_image_memory;
-	VkImageView depth_image_view;
-	VkImageView depth_image_view2;
-	VkImageView depth_image_view_array;
-	VkSampler depth_sampler;
-	VkFramebuffer depth_framebuffer;
-	VkFramebuffer depth_framebuffer2;
-
-	glm::vec3 sun_direction{ 0.0, -1.0, 0.0 };
-	glm::mat4 light_view_projections[2];
 };

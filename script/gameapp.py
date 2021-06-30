@@ -197,7 +197,7 @@ class App:
         self.light.set_color(vcolor.bounce(vcolors.red, vcolors.lime, alpha))
         
         sun_direction = vmath.Vector3(math.cos(self.world.game_time), -1.0, math.sin(self.world.game_time)).normalize()
-        toy.app.sun_direction = sun_direction
+        toy.app.light_manager.get_sun().set_direction(sun_direction)
         sun_origin = vmath.Vector3(0.0, 5.0, 0.0)
         drawutil.draw_line(sun_origin, sun_origin + sun_direction)
         transform = vmath.Transform()
