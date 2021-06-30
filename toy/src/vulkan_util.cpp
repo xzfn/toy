@@ -1085,7 +1085,7 @@ VkImage create_image(VkDevice device, uint32_t width, uint32_t height) {
     return image;
 }
 
-VkImage create_image_depth(VkDevice device, VkFormat format, uint32_t width, uint32_t height, bool sampled) {
+VkImage create_image_depth(VkDevice device, VkFormat format, uint32_t width, uint32_t height, uint32_t array_layers, bool sampled) {
     VkExtent3D extent = {
         width, height, 1
     };
@@ -1101,7 +1101,7 @@ VkImage create_image_depth(VkDevice device, VkFormat format, uint32_t width, uin
         format,  // format;
         extent,  // extent;
         1,  // mipLevels;
-        1,  // arrayLayers;
+        array_layers,  // arrayLayers;
         VK_SAMPLE_COUNT_1_BIT,  // samples;
         VK_IMAGE_TILING_OPTIMAL,  // tiling;
         usage,  // usage;
@@ -1508,17 +1508,17 @@ VkImageView create_image_view_texture_cubemap(VkDevice device, VkImage image)
     return image_view;
 }
 
-std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height, bool sampled)
+std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height, uint32_t array_layers, bool sampled)
 {
     VkResult vkres;
-    VkImage image = create_image_depth(device, format, width, height, sampled);
+    VkImage image = create_image_depth(device, format, width, height, array_layers, sampled);
     VkDeviceMemory memory = create_image_memory(memory_properties, device, image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkres = vkBindImageMemory(device, image, memory, 0);
     assert(vkres == VK_SUCCESS);
     return std::make_pair(image, memory);
 }
 
-VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFormat format, bool use_depth, bool use_stencil)
+VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFormat format, bool use_depth, bool use_stencil, uint32_t base_array_layer, uint32_t layer_count)
 {
     VkImageAspectFlags image_aspect_flags = 0;
     if (use_depth) {
@@ -1527,12 +1527,19 @@ VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFo
     if (use_stencil) {
         image_aspect_flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
+    VkImageViewType view_type;
+    if (layer_count == 1) {
+        view_type = VK_IMAGE_VIEW_TYPE_2D;
+    }
+    else {
+        view_type = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    }
     VkImageViewCreateInfo create_info = {
         VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,  // sType;
         nullptr,  // pNext;
         0,  // flags;
         image,  // image;
-        VK_IMAGE_VIEW_TYPE_2D,  // viewType;
+        view_type,  // viewType;
         format,  // format;
         {
             VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -1544,8 +1551,8 @@ VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFo
             image_aspect_flags,
             0,
             1,
-            0,
-            1
+            base_array_layer,
+            layer_count
         }  // subresourceRange;
     };
     VkImageView image_view = VK_NULL_HANDLE;

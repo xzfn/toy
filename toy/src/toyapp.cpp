@@ -289,15 +289,19 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	// shadow depth texture
 	depth_width = 512;
 	depth_height = 512;
-	auto depth_image_and_memory = ctx.create_texture_depth(depth_width, depth_height, true);
+	auto depth_image_and_memory = ctx.create_texture_depth(depth_width, depth_height, 2, true);
 	depth_image = depth_image_and_memory.first;
 	depth_image_memory = depth_image_and_memory.second;
-	depth_image_view = ctx.create_image_view_texture_depth(depth_image, true, false);
+	depth_image_view = ctx.create_image_view_texture_depth(depth_image, true, false, 0, 1);
+	depth_image_view2 = ctx.create_image_view_texture_depth(depth_image, true, false, 1, 1);
+	depth_image_view_array = ctx.create_image_view_texture_depth(depth_image, true, false, 0, 2);
 	depth_sampler = ctx.create_depth_sampler();
 	std::vector<VkImageView> depth_image_views{ depth_image_view };
 	depth_framebuffer = ctx.create_framebuffer(depth_width, depth_height, ctx.basic.depth_render_pass, depth_image_views);
+	std::vector<VkImageView> depth_image_views2{ depth_image_view2 };
+	depth_framebuffer2 = ctx.create_framebuffer(depth_width, depth_height, ctx.basic.depth_render_pass, depth_image_views2);
 
-	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, shadow_uniform_buffer, sizeof(ShadowUniforms), depth_sampler, depth_image_view);
+	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, shadow_uniform_buffer, sizeof(ShadowUniforms), depth_sampler, depth_image_view_array);
 
 	auto light1 = std::make_shared<Light>();
 	light1->set_type(LightType::Point);
@@ -339,9 +343,13 @@ void App::shutdown() {
 	// shadow
 	ctx.destroy_image(depth_image);
 	ctx.destroy_image_view(depth_image_view);
+	ctx.destroy_image_view(depth_image_view2);
+	ctx.destroy_image_view(depth_image_view_array);
 	ctx.free_memory(depth_image_memory);
 	ctx.destroy_sampler(depth_sampler);
 	vkDestroyFramebuffer(ctx.basic.device, depth_framebuffer, vkutil::vulkan_allocator);
+	vkDestroyFramebuffer(ctx.basic.device, depth_framebuffer2, vkutil::vulkan_allocator);
+
 }
 
 void App::update() {
@@ -409,14 +417,9 @@ void App::update() {
 
 
 	// shadow
-	glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
-	Transform light_model = Transform();
-	light_model.rotation = look_rotation_to_quat(sun_direction, VEC3_Y);
-	glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
-	glm::mat4 light_view_projection = projection * light_view;
-
 	ShadowUniforms shadow_uniform;
-	shadow_uniform.layers[0].light_matrix = light_view_projection;
+	shadow_uniform.layers[0].light_matrix = light_view_projections[0];
+	shadow_uniform.layers[1].light_matrix = light_view_projections[1];
 
 	int shadow_uniform_data_size = sizeof(shadow_uniform);
 	void* shadow_uniform_data = &shadow_uniform;
@@ -459,69 +462,98 @@ void App::depth_pass(VkCommandBuffer command_buffer)
 	std::array<VkClearValue, 1> clear_values;
 	clear_values[0].depthStencil = clear_depth_value;
 
-	VkFramebuffer framebuffer = depth_framebuffer;
-	VkRenderPassBeginInfo render_pass_begin_info = {
-		VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,  // sType;
-		nullptr,  // pNext;
-		ctx.basic.depth_render_pass,  // renderPass;
-		framebuffer,  // framebuffer;
-		render_area,  // renderArea;
-		clear_values.size(),  // clearValueCount;
-		clear_values.data()  // pClearValues;
-	};
-	vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+	VkFramebuffer framebuffers[] = {depth_framebuffer, depth_framebuffer2};
 
-
-	VkViewport viewport = {
-		0.0f, 0.0f, (float)depth_width, (float)depth_height, 0.0f, 1.0f
-	};
-	vkutil::flip_viewport(viewport);
-
-	VkRect2D scissor = {
-		{
-			0, 0
-		},
-		{
-			depth_width, depth_height
-		}
-	};
-	vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-	// frame descriptor set, need view_projection when light as camera
+	// light 1, sun
 	glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
-
 	Transform light_model = Transform();
 	light_model.rotation = look_rotation_to_quat(sun_direction, VEC3_Y);
 	glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
-	glm::mat4 light_view_projection = projection * light_view;
+	glm::mat4 sun_light_view_projection = projection * light_view;
 
-	FrameUniforms light_frame_uniforms;
-	light_frame_uniforms.view_projection = light_view_projection;
+	// light 2, spotlight	
+	glm::mat4 spot_light_view_projection(1.0f);
+	for (auto& light : light_manager.m_lights) {
+		if (light->get_type() == LightType::Spot) {
+			glm::vec3 spot_position = light->get_position();
+			glm::vec3 spot_direction = light->get_direction();
+			light_model.translation = spot_position;
+			glm::vec3 up = VEC3_Y;
+			if (abs(glm::dot(spot_direction, up)) > 0.99) {
+				up = VEC3_Z;
+			}
+			light_model.rotation = look_rotation_to_quat(spot_direction, up);
+			glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
+			float spot_outer_angle = light->get_spot_outer_angle();
+			projection = glm::perspective(spot_outer_angle, 1.0f, 0.1f, 20.0f);
+			spot_light_view_projection = projection * light_view;
+			break;
+		}
+	}
 
-	VkDescriptorSet light_frame_descriptor_set = ctx.create_descriptor_set(pipeline_depth.ref_descriptor_set_layouts().frame);
-	auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_frame_uniforms, sizeof(light_frame_uniforms));
-	pipeline_depth.update_descriptor_set_frame(light_frame_descriptor_set, buffer_and_memory.first, sizeof(light_frame_uniforms));
+	light_view_projections[0] = sun_light_view_projection;
+	light_view_projections[1] = spot_light_view_projection;
 
-	std::vector<VkDescriptorSet> sets{ light_frame_descriptor_set };
-	ctx.destroy_vulkan_descriptor_sets(sets);
-	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
 
-	// render depth
-	std::vector<VkDescriptorSet> descriptor_sets_frame{
-		light_frame_descriptor_set,
-		descriptor_set_light
-	};
+	for (int shadow_index = 0; shadow_index < 2; ++shadow_index) {
+		VkFramebuffer framebuffer = framebuffers[shadow_index];
+		glm::mat4 light_view_projection = light_view_projections[shadow_index];
+		VkRenderPassBeginInfo render_pass_begin_info = {
+			VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,  // sType;
+			nullptr,  // pNext;
+			ctx.basic.depth_render_pass,  // renderPass;
+			framebuffer,  // framebuffer;
+			render_area,  // renderArea;
+			clear_values.size(),  // clearValueCount;
+			clear_values.data()  // pClearValues;
+		};
+		vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-	glm::mat4 model(1.0f);
-	pipeline_depth.bind(command_buffer);
-	pipeline_depth.bind_descriptor_sets(command_buffer, descriptor_sets_frame);
-	pipeline_depth.push_constants_matrix(command_buffer, model);
 
-	render_manager.render_depth(command_buffer, pipeline_depth);
+		VkViewport viewport = {
+			0.0f, 0.0f, (float)depth_width, (float)depth_height, 0.0f, 1.0f
+		};
+		vkutil::flip_viewport(viewport);
 
-	// -----
-	vkCmdEndRenderPass(command_buffer);
+		VkRect2D scissor = {
+			{
+				0, 0
+			},
+			{
+				depth_width, depth_height
+			}
+		};
+		vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+		// frame descriptor set, need view_projection when light as camera
+
+		FrameUniforms light_frame_uniforms;
+		light_frame_uniforms.view_projection = light_view_projection;
+
+		VkDescriptorSet light_frame_descriptor_set = ctx.create_descriptor_set(pipeline_depth.ref_descriptor_set_layouts().frame);
+		auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_frame_uniforms, sizeof(light_frame_uniforms));
+		pipeline_depth.update_descriptor_set_frame(light_frame_descriptor_set, buffer_and_memory.first, sizeof(light_frame_uniforms));
+
+		std::vector<VkDescriptorSet> sets{ light_frame_descriptor_set };
+		ctx.destroy_vulkan_descriptor_sets(sets);
+		ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
+
+		// render depth
+		std::vector<VkDescriptorSet> descriptor_sets_frame{
+			light_frame_descriptor_set
+		};
+
+		glm::mat4 model(1.0f);
+		pipeline_depth.bind(command_buffer);
+		pipeline_depth.bind_descriptor_sets(command_buffer, descriptor_sets_frame);
+		pipeline_depth.push_constants_matrix(command_buffer, model);
+
+		render_manager.render_depth(command_buffer, pipeline_depth);
+
+		// -----
+		vkCmdEndRenderPass(command_buffer);
+	}
 }
 
 void App::render(VkCommandBuffer command_buffer) {

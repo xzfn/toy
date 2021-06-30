@@ -89,7 +89,7 @@ class App:
         self.spot_light = toy.Light()
         self.spot_light.set_type(toy.LightType.Spot)
         self.spot_light.set_color(vcolor.WHITE * 0.5)
-        self.spot_light.set_position(vmath.Vector3(0.0, 10.0, 0.0))
+        self.spot_light.set_position(vmath.Vector3(0.0, .0, 0.0))
         self.spot_light.set_spot_inner_angle(math.radians(30))
         self.spot_light.set_spot_outer_angle(math.radians(40))
         self.spot_light.set_direction(vmath.Vector3(0.0, -1.0, 0.5).normalize())
@@ -212,6 +212,13 @@ class App:
         drawutil.draw_split_line(vmath.Vector3(-10, 1, -10), vmath.Vector3(-10, 1, 10), vcolor.GRAY, vcolor.RED, t)
         drawutil.draw_travel_line(vmath.Vector3(-10, 2, -10), vmath.Vector3(-10, 2, 10), vcolor.GRAY, vcolor.RED, t)
         drawutil.draw_travel_line(vmath.Vector3(-10, 3, -10), vmath.Vector3(-10, 3, 10), vcolor.GRAY, vcolor.GREEN, t)
+
+        spot_direction = vmath.Vector3(0.0, -1.0, 0.8 * vutil.ping_pong(t)).normalize()
+        self.spot_light.set_direction(spot_direction)
+        spot_position = vmath.Vector3(0.0, 10.0, -4.0 * vutil.ping_pong(t))
+        self.spot_light.set_position(spot_position)
+        drawutil.draw_sphere(spot_position, 0.1)
+        drawutil.draw_line(spot_position, spot_position + spot_direction)
 
     def shutdown(self):
         self.console_server.shutdown()

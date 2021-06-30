@@ -62,8 +62,8 @@ std::pair<VkImage, VkDeviceMemory> create_texture_cubemap(const VkPhysicalDevice
 	VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, uint32_t width, 
 	uint32_t height, uint8_t* buffer_data, std::size_t buffer_size);
 VkImageView create_image_view_texture_cubemap(VkDevice device, VkImage image);
-std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height, bool sampled);
-VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFormat format, bool use_depth, bool use_stencil);
+std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height, uint32_t array_layers, bool sampled);
+VkImageView create_image_view_texture_depth(VkDevice device, VkImage image, VkFormat format, bool use_depth, bool use_stencil, uint32_t base_array_layer, uint32_t layer_count);
 std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device,
 	VkQueue queue, VkCommandBuffer command_buffer,
 	uint8_t* buffer_data, VkDeviceSize buffer_size);

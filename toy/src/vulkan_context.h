@@ -78,10 +78,10 @@ public:
 		uint8_t* buffer_data, std::size_t buffer_size);
 	std::pair<VkImage, VkDeviceMemory> create_texture_cubemap(uint32_t width, uint32_t height,
 		uint8_t* buffer_data, std::size_t buffer_size);
-	std::pair<VkImage, VkDeviceMemory> create_texture_depth(uint32_t width, uint32_t height, bool sampled);
+	std::pair<VkImage, VkDeviceMemory> create_texture_depth(uint32_t width, uint32_t height, uint32_t array_layers, bool sampled);
 	VkImageView create_image_view_texture(VkImage image);
 	VkImageView create_image_view_texture_cubemap(VkImage image);
-	VkImageView create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil);
+	VkImageView create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil, uint32_t base_array_layer, uint32_t layer_count);
 	VkSampler create_sampler();
 	VkSampler create_depth_sampler();
 	void destroy_buffer(VkBuffer buffer);

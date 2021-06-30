@@ -123,8 +123,12 @@ public:
 	VkImage depth_image;
 	VkDeviceMemory depth_image_memory;
 	VkImageView depth_image_view;
+	VkImageView depth_image_view2;
+	VkImageView depth_image_view_array;
 	VkSampler depth_sampler;
 	VkFramebuffer depth_framebuffer;
+	VkFramebuffer depth_framebuffer2;
 
 	glm::vec3 sun_direction{ 0.0, -1.0, 0.0 };
+	glm::mat4 light_view_projections[2];
 };

@@ -4,7 +4,7 @@
 #include "light_uniforms.glsl"
 #include "shadow_uniforms.glsl"
 
-layout(set = 2, binding = 1) uniform sampler2D u_ShadowMap;
+layout(set = 2, binding = 1) uniform sampler2DArray u_ShadowMap;
 
 // FIXME 4 is material
 layout(set = 4, binding = 0) uniform MaterialUniforms {
@@ -42,6 +42,17 @@ vec3 shade_sun_light(vec3 base_color, vec3 view_dir, vec3 frag_normal, float vis
 	return (ambient_strength + (diffuse_strength + specular_strength) * visibility) * sun_light_color * base_color;
 }
 
+float calc_shadow_visibility(uint layer) {
+	vec4 clip_vec = u_shadow.layers[layer].light_matrix * vec4(v_WorldPosition, 1.0);
+	vec3 clip_pos = clip_vec.xyz / clip_vec.w;
+	vec2 shadow_uv = clip_to_uv(clip_pos.xy);
+	float shadow_depth = texture(u_ShadowMap, vec3(shadow_uv, layer)).x;
+	float shadow_bias = 0.001;
+	float shadow_delta = shadow_bias + shadow_depth - clip_pos.z;
+	float visibility = step(0.0, shadow_delta);
+	return visibility;
+}
+
 float calc_spot_angle_attenuation(float cos_theta, float cos_inner, float cos_outer) {
 	return clamp((cos_theta - cos_outer) / (cos_inner - cos_outer), 0.0, 1.0);
 }
@@ -53,13 +64,7 @@ void main() {
 
 	vec3 view_dir = normalize(u_frame.camera_position - v_WorldPosition);
 
-	vec4 clip_vec = u_shadow.layers[0].light_matrix * vec4(v_WorldPosition, 1.0);
-	vec3 clip_pos = clip_vec.xyz / clip_vec.w;
-	vec2 shadow_uv = clip_to_uv(clip_pos.xy);
-	float shadow_depth = texture(u_ShadowMap, shadow_uv).x;
-	float shadow_bias = 0.001;
-	float shadow_delta = shadow_bias + shadow_depth - clip_pos.z;
-	float visibility = step(0.0, shadow_delta);
+	float visibility = calc_shadow_visibility(0);
 
 	//out_Color = vec4(base_color * visibility, 1.0);
 	vec3 shaded_color = 0.5 * shade_sun_light(base_color, view_dir, frag_normal, visibility);
@@ -86,6 +91,8 @@ void main() {
 		else if (light.type == LightType_Spot) {
 			vec3 spot_dir = light.direction;
 
+			float spot_visibility = calc_shadow_visibility(1);
+
 			vec3 light_dir = normalize(light.position - v_WorldPosition);
 
 			float cos_theta = dot(spot_dir, -light_dir);
@@ -93,12 +100,12 @@ void main() {
 
 			float diffuse_strength = max(dot(frag_normal, light_dir), 0.0);
 			vec3 diffuse_color = diffuse_strength * base_color;
-			result_color += diffuse_color * light.color * spot_attenuation;
+			result_color += diffuse_color * light.color * spot_attenuation * spot_visibility;
 
 			vec3 reflect_dir = reflect(-light_dir, frag_normal);
 			float specular_strength = pow(max(dot(reflect_dir, view_dir), 0.0f), 60);
 			vec3 specular_color = specular_strength * base_color;
-			result_color += specular_color * light.color * spot_attenuation;
+			result_color += specular_color * light.color * spot_attenuation * spot_visibility;
 		}
 	}
 

@@ -78,7 +78,7 @@ std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_cubemap(uint32_
 	);
 }
 
-std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_depth(uint32_t width, uint32_t height, bool sampled)
+std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_depth(uint32_t width, uint32_t height, uint32_t array_layers, bool sampled)
 {
 	return vkutil::create_texture_depth(
 		feature.memory_properties,
@@ -87,6 +87,7 @@ std::pair<VkImage, VkDeviceMemory> VulkanContext::create_texture_depth(uint32_t 
 		basic.work_command_buffer,
 		basic.depth_format,
 		width, height,
+		array_layers,
 		sampled
 	);
 }
@@ -101,10 +102,10 @@ VkImageView VulkanContext::create_image_view_texture_cubemap(VkImage image)
 	return vkutil::create_image_view_texture_cubemap(basic.device, image);
 }
 
-VkImageView VulkanContext::create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil)
+VkImageView VulkanContext::create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil, uint32_t base_array_layer, uint32_t layer_count)
 {
 	return vkutil::create_image_view_texture_depth(
-		basic.device, image, basic.depth_format, use_depth, use_stencil
+		basic.device, image, basic.depth_format, use_depth, use_stencil, base_array_layer, layer_count
 	);
 }
 
@@ -522,9 +523,9 @@ void VulkanContext::init_depth()
 		vkFreeMemory(basic.device, basic.depth_memory, vkutil::vulkan_allocator);
 	}
 	
-	std::pair<VkImage, VkDeviceMemory> image_and_memory = create_texture_depth(basic.window_extent.width, basic.window_extent.height, false);
+	std::pair<VkImage, VkDeviceMemory> image_and_memory = create_texture_depth(basic.window_extent.width, basic.window_extent.height, 1, false);
 	VkImage depth_image = image_and_memory.first;
-	VkImageView depth_image_view = create_image_view_texture_depth(depth_image, true, true);
+	VkImageView depth_image_view = create_image_view_texture_depth(depth_image, true, true, 0, 1);
 	basic.depth_image = depth_image;
 	basic.depth_image_view = depth_image_view;
 	basic.depth_memory = image_and_memory.second;
