@@ -91,7 +91,10 @@ void main() {
 		else if (light.type == LightType_Spot) {
 			vec3 spot_dir = light.direction;
 
-			float spot_visibility = calc_shadow_visibility(1);
+			float spot_visibility = 1.0f;
+			if (bool(light.shadow)) {
+				spot_visibility = calc_shadow_visibility(light.shadow_layer);
+			}
 
 			vec3 light_dir = normalize(light.position - v_WorldPosition);
 

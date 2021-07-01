@@ -65,6 +65,15 @@ LightUniforms LightManager::build_light_uniform()
 		uniform.spot_inner = std::cos(light_data.spot_inner_angle * 0.5f);
 		uniform.spot_outer = std::cos(light_data.spot_outer_angle * 0.5f);
 
+		int shadow_layer = light_data.shadow_layer;
+		uniform.shadow_layer = shadow_layer;
+		if (shadow_layer == -1) {
+			uniform.shadow = false;
+		}
+		else {
+			uniform.shadow = light_data.shadow;
+		}
+
 		light_uniforms.lights[actual_index] = uniform;
 		++actual_index;
 	}

@@ -10,9 +10,9 @@ const int LightType_Directional = 3;
 
 struct Light {
 	int type;
+	int shadow;
+	int shadow_layer;
 	float padding_0;
-	float padding_1;
-	float padding_2;
 
 	vec3 color;
 	float padding_3;

@@ -89,11 +89,20 @@ class App:
         self.spot_light = toy.Light()
         self.spot_light.set_type(toy.LightType.Spot)
         self.spot_light.set_color(vcolor.WHITE * 0.5)
-        self.spot_light.set_position(vmath.Vector3(0.0, .0, 0.0))
+        self.spot_light.set_position(vmath.Vector3(0.0, 0.0, 0.0))
         self.spot_light.set_spot_inner_angle(math.radians(30))
         self.spot_light.set_spot_outer_angle(math.radians(40))
         self.spot_light.set_direction(vmath.Vector3(0.0, -1.0, 0.5).normalize())
         toy.app.light_manager.add_light(self.spot_light)
+
+        self.spot_light2 = toy.Light()
+        self.spot_light2.set_type(toy.LightType.Spot)
+        self.spot_light2.set_color(vcolor.WHITE * 0.5)
+        self.spot_light2.set_position(vmath.Vector3(0.0, 5.0, 5.0))
+        self.spot_light2.set_spot_inner_angle(math.radians(30))
+        self.spot_light2.set_spot_outer_angle(math.radians(40))
+        self.spot_light2.set_direction(vmath.Vector3(0.0, -1.0, 0.1).normalize())
+        toy.app.light_manager.add_light(self.spot_light2)
 
         self.world.unit_manager.create_unit(Player)
         self.world.unit_manager.create_unit(Enemy)
@@ -207,7 +216,7 @@ class App:
         drawutil.draw_circle(transform, color=vcolor.BLUE)
         drawutil.draw_line(sun_origin, transform.translation, color=vcolor.GREEN)
 
-        t = math.modf(self.world.game_time * 0.2)[0]
+        t = math.modf(self.world.game_time * 0.1)[0]
         #t = vutil.ping_pong(t)
         drawutil.draw_split_line(vmath.Vector3(-10, 1, -10), vmath.Vector3(-10, 1, 10), vcolor.GRAY, vcolor.RED, t)
         drawutil.draw_travel_line(vmath.Vector3(-10, 2, -10), vmath.Vector3(-10, 2, 10), vcolor.GRAY, vcolor.RED, t)
@@ -217,6 +226,10 @@ class App:
         self.spot_light.set_direction(spot_direction)
         spot_position = vmath.Vector3(0.0, 10.0, -4.0 * vutil.ping_pong(t))
         self.spot_light.set_position(spot_position)
+        self.spot_light2.set_position(vmath.Vector3(-3.0, 10.0, 0.0))
+        drawutil.draw_screen_text(vmath.Vector3(0, 100, 0), str(vmath.Vector3(spot_direction.x, spot_direction.y, -spot_direction.z)))
+        self.spot_light2.set_direction(vmath.Vector3(spot_direction.x, spot_direction.y, -spot_direction.z))
+        #self.spot_light2.set_direction(vmath.Vector3(0.0, -0.900168, -0.435542))
         drawutil.draw_sphere(spot_position, 0.1)
         drawutil.draw_line(spot_position, spot_position + spot_direction)
 

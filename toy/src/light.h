@@ -2,6 +2,8 @@
 
 #include <glm/vec3.hpp>
 
+#include "glm_util.h"
+
 
 enum class LightType {
 	Empty = 0,
@@ -13,11 +15,13 @@ enum class LightType {
 struct LightData {
 	LightType type = LightType::Empty;
 	glm::vec3 color;
-	glm::vec3 position;
+	glm::vec3 position = VEC3_ZERO;
 	glm::vec3 direction;
-	float range;
+	float range = 50.0f;
 	float spot_outer_angle;
 	float spot_inner_angle;
+	bool shadow = true;
+	int shadow_layer = 0;
 };
 
 class Light {
@@ -47,6 +51,11 @@ public:
 
 	float get_spot_inner_angle();
 	void set_spot_inner_angle(float angle);
+
+	bool get_shadow();
+	void set_shadow(bool shadow);
+
+	void internal_set_shadow_layer(int layer);
 
 public:
 	LightData data;

@@ -55,28 +55,30 @@ void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipel
 
 	// regular lights, spot only
 	for (auto& plight : light_manager.ref_lights()) {
-		if (current_layer_index >= MAX_SHADOWS) {
-			break;
-		}
 		Light& light = *plight;
-		if (light.get_type() == LightType::Spot) {
-			Transform light_model;
-			glm::vec3 spot_position = light.get_position();
-			glm::vec3 spot_direction = light.get_direction();
-			light_model.translation = spot_position;
-			glm::vec3 up = VEC3_Y;
-			if (abs(glm::dot(spot_direction, up)) > 0.99) {
-				up = VEC3_Z;
+		if (light.get_shadow()) {
+			if (current_layer_index >= MAX_SHADOWS) {
+				light.internal_set_shadow_layer(-1);
 			}
-			light_model.rotation = look_rotation_to_quat(spot_direction, up);
-			glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
-			float spot_outer_angle = light.get_spot_outer_angle();
-			glm::mat4 projection = glm::perspective(spot_outer_angle, 1.0f, 0.1f, 20.0f);
-			glm::mat4 spot_light_view_projection = projection * light_view;
-			light_view_projections[current_layer_index] = spot_light_view_projection;
-			// TODO set current_layer_index to light uniform
-
-			++current_layer_index;
+			else if (light.get_type() == LightType::Spot) {
+				Transform light_model;
+				glm::vec3 spot_position = light.get_position();
+				glm::vec3 spot_direction = light.get_direction();
+				light_model.translation = spot_position;
+				glm::vec3 up = VEC3_Y;
+				if (abs(glm::dot(spot_direction, up)) > 0.9) {
+					up = VEC3_Z;
+				}
+				light_model.rotation = look_rotation_to_quat(spot_direction, up);
+				glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
+				float spot_outer_angle = light.get_spot_outer_angle();
+				glm::mat4 projection = glm::perspective(spot_outer_angle, 1.0f, 0.1f, 20.0f);
+				glm::mat4 spot_light_view_projection = projection * light_view;
+				light_view_projections[current_layer_index] = spot_light_view_projection;
+				// set current_layer_index to light uniform
+				light.internal_set_shadow_layer(current_layer_index);
+				++current_layer_index;
+			}
 		}
 	}
 	int shadow_count = current_layer_index;

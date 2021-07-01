@@ -11,9 +11,9 @@ constexpr int MAX_LIGHTS = 8;
 
 struct LightUniform {
 	LightType type;
+	int shadow;
+	int shadow_layer;
 	float padding_0;
-	float padding_1;
-	float padding_2;
 
 	glm::vec3 color;
 	float padding_3;
