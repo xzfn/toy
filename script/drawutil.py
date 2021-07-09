@@ -11,6 +11,17 @@ def draw_line(position0, position1, color=vmath.Vector3(1.0, 0.0, 0.0), duration
 def draw_raw_line(position0, color0, position1, color1, duration=0.0):
     toy.app.timed_geometry_builder.add_raw_line(position0, color0, position1, color1, duration)
 
+def draw_lines(lines, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    _add_line = toy.app.timed_geometry_builder.add_line
+    for p0, p1 in lines:
+        _add_line(p0, p1, color, duration)
+
+def draw_lines_transform(transform, lines, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    _add_line = toy.app.timed_geometry_builder.add_line
+    _transform_point = transform.transform_point
+    for p0, p1 in lines:
+        _add_line(_transform_point(p0), _transform_point(p1), color, duration)
+
 def draw_transform(transform, duration=0.0):
     axis_x, axis_y, axis_z = transform.rotation.to_matrix3()
     origin = transform.translation
@@ -57,6 +68,12 @@ def connect_points_loop(points):
     point_count = len(points)
     for i in range(point_count):
         lines.append((points[i], points[(i + 1) % point_count]))
+    return lines
+
+def connect_point_pairs(points0, points1):
+    lines = []
+    for point0, point1 in zip(points0, points1):
+        lines.append((point0, point1))
     return lines
 
 def draw_circle(transform, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
@@ -117,3 +134,44 @@ def draw_travel_line(position0, position1, color_end, color_split, t, duration=0
             (1.0, color_end)
         )
     draw_gradient_line(position0, position1, color_stops, duration)
+
+def draw_perspective(transform, fov, aspect, z_near, z_far, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    t = math.tan(fov / 2.0)
+    yn = z_near * t
+    xn = yn * aspect
+    nears = [
+        vmath.Vector3(-xn, -yn, z_near),
+        vmath.Vector3(xn, -yn, z_near),
+        vmath.Vector3(xn, yn, z_near),
+        vmath.Vector3(-xn, yn, z_near),
+    ]
+    yf = z_far * t
+    xf = yf * aspect
+    fars = [
+        vmath.Vector3(-xf, -yf, z_far),
+        vmath.Vector3(xf, -yf, z_far),
+        vmath.Vector3(xf, yf, z_far),
+        vmath.Vector3(-xf, yf, z_far),
+    ]
+    draw_transform(transform, duration)
+    draw_lines_transform(transform, connect_points_loop(nears), color, duration)
+    draw_lines_transform(transform, connect_points_loop(fars), color, duration)
+    draw_lines_transform(transform, connect_point_pairs(nears, fars), color, duration)
+
+def draw_orthographic(transform, left, right, bottom, top, z_near, z_far, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    nears = [
+        vmath.Vector3(left, bottom, z_near),
+        vmath.Vector3(right, bottom, z_near),
+        vmath.Vector3(right, top, z_near),
+        vmath.Vector3(left, top, z_near),
+    ]
+    fars = [
+        vmath.Vector3(left, bottom, z_far),
+        vmath.Vector3(right, bottom, z_far),
+        vmath.Vector3(right, top, z_far),
+        vmath.Vector3(left, top, z_far),
+    ]
+    draw_transform(transform, duration)
+    draw_lines_transform(transform, connect_points_loop(nears), color, duration)
+    draw_lines_transform(transform, connect_points_loop(fars), color, duration)
+    draw_lines_transform(transform, connect_point_pairs(nears, fars), color, duration)

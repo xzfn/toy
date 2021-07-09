@@ -18,6 +18,7 @@ import retroreload
 from world import World
 import drawutil
 import shaderutil
+import mathutil
 
 from units.player import Player
 from units.enemy import Enemy
@@ -132,7 +133,7 @@ class App:
         self.console_server.service()
         time.sleep(0.001)
         #toyqt.update()
-
+        game_time = self.world.game_time
         mouse_dx, mouse_dy = toy.app.input_manager.get_mouse_move()
         mouse_wheel = toy.app.input_manager.get_mouse_wheel()
 
@@ -232,6 +233,20 @@ class App:
         #self.spot_light2.set_direction(vmath.Vector3(0.0, -0.900168, -0.435542))
         drawutil.draw_sphere(spot_position, 0.1)
         drawutil.draw_line(spot_position, spot_position + spot_direction)
+
+        transform = vmath.Transform()
+        transform.translation = vmath.Vector3(0.0, 3.0, 2.0)
+        transform.rotation = vmath.Quaternion.from_euler_angles(vmath.Vector3(0.0, game_time * 0.3, game_time * 0.5))
+        drawutil.draw_perspective(transform, 1.0, 1.6, 3.0, 10.0)
+        # drawutil.draw_orthographic(transform, -5.0, 5.0, -3.0, 3.0, 3.0, 10.0, vcolor.YELLOW)
+
+        orientation = vmath.Quaternion.from_euler_angles(vmath.Vector3(0.0, game_time * 0.2, 0.0))
+        ortho_transform, ortho_param = mathutil.perspective_to_bounding_orthographic(transform, 1.0, 1.6, 3.0, 10.0, orientation)
+        drawutil.draw_orthographic(ortho_transform, *ortho_param, color=vcolor.YELLOW)
+
+        orientation = vmath.Quaternion.from_euler_angles(vmath.Vector3(0.0, 0.0, 0.0))
+        ortho_transform, ortho_param = mathutil.perspective_to_bounding_orthographic(transform, 1.0, 1.6, 3.0, 10.0, orientation)
+        drawutil.draw_orthographic(ortho_transform, *ortho_param, color=vcolor.GREEN)
 
     def shutdown(self):
         self.console_server.shutdown()
