@@ -183,46 +183,6 @@ void CameraManager::update_controller(float delta_time)
 		m_camera_controller.set_transform(quick_transform);
 	}
 
-	// testing
-	if (input_manager.get_key_down('G')) {
-
-		std::cout << "mouse " << mouse_x << " " << mouse_y << "\n";
-		glm::vec3 screen_point = m_camera.world_to_screen(VEC3_ZERO);
-		std::cout << "screen " << glm::to_string(screen_point) << "\n";
-
-		std::cout << "-----\n";
-
-		glm::vec3 ray_screen(mouse_x, mouse_y, 0.0f);
-		Ray ray = m_camera.screen_to_world_ray(ray_screen);
-		glm::vec3 eye_pos = ray.position;
-		glm::vec3 ray_direction = ray.direction;
-
-		std::cout << "eye " << glm::to_string(eye_pos) << "\n";
-		std::cout << "dir " << glm::to_string(ray_direction) << "\n";
-		std::cout << "mouse " << mouse_x << " " << mouse_y << "\n";
-		glm::vec3 end_pos = eye_pos + ray_direction * 1000.0f;
-		get_app()->timed_geometry_builder.add_line(eye_pos, end_pos, COLOR_CYAN, 5.0f);
-		std::cout << "end " << glm::to_string(end_pos);
-		screen_point = m_camera.world_to_screen(end_pos);
-		std::cout << "screen " << glm::to_string(screen_point) << "\n";
-
-	}
-
-	// testing
-	if (input_manager.get_mouse_button_down(MouseButtonLeft)) {
-
-		glm::vec3 ray_screen(mouse_x, mouse_y, 0.0f);
-		Ray ray = m_camera.screen_to_world_ray(ray_screen);
-		glm::vec3 eye_pos = ray.position;
-		glm::vec3 ray_direction = ray.direction;
-		if (ray_direction.y != 0.0f) {
-			float t = -eye_pos.y / ray_direction.y;
-			glm::vec3 floor_point = eye_pos + ray_direction * t;
-			get_app()->timed_geometry_builder.add_sphere(floor_point, 1.0f, COLOR_CYAN, 5.0f);
-		}
-	}
-
-
 }
 
 Camera* CameraManager::get_camera()
