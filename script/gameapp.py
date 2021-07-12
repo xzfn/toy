@@ -22,6 +22,8 @@ import mathutil
 
 from units.player import Player
 from units.enemy import Enemy
+from units.projection import Projection
+
 import keycodes
 
 
@@ -107,6 +109,7 @@ class App:
 
         self.world.unit_manager.create_unit(Player)
         self.world.unit_manager.create_unit(Enemy)
+        self.world.unit_manager.create_unit(Projection)
 
         self.red_texture = toy.Texture.create_color(vcolor.RED)
         self.green_texture = toy.Texture.create_color(vcolor.GREEN)
