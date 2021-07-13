@@ -48,13 +48,18 @@ class Projection(Unit):
         drawutil.draw_lines(world_lines, vcolor.RED)
 
         identity = vmath.Matrix4()
+        identity.m22 = -1.0
 
         t = vutil.ping_pong(vutil.fract(game_time * 0.2))
         #t = 0
         custom = vutil.lerp_matrix(projection, identity, t)
 
         _project_point = custom.project_point
-        projected_lines = [(_project_point(p0), _project_point(p1)) for p0, p1 in world_lines]
+        def _process_point(p):
+            p_proj = _project_point(p)
+            return vmath.Vector3(p_proj.x, p_proj.y, -p_proj.z)
+
+        projected_lines = [(_process_point(p0), _process_point(p1)) for p0, p1 in world_lines]
         drawutil.draw_lines(projected_lines, vcolor.MAGENTA)
 
 
