@@ -49,6 +49,15 @@ class UnitManager:
 	def get_units(self):
 		return self._units.values()
 
+	def get_units_type(self, typename):
+		units = []
+		for unit in self._units.values():
+			if unit.is_destroyed():
+				continue
+			if type(unit).__name__ == typename:
+				units.append(unit)
+		return units
+
 	def tick(self, delta_time):
 		destroyed_units = []
 		for unit in list(self._units.values()):

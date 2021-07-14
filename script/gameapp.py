@@ -23,6 +23,8 @@ import mathutil
 from units.player import Player
 from units.enemy import Enemy
 from units.projection import Projection
+from units.cameraman import Cameraman
+from units.lightman import Lightman
 
 import keycodes
 
@@ -110,6 +112,8 @@ class App:
         self.world.unit_manager.create_unit(Player)
         self.world.unit_manager.create_unit(Enemy)
         self.world.unit_manager.create_unit(Projection)
+        self.world.unit_manager.create_unit(Cameraman)
+        self.world.unit_manager.create_unit(Lightman)
 
         self.red_texture = toy.Texture.create_color(vcolor.RED)
         self.green_texture = toy.Texture.create_color(vcolor.GREEN)

@@ -8,19 +8,21 @@ def perspective_to_bounding_orthographic(transform, fov, aspect, z_near, z_far, 
     t = math.tan(fov / 2.0)
     yn = z_near * t
     xn = yn * aspect
+    neg_z_near = -z_near
     nears = [
-        vmath.Vector3(-xn, -yn, z_near),
-        vmath.Vector3(xn, -yn, z_near),
-        vmath.Vector3(xn, yn, z_near),
-        vmath.Vector3(-xn, yn, z_near),
+        vmath.Vector3(-xn, -yn, neg_z_near),
+        vmath.Vector3(xn, -yn, neg_z_near),
+        vmath.Vector3(xn, yn, neg_z_near),
+        vmath.Vector3(-xn, yn, neg_z_near),
     ]
     yf = z_far * t
     xf = yf * aspect
+    neg_z_far = -z_far
     fars = [
-        vmath.Vector3(-xf, -yf, z_far),
-        vmath.Vector3(xf, -yf, z_far),
-        vmath.Vector3(xf, yf, z_far),
-        vmath.Vector3(-xf, yf, z_far),
+        vmath.Vector3(-xf, -yf, neg_z_far),
+        vmath.Vector3(xf, -yf, neg_z_far),
+        vmath.Vector3(xf, yf, neg_z_far),
+        vmath.Vector3(-xf, yf, neg_z_far),
     ]
 
     reverse_transform = vmath.Transform()
@@ -45,7 +47,7 @@ def perspective_to_bounding_orthographic(transform, fov, aspect, z_near, z_far, 
 
     ortho_x = (x_min + x_max) / 2.0
     ortho_y = (y_min + y_max) / 2.0
-    ortho_z = z_min
+    ortho_z = z_max
 
     abs_left = (x_max - x_min) / 2.0
     abs_bottom = (y_max - y_min) / 2.0

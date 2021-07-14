@@ -139,19 +139,21 @@ def draw_perspective(transform, fov, aspect, z_near, z_far, color=vmath.Vector3(
     t = math.tan(fov / 2.0)
     yn = z_near * t
     xn = yn * aspect
+    neg_z_near = -z_near
     nears = [
-        vmath.Vector3(-xn, -yn, z_near),
-        vmath.Vector3(xn, -yn, z_near),
-        vmath.Vector3(xn, yn, z_near),
-        vmath.Vector3(-xn, yn, z_near),
+        vmath.Vector3(-xn, -yn, neg_z_near),
+        vmath.Vector3(xn, -yn, neg_z_near),
+        vmath.Vector3(xn, yn, neg_z_near),
+        vmath.Vector3(-xn, yn, neg_z_near),
     ]
     yf = z_far * t
     xf = yf * aspect
+    neg_z_far = -z_far
     fars = [
-        vmath.Vector3(-xf, -yf, z_far),
-        vmath.Vector3(xf, -yf, z_far),
-        vmath.Vector3(xf, yf, z_far),
-        vmath.Vector3(-xf, yf, z_far),
+        vmath.Vector3(-xf, -yf, neg_z_far),
+        vmath.Vector3(xf, -yf, neg_z_far),
+        vmath.Vector3(xf, yf, neg_z_far),
+        vmath.Vector3(-xf, yf, neg_z_far),
     ]
     draw_transform(transform, duration)
     draw_lines_transform(transform, connect_points_loop(nears), color, duration)
@@ -159,17 +161,19 @@ def draw_perspective(transform, fov, aspect, z_near, z_far, color=vmath.Vector3(
     draw_lines_transform(transform, connect_point_pairs(nears, fars), color, duration)
 
 def draw_orthographic(transform, left, right, bottom, top, z_near, z_far, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    neg_z_near = -z_near
     nears = [
-        vmath.Vector3(left, bottom, z_near),
-        vmath.Vector3(right, bottom, z_near),
-        vmath.Vector3(right, top, z_near),
-        vmath.Vector3(left, top, z_near),
+        vmath.Vector3(left, bottom, neg_z_near),
+        vmath.Vector3(right, bottom, neg_z_near),
+        vmath.Vector3(right, top, neg_z_near),
+        vmath.Vector3(left, top, neg_z_near),
     ]
+    neg_z_far = -z_far
     fars = [
-        vmath.Vector3(left, bottom, z_far),
-        vmath.Vector3(right, bottom, z_far),
-        vmath.Vector3(right, top, z_far),
-        vmath.Vector3(left, top, z_far),
+        vmath.Vector3(left, bottom, neg_z_far),
+        vmath.Vector3(right, bottom, neg_z_far),
+        vmath.Vector3(right, top, neg_z_far),
+        vmath.Vector3(left, top, neg_z_far),
     ]
     draw_transform(transform, duration)
     draw_lines_transform(transform, connect_points_loop(nears), color, duration)
