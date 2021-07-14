@@ -263,7 +263,7 @@ LRESULT Window::window_proc_impl(HWND hwnd, UINT message, WPARAM wparam, LPARAM 
 			else {
 				// virtual key codes
 				// https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-				uint32_t key = wparam;
+				uint32_t key = (uint32_t)wparam;
 				m_callbacks.key_down(key);
 			}
 		}
@@ -273,7 +273,7 @@ LRESULT Window::window_proc_impl(HWND hwnd, UINT message, WPARAM wparam, LPARAM 
 	case WM_KEYUP:
 	{
 		if (m_callbacks.key_up) {
-			uint32_t key = wparam;
+			uint32_t key = (uint32_t)wparam;
 			m_callbacks.key_up(key);
 		}
 	}

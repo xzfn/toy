@@ -34,14 +34,12 @@ void ShadowManager::init(VulkanContext& ctx)
 
 void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipeline& pipeline_depth, LightManager& light_manager, RenderManager& render_manager)
 {
-	VulkanContext& ctx = *m_ctx;
-
 	glm::mat4 light_view_projections[MAX_SHADOWS];
 
 	int current_layer_index = 0;
 
 	// sun
-	auto& psun = light_manager.get_sun();
+	auto psun = light_manager.get_sun();
 	if (psun) {
 		Light& sun = *psun;
 		glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
@@ -108,7 +106,7 @@ void ShadowManager::render_one_depth(VkCommandBuffer command_buffer, BasicPipeli
 		ctx.basic.depth_render_pass,  // renderPass;
 		framebuffer,  // framebuffer;
 		m_depth_render_area,  // renderArea;
-		clear_values.size(),  // clearValueCount;
+		(uint32_t)clear_values.size(),  // clearValueCount;
 		clear_values.data()  // pClearValues;
 	};
 	vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);

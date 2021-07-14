@@ -17,11 +17,9 @@ void print_pybind11_exception(pybind11::error_already_set& e)
 }
 
 void call_sys_excepthook(pybind11::error_already_set& e) {
-	auto& sys = pybind11::module_::import("sys");
-	auto& excepthook = sys.attr("excepthook");
-	if (excepthook) {
-		excepthook(e.type(), e.value(), e.trace());
-	}
+	auto sys = pybind11::module_::import("sys");
+	auto excepthook = sys.attr("excepthook");
+	excepthook(e.type(), e.value(), e.trace());
 }
 
 }

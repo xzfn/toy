@@ -11,7 +11,7 @@
 #include "geometry_util.h"
 
 namespace numbers{
-	constexpr float pi = M_PI;
+	constexpr float pi = (float)M_PI;
 	constexpr float pi_mul_2 = pi * 2.0f;
 	constexpr float pi_div_2 = pi * 0.5f;
 	constexpr float pi_div_4 = pi * 0.25f;

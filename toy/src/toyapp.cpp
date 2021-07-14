@@ -207,14 +207,14 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	timestamp = std::chrono::duration<double>(now).count();
 
 	PYUTIL_CHECK_RUN_BEGIN
-	auto& toyentry = py::module::import("toyentry");
+	auto toyentry = py::module::import("toyentry");
 	toyentry.attr("startup")();
 	PYUTIL_CHECK_RUN_END
 }
 
 void App::shutdown() {
 	PYUTIL_SAFE_RUN_BEGIN
-	auto& toyentry = py::module::import("toyentry");
+	auto toyentry = py::module::import("toyentry");
 	toyentry.attr("shutdown")();
 	PYUTIL_SAFE_RUN_END
 
@@ -233,13 +233,13 @@ void App::update() {
 	VulkanContext& ctx = *ctxptr;
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	double new_timestamp = std::chrono::duration<double>(now).count();
-	delta_time = new_timestamp - timestamp;
+	delta_time = (float)(new_timestamp - timestamp);
 	timestamp = new_timestamp;
 
 	timer_manager.schedule(new_timestamp);
 
 	try {
-		auto& toyentry = py::module::import("toyentry");
+		auto toyentry = py::module::import("toyentry");
 		toyentry.attr("update")();
 	}
 	catch (py::error_already_set& e) {
@@ -253,8 +253,6 @@ void App::update() {
 		}
 	}
 
-	double integral;
-	float fractional = std::modf(timestamp / 10.0f, &integral);
 	VkClearColorValue clear_color;
 	clear_color.float32[0] = background_color.x;
 	clear_color.float32[1] = background_color.y;
@@ -265,14 +263,14 @@ void App::update() {
 
 	auto extent = ctx.basic.window_extent;
 	
-	camera_manager.get_camera()->set_view_size(extent.width, extent.height);
+	camera_manager.get_camera()->set_view_size((float)extent.width, (float)extent.height);
 
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
 	frame_uniform.view_projection = camera_view_projection;
 	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
 	frame_uniform.sun_light_direction = light_manager.get_sun()->get_direction();
-	frame_uniform.screen_width = ctx.basic.extent.width;
-	frame_uniform.screen_height = ctx.basic.extent.height;
+	frame_uniform.screen_width = (float)ctx.basic.extent.width;
+	frame_uniform.screen_height = (float)ctx.basic.extent.height;
 
 	void* memory_pointer;
 	int frame_uniform_data_size = sizeof(frame_uniform);
@@ -398,10 +396,14 @@ void App::on_key_up(uint32_t key) {
 }
 
 void App::on_mouse_down(uint32_t mouse_button, uint32_t x, uint32_t y) {
+	(void)x;
+	(void)y;
 	input_manager.input_mouse_button_down(mouse_button);
 }
 
 void App::on_mouse_up(uint32_t mouse_button, uint32_t x, uint32_t y) {
+	(void)x;
+	(void)y;
 	input_manager.input_mouse_button_up(mouse_button);
 }
 
@@ -410,6 +412,8 @@ void App::on_mouse_move(uint32_t x, uint32_t y) {
 }
 
 void App::on_mouse_wheel(float wheel_delta, uint32_t x, uint32_t y) {
+	(void)x;
+	(void)y;
 	input_manager.input_mouse_wheel(wheel_delta);
 }
 

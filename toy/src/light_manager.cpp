@@ -45,7 +45,6 @@ void LightManager::remove_light(std::shared_ptr<Light> light)
 LightUniforms LightManager::build_light_uniform()
 {
 	LightUniforms light_uniforms;
-	int light_index = 0;
 	int actual_index = 0;
 	for (int i = 0; i < m_lights.size(); ++i) {
 		Light& light = *m_lights[i];

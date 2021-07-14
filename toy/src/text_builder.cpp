@@ -55,13 +55,13 @@ void write_screen_text_triangles(TextInfo info, std::vector<ColorTextureTriangle
 
 	float spacing_scale = 0.8f;
 
-	float pos_dx = char_width * 0.5 * spacing_scale;
-	float pos_dy = char_height * 0.5 * spacing_scale;
+	float pos_dx = char_width * 0.5f * spacing_scale;
+	float pos_dy = char_height * 0.5f * spacing_scale;
 
 	float pos_x = 0.0f;
 	float pos_y = 0.0f;
 
-	float screen_height = get_app()->ctxptr->basic.extent.height;
+	float screen_height = (float)(get_app()->ctxptr->basic.extent.height);
 
 	glm::vec3 base_position = glm::vec3(info.position.x, screen_height - info.position.y, info.position.z);
 

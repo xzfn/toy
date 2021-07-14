@@ -25,7 +25,7 @@ void set_thread_priority(uint64_t thread_id, int level) {
 		native_priority = THREAD_PRIORITY_LOWEST;
 		break;
 	}
-	HANDLE h_thread = OpenThread(THREAD_SET_INFORMATION, false, thread_id);
+	HANDLE h_thread = OpenThread(THREAD_SET_INFORMATION, false, (DWORD)thread_id);
 	if (h_thread == NULL) {
 		std::cout << "ThreadPriority OpenThread failed " << thread_id << "\n";
 		return;

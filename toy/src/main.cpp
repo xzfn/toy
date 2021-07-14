@@ -185,16 +185,16 @@ public:
 		VulkanContext& ctx = *ctxptr;
 		auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 		double new_timestamp = std::chrono::duration<double>(now).count();
-		float delta_time = new_timestamp - timestamp;
+		float delta_time = (float)(new_timestamp - timestamp);
 		timestamp = new_timestamp;
 
 		double integral;
-		float fractional = std::modf(timestamp / 10.0f, &integral);
+		float fractional = (float)std::modf(timestamp / 10.0f, &integral);
 		VkClearColorValue clear_color{
 			std::abs(fractional - 0.5f), 0.0, 0.0f, 1.0f
 		};
 
-		float theta = timestamp;
+		float theta = (float)timestamp;
 		float cos_theta = cosf(theta);
 		float sin_theta = sinf(theta);
 
@@ -243,7 +243,7 @@ public:
 		glm::mat4 model2 = glm::rotate(glm::mat4(1.0), theta, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		frame_uniform.view_projection = camera.get_view_projection();
-		theta = timestamp * 3.0f;
+		theta = (float)timestamp * 3.0f;
 		cos_theta = cosf(theta);
 		sin_theta = sinf(theta);
 		frame_uniform.sun_light_direction = glm::vec3(cos_theta, 0.5f, sin_theta);
@@ -269,7 +269,7 @@ public:
 		};
 
 		ctx.render(clear_color,
-			[](VkCommandBuffer command_buffer) {},
+			[](VkCommandBuffer command_buffer) {(void)command_buffer;},
 			[this](VkCommandBuffer command_buffer) { this->render(command_buffer); }
 		);
 
@@ -286,7 +286,7 @@ public:
 		std::vector<VkDescriptorSet> descriptor_sets3{
 			descriptor_set_frame  //, descriptor_set_model
 		};
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets3.size(), descriptor_sets3.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, (uint32_t)descriptor_sets3.size(), descriptor_sets3.data(), 0, nullptr);
 
 		model = glm::scale(MAT4_IDENTITY, VEC3_ONES * 10000.0f);
 		vkCmdPushConstants(command_buffer, pipeline_skybox.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
@@ -299,7 +299,7 @@ public:
 		std::vector<VkDescriptorSet> descriptor_sets{
 			descriptor_set_frame, descriptor_set_model
 		};
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.get_pipeline_layout(), 0, (uint32_t)descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
 
 		material.bind(command_buffer);
 		mesh.draw(command_buffer);
@@ -314,30 +314,30 @@ public:
 			descriptor_set_frame  //, descriptor_set_model
 		};
 
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, descriptor_sets2.size(), descriptor_sets2.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_lines.get_pipeline_layout(), 0, (uint32_t)descriptor_sets2.size(), descriptor_sets2.data(), 0, nullptr);
 
-		float angle = timestamp;
+		float angle = (float)timestamp;
 		model = glm::rotate(glm::mat4(1.0f), angle * 4.0f, VEC3_Z);
 
 		vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 
 		mesh2.draw(command_buffer);
 
-		float angle2 = timestamp;
+		float angle2 = (float)timestamp;
 		model = glm::rotate(glm::mat4(1.0f), angle2 * 2.0f, VEC3_Z);
 
 		vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 
 		mesh2.draw(command_buffer);
 
-		float angle3 = timestamp;
+		float angle3 = (float)timestamp;
 		model = glm::rotate(glm::mat4(1.0f), angle3 * 1.0f, VEC3_X);
 		model = model * glm::scale(glm::mat4(1.0f), VEC3_ONES * 0.3f);
 		vkCmdPushConstants(command_buffer, pipeline_lines.get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(model), glm::value_ptr(model));
 
 		mesh2.draw(command_buffer);
 
-		float length = std::fmodf(timestamp, 10.0f);
+		float length = std::fmodf((float)timestamp, 10.0f);
 		timed_geometry_builder.add_cube(VEC3_ZERO, length, COLOR_RED, 0.2f);
 		GeometryMesh temp_mesh;
 		temp_mesh.init_resource(ctx, timed_geometry_builder.build_buffer());
@@ -384,10 +384,14 @@ public:
 	}
 
 	void on_mouse_down(uint32_t mouse_button, uint32_t x, uint32_t y) {
+		(void)x;
+		(void)y;
 		mouse_states[mouse_button] = true;
 	}
 
 	void on_mouse_up(uint32_t mouse_button, uint32_t x, uint32_t y) {
+		(void)x;
+		(void)y;
 		mouse_states[mouse_button] = false;
 	}
 

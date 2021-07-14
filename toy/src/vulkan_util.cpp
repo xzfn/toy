@@ -129,9 +129,9 @@ std::pair<uint32_t, uint32_t> select_graphics_present_queue_family(VkPhysicalDev
     uint32_t graphics_queue_family_index = UINT32_MAX;
     uint32_t present_queue_family_index = UINT32_MAX;
     auto queue_family_properties = get_queue_family_properties(physical_device);
-    uint32_t queue_family_count = queue_family_properties.size();
+    uint32_t queue_family_count = (uint32_t)queue_family_properties.size();
     std::vector<VkBool32> present_supports(queue_family_count);
-    for (std::size_t i = 0; i < queue_family_count; ++i) {
+    for (uint32_t i = 0; i < queue_family_count; ++i) {
         vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, surface, &present_supports[i]);
         VkQueueFamilyProperties& properties = queue_family_properties[i];
         if (properties.queueCount > 0 && (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
@@ -722,7 +722,7 @@ VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device) {
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,  // sType;
         nullptr,  // pNext;
         0,  // flags;
-        layout_bindings.size(),  // bindingCount;
+        (uint32_t)layout_bindings.size(),  // bindingCount;
         layout_bindings.data()  // pBindings;
     };
     VkDescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
@@ -755,7 +755,7 @@ VkDescriptorPool create_descriptor_pool(VkDevice device) {
         nullptr,  // pNext;
         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,  // flags;  // TODO not good for performance, may need per frame transient pool
         descriptor_max_count * (uint32_t)pool_sizes.size(),  // maxSets;
-        pool_sizes.size(),  // poolSizeCount;
+        (uint32_t)pool_sizes.size(),  // poolSizeCount;
         pool_sizes.data()  // pPoolSizes;
     };
     VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
@@ -1509,6 +1509,9 @@ VkImageView create_image_view_texture_cubemap(VkDevice device, VkImage image)
 
 std::pair<VkImage, VkDeviceMemory> create_texture_depth(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, VkFormat format, uint32_t width, uint32_t height, uint32_t array_layers, bool sampled)
 {
+    (void)command_buffer;
+    (void)queue;
+
     VkResult vkres;
     VkImage image = create_image_depth(device, format, width, height, array_layers, sampled);
     VkDeviceMemory memory = create_image_memory(memory_properties, device, image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -1636,6 +1639,9 @@ std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer(const VkPhysicalDevice
 
 std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer_coherent(const VkPhysicalDeviceMemoryProperties& memory_properties, VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, uint8_t* buffer_data, VkDeviceSize buffer_size)
 {
+    (void)command_buffer;
+    (void)queue;
+
     VkResult vkres;
     auto buffer_and_memory = create_buffer(memory_properties, device, buffer_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -1692,7 +1698,7 @@ void update_descriptor_set(VkDevice device, VkDescriptorSet descriptor_set, VkSa
             nullptr  // pTexelBufferView;
         }
      } };
-    vkUpdateDescriptorSets(device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(device, (uint32_t)descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 }
 
 VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device, const std::vector<VkDescriptorSetLayoutBinding>& layout_bindings)

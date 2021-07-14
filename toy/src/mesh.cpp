@@ -34,7 +34,7 @@ void Mesh::draw(VkCommandBuffer command_buffer)
 	vkCmdBindVertexBuffers(command_buffer, 0, 1, &m_vertex_buffer.buffer, &offset);
 	vkCmdBindIndexBuffer(command_buffer, m_index_buffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdDrawIndexed(command_buffer, m_index_count, 1, 0, 0, 0);
+	vkCmdDrawIndexed(command_buffer, (uint32_t)m_index_count, 1, 0, 0, 0);
 }
 
 void Mesh::destroy()

@@ -40,7 +40,7 @@ void GeometryMesh::draw(VkCommandBuffer command_buffer)
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers(command_buffer, 0, 1, &m_vertex_buffer.buffer, &offset);
 
-	vkCmdDraw(command_buffer, m_vertex_count, 1, 0, 0);
+	vkCmdDraw(command_buffer, (uint32_t)m_vertex_count, 1, 0, 0);
 }
 
 void GeometryMesh::destroy()

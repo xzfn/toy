@@ -22,7 +22,6 @@ std::vector<CharUv> calc_char_uvs() {
 	int col_gap = 40;
 	int row_gap = 60;
 	int ncols = 12;
-	int nrows = 8;
 	int anchor_x = 17;
 	int anchor_y = 73;
 	char char_start = 32;

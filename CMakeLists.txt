@@ -20,5 +20,12 @@ find_package(glm REQUIRED)
 
 find_package(pybind11 REQUIRED)
 
+# more warnings
+if (MSVC)
+  add_compile_options(/W4)  # /WX
+  add_compile_options(/wd4201)
+else()
+  add_compile_options(-Wall -Wextra -pedantic)  # /-Werror
+endif()
 
 add_subdirectory(toy)

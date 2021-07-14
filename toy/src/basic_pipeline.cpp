@@ -157,7 +157,7 @@ void BasicPipeline::bind(VkCommandBuffer command_buffer)
 
 void BasicPipeline::bind_descriptor_sets(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet>& descriptor_sets)
 {
-    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, get_pipeline_layout(), 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, get_pipeline_layout(), 0, (uint32_t)descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
 }
 
 void BasicPipeline::_init_vk_pipeline()
@@ -265,7 +265,7 @@ void BasicPipeline::update_descriptor_set_shadow(VkDescriptorSet descriptor_set,
         }
     };
     auto& ctx = *m_ctx;
-    vkUpdateDescriptorSets(ctx.basic.device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(ctx.basic.device, (uint32_t)descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 }
 
 void BasicPipeline::update_descriptor_set_model(VkDescriptorSet descriptor_set, VkBuffer uniform_buffer, std::size_t uniform_buffer_size)
@@ -331,7 +331,7 @@ void BasicPipeline::update_descriptor_set_material(VkDescriptorSet descriptor_se
         }
     };
     auto& ctx = *m_ctx;
-    vkUpdateDescriptorSets(ctx.basic.device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(ctx.basic.device, (uint32_t)descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 }
 
 void BasicPipeline::push_constants_matrix(VkCommandBuffer command_buffer, glm::mat4 matrix)

@@ -173,7 +173,10 @@ void TimerManager::cancel_tick_timer(Timer timer)
 void TimerManager::clear_timers()
 {
 	m_timers.clear();
-	m_timer_queue.swap(decltype(m_timer_queue)());
+	{
+		decltype(m_timer_queue) empty;
+		m_timer_queue.swap(empty);
+	} // scope only
 	m_pending_add_timers.clear();
 	m_tick_timers.clear();
 	m_pending_add_tick_timers.clear();

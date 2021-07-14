@@ -31,11 +31,11 @@ void CameraManager::update_controller(float delta_time)
 
 	float wheel_delta = input_manager.get_mouse_wheel();
 	auto move_delta = input_manager.get_mouse_move();
-	float delta_x = move_delta.dx;
-	float delta_y = move_delta.dy;
+	float delta_x = (float)move_delta.dx;
+	float delta_y = (float)move_delta.dy;
 	auto mouse_pos = input_manager.get_mouse_position();
-	float mouse_x = mouse_pos.x;
-	float mouse_y = mouse_pos.y;
+	float mouse_x = (float)mouse_pos.x;
+	float mouse_y = (float)mouse_pos.y;
 	glm::vec2 view_size = get_app()->get_view_size();
 	float view_width = view_size.x;
 	float view_height = view_size.y;
@@ -152,8 +152,8 @@ void CameraManager::update_controller(float delta_time)
 	// quick reposition
 	bool have_quick_reposition = false;
 	float distance_to_origin = 10.0f;
-	glm::vec3 eye;
-	glm::quat rotation;
+	glm::vec3 eye = VEC3_ZERO;
+	glm::quat rotation = QUAT_IDENTITY;
 	if (input_manager.get_key_down('I')) {
 		// face +x
 		eye = glm::vec3(-distance_to_origin, 0.0f, 0.0f);

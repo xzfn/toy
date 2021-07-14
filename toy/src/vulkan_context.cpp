@@ -236,7 +236,7 @@ void VulkanContext::render(VkClearColorValue clear_color,
 
 	basic.frame_index = (basic.frame_index + 1) % frame_count;
 	VulkanFrame& frame = frames[basic.frame_index];
-	vkres = vkWaitForFences(basic.device, 1, &frame.fence, VK_FALSE, 1e10);
+	vkres = vkWaitForFences(basic.device, 1, &frame.fence, VK_FALSE, 0xffffff);
 	vkutil::check_vk_result(vkres);
 	vkResetFences(basic.device, 1, &frame.fence);
 
@@ -314,7 +314,7 @@ void VulkanContext::render(VkClearColorValue clear_color,
 		basic.render_pass,  // renderPass;
 		framebuffer,  // framebuffer;
 		render_area,  // renderArea;
-		clear_values.size(),  // clearValueCount;
+		(uint32_t)clear_values.size(),  // clearValueCount;
 		clear_values.data()  // pClearValues;
 	};
 	vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -594,7 +594,6 @@ void VulkanContext::init_command_pool()
 void VulkanContext::init_swapchain_images()
 {
 	auto device = basic.device;
-	auto vulkan_allocator = vkutil::vulkan_allocator;
 
 	if (swap_images.size() > 0) {
 		for (uint32_t i = 0; i < swap_images.size(); ++i) {
@@ -608,7 +607,7 @@ void VulkanContext::init_swapchain_images()
 	}
 
 	auto images = vkutil::get_swapchain_images(basic.device, basic.swapchain);
-	uint32_t image_count = images.size();
+	uint32_t image_count = (uint32_t)images.size();
 
 	swap_images.resize(image_count);
 	for (uint32_t i = 0; i < image_count; ++i) {
