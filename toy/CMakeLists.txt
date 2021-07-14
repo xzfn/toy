@@ -151,6 +151,9 @@ set(toyapp_SOURCES
 	src/wrap/wrap_camera_manager.h
 	src/wrap/wrap_camera_manager.cpp
 
+	src/wrap/wrap_camera_controller.h
+	src/wrap/wrap_camera_controller.cpp
+
 	src/wrap/wrap_render_manager.h
 	src/wrap/wrap_render_manager.cpp
 

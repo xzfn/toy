@@ -7,6 +7,7 @@ namespace py = pybind11;
 #include "wrap_input_manager.h"
 #include "wrap_camera.h"
 #include "wrap_camera_manager.h"
+#include "wrap_camera_controller.h"
 #include "wrap_render_manager.h"
 #include "wrap_mesh.h"
 #include "wrap_material.h"
@@ -30,6 +31,7 @@ void wrap_toy(py::module_& m) {
 	wrap_input_manager(m);
 	wrap_camera(m);
 	wrap_camera_manager(m);
+	wrap_camera_controller(m);
 	wrap_render_manager(m);
 	wrap_mesh(m);
 	wrap_material(m);
