@@ -86,28 +86,20 @@ class App:
         geometry_mesh_data = builder.build_data()
         self.geometry_mesh = toy.GeometryMesh.create(geometry_mesh_data)
 
-        self.light = toy.Light()
-        self.light.set_type(toy.LightType.Point)
-        self.light.set_position(vmath.Vector3(5.0, 5.0, -5.0))
-        toy.app.light_manager.add_light(self.light)
-
         self.spot_light = toy.Light()
         self.spot_light.set_type(toy.LightType.Spot)
         self.spot_light.set_color(vcolor.WHITE * 0.5)
-        self.spot_light.set_position(vmath.Vector3(0.0, 0.0, 0.0))
         self.spot_light.set_spot_inner_angle(math.radians(30))
         self.spot_light.set_spot_outer_angle(math.radians(40))
-        self.spot_light.set_direction(vmath.Vector3(0.0, -1.0, 0.5).normalize())
         toy.app.light_manager.add_light(self.spot_light)
 
-        self.spot_light2 = toy.Light()
-        self.spot_light2.set_type(toy.LightType.Spot)
-        self.spot_light2.set_color(vcolor.WHITE * 0.5)
-        self.spot_light2.set_position(vmath.Vector3(0.0, 5.0, 5.0))
-        self.spot_light2.set_spot_inner_angle(math.radians(30))
-        self.spot_light2.set_spot_outer_angle(math.radians(40))
-        self.spot_light2.set_direction(vmath.Vector3(0.0, -1.0, 0.1).normalize())
-        toy.app.light_manager.add_light(self.spot_light2)
+        self.point_light = toy.Light()
+        self.point_light.set_type(toy.LightType.Point)
+        self.point_light.set_color(vcolor.WHITE * 0.2)
+        transform = vmath.Transform()
+        transform.translation = vmath.Vector3(5.0, 5.0, 5.0)
+        self.point_light.set_transform(transform)
+        toy.app.light_manager.add_light(self.point_light)
 
         self.world.unit_manager.create_unit(Player)
         self.world.unit_manager.create_unit(Enemy)
@@ -208,13 +200,17 @@ class App:
             material = self.rgb_materials[i]
             toy.app.render_manager.add_mesh(self.cube_mesh, transform.to_matrix4(), material)
 
-        #drawutil.draw_sphere(self.light.get_position())
         alpha = math.modf(self.world.game_time * 0.4)[0]
         c = vcolor.bounce(vcolors.red, vcolors.lime, alpha)
-        self.light.set_color(vcolor.bounce(vcolors.red, vcolors.lime, alpha))
+        self.spot_light.set_color(vcolor.bounce(vcolors.red, vcolors.lime, alpha))
         
         sun_direction = vmath.Vector3(math.cos(self.world.game_time), -1.0, math.sin(self.world.game_time)).normalize()
-        toy.app.light_manager.get_sun().set_direction(sun_direction)
+        transform = vmath.Transform()
+        transform.rotation = vmath.Quaternion.from_look_rotation(sun_direction, vutil.VEC3_Y)
+        toy.app.light_manager.get_sun().set_transform(transform)
+        transform.scale = vmath.Vector3(10.0, 10.0, 10.0)
+        drawutil.draw_transform(transform)
+
         sun_origin = vmath.Vector3(0.0, 5.0, 0.0)
         drawutil.draw_line(sun_origin, sun_origin + sun_direction)
         transform = vmath.Transform()
@@ -231,15 +227,13 @@ class App:
         drawutil.draw_travel_line(vmath.Vector3(-10, 3, -10), vmath.Vector3(-10, 3, 10), vcolor.GRAY, vcolor.GREEN, t)
 
         spot_direction = vmath.Vector3(0.0, -1.0, 0.8 * vutil.ping_pong(t)).normalize()
-        self.spot_light.set_direction(spot_direction)
         spot_position = vmath.Vector3(0.0, 10.0, -4.0 * vutil.ping_pong(t))
-        self.spot_light.set_position(spot_position)
-        self.spot_light2.set_position(vmath.Vector3(-3.0, 10.0, 0.0))
-        drawutil.draw_screen_text(vmath.Vector3(0, 100, 0), str(vmath.Vector3(spot_direction.x, spot_direction.y, -spot_direction.z)))
-        self.spot_light2.set_direction(vmath.Vector3(spot_direction.x, spot_direction.y, -spot_direction.z))
-        #self.spot_light2.set_direction(vmath.Vector3(0.0, -0.900168, -0.435542))
-        drawutil.draw_sphere(spot_position, 0.1)
-        drawutil.draw_line(spot_position, spot_position + spot_direction)
+        transform = vmath.Transform()
+        transform.translation = spot_position
+        transform.rotation = vmath.Quaternion.from_euler_angles(vmath.Vector3(-vutil.ping_pong(t) - math.pi / 2.0, 0.0, 0.0))
+        drawutil.draw_transform(transform)
+        drawutil.draw_sphere(spot_position, 0.4, vcolor.GREEN)
+        self.spot_light.set_transform(transform)
 
         transform = vmath.Transform()
         transform.translation = vmath.Vector3(0.0, 3.0, 2.0)

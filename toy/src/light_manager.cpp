@@ -10,7 +10,9 @@
 LightManager::LightManager()
 {
 	auto sun = std::make_shared<Light>();
-	sun->set_direction(glm::normalize(glm::vec3(0.0f, -1.0f, 0.5f)));
+	Transform sun_transform;
+	sun_transform.rotation = look_rotation_to_quat(glm::normalize(glm::vec3(0.0f, -1.0f, 0.5f)), VEC3_Y);
+	sun->set_transform(sun_transform);
 	sun->set_color(glm::vec3(1.0f, 1.0f, 1.0f));
 	set_sun(sun);
 }
@@ -58,8 +60,8 @@ LightUniforms LightManager::build_light_uniform()
 		LightUniform uniform;
 		uniform.type = light_data.type;
 		uniform.color = light_data.color;
-		uniform.position = light_data.position;
-		uniform.direction = light_data.direction;
+		uniform.position = light_data.transform.translation;
+		uniform.direction = -quat_axis_z(light_data.transform.rotation);
 		uniform.range = light_data.range;
 		uniform.spot_inner = std::cos(light_data.spot_inner_angle * 0.5f);
 		uniform.spot_outer = std::cos(light_data.spot_outer_angle * 0.5f);

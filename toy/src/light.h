@@ -14,12 +14,11 @@ enum class LightType {
 
 struct LightData {
 	LightType type = LightType::Empty;
-	glm::vec3 color;
-	glm::vec3 position = VEC3_ZERO;
-	glm::vec3 direction;
+	glm::vec3 color = VEC3_ONES;
+	Transform transform;
 	float range = 50.0f;
-	float spot_outer_angle;
-	float spot_inner_angle;
+	float spot_outer_angle = 1.0f;
+	float spot_inner_angle = 0.5f;
 	bool shadow = true;
 	int shadow_layer = 0;
 };
@@ -34,14 +33,11 @@ public:
 	LightType get_type();
 	void set_type(LightType type);
 
-	glm::vec3 get_position();
-	void set_position(glm::vec3 position);
+	Transform get_transform();
+	void set_transform(Transform transform);
 
 	glm::vec3 get_color();
 	void set_color(glm::vec3 color);
-
-	glm::vec3 get_direction();
-	void set_direction(glm::vec3 direction);
 
 	float get_range();
 	void set_range(float range);

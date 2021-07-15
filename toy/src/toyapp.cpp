@@ -163,18 +163,6 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	texture_cubemap.init(ctx, cubemap_raw_images);
 	material_cubemap.init(ctx, pipeline_skybox, texture_cubemap);
 
-	auto light1 = std::make_shared<Light>();
-	light1->set_type(LightType::Point);
-	light1->set_position(glm::vec3(5.0f, 5.0f, 5.0f));
-	light1->set_color(glm::vec3(1.0f, 1.0f, 0.5f));
-	light_manager.add_light(light1);
-	
-	auto light2 = std::make_shared<Light>();
-	light2->set_type(LightType::Point);
-	light2->set_position(glm::vec3(5.0f, 5.0f, -5.0f));
-	light2->set_color(glm::vec3(1.0f, 0.0f, 0.5f));
-	light_manager.add_light(light2);
-
 
 	auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
 	timestamp = std::chrono::duration<double>(now).count();
@@ -260,7 +248,7 @@ void App::pre_render(VkCommandBuffer command_buffer) {
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
 	frame_uniform.view_projection = camera_view_projection;
 	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
-	frame_uniform.sun_light_direction = light_manager.get_sun()->get_direction();
+	frame_uniform.sun_light_direction = -quat_axis_z(light_manager.get_sun()->get_transform().rotation);
 	frame_uniform.screen_width = (float)ctx.basic.extent.width;
 	frame_uniform.screen_height = (float)ctx.basic.extent.height;
 

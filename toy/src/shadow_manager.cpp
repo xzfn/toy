@@ -43,8 +43,7 @@ void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipel
 	if (psun) {
 		Light& sun = *psun;
 		glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
-		Transform light_model = Transform();
-		light_model.rotation = look_rotation_to_quat(sun.get_direction(), VEC3_Y);
+		Transform light_model = sun.get_transform();
 		glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
 		glm::mat4 sun_light_view_projection = projection * light_view;
 		light_view_projections[current_layer_index] = sun_light_view_projection;
@@ -59,18 +58,12 @@ void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipel
 				light.internal_set_shadow_layer(-1);
 			}
 			else if (light.get_type() == LightType::Spot) {
-				Transform light_model;
-				glm::vec3 spot_position = light.get_position();
-				glm::vec3 spot_direction = light.get_direction();
-				light_model.translation = spot_position;
-				glm::vec3 up = VEC3_Y;
-				if (abs(glm::dot(spot_direction, up)) > 0.9) {
-					up = VEC3_Z;
-				}
-				light_model.rotation = look_rotation_to_quat(spot_direction, up);
+				Transform light_model = light.get_transform();
+				glm::vec3 spot_position = light.get_transform().translation;
+				glm::vec3 spot_direction = -quat_axis_z(light.get_transform().rotation);
 				glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
 				float spot_outer_angle = light.get_spot_outer_angle();
-				glm::mat4 projection = glm::perspective(spot_outer_angle, 1.0f, 0.1f, 20.0f);
+				glm::mat4 projection = glm::perspective(spot_outer_angle, 1.0f, 0.1f, 20.0f);  // TODO spot range
 				glm::mat4 spot_light_view_projection = projection * light_view;
 				light_view_projections[current_layer_index] = spot_light_view_projection;
 				// set current_layer_index to light uniform

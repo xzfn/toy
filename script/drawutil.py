@@ -25,11 +25,11 @@ def draw_lines_transform(transform, lines, color=vmath.Vector3(1.0, 0.0, 0.0), d
 def draw_transform(transform, duration=0.0):
     axis_x, axis_y, axis_z = transform.rotation.to_matrix3()
     origin = transform.translation
-    length = 1.0
+    scale = transform.scale
     _add_line = toy.app.timed_geometry_builder.add_line
-    _add_line(origin, origin + axis_x * length, vmath.Vector3(1.0, 0.0, 0.0), duration)
-    _add_line(origin, origin + axis_y * length, vmath.Vector3(0.0, 1.0, 0.0), duration)
-    _add_line(origin, origin + axis_z * length, vmath.Vector3(0.0, 0.0, 1.0), duration)
+    _add_line(origin, origin + axis_x * scale.x, vmath.Vector3(1.0, 0.0, 0.0), duration)
+    _add_line(origin, origin + axis_y * scale.y, vmath.Vector3(0.0, 1.0, 0.0), duration)
+    _add_line(origin, origin + axis_z * scale.z, vmath.Vector3(0.0, 0.0, 1.0), duration)
 
 def draw_ground_grid(step=1.0, count=10, color=vmath.Vector3(0.5, 0.5, 0.5), duration=0.0):
     side = step * count

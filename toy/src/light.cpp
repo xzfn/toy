@@ -14,14 +14,14 @@ void Light::set_type(LightType type)
 	data.type = type;
 }
 
-glm::vec3 Light::get_position()
+Transform Light::get_transform()
 {
-	return data.position;
+	return data.transform;
 }
 
-void Light::set_position(glm::vec3 position)
+void Light::set_transform(Transform transform)
 {
-	data.position = position;
+	data.transform = transform;
 }
 
 glm::vec3 Light::get_color()
@@ -32,16 +32,6 @@ glm::vec3 Light::get_color()
 void Light::set_color(glm::vec3 color)
 {
 	data.color = color;
-}
-
-glm::vec3 Light::get_direction()
-{
-	return data.direction;
-}
-
-void Light::set_direction(glm::vec3 direction)
-{
-	data.direction = direction;
 }
 
 float Light::get_range() {

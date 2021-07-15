@@ -15,8 +15,6 @@ class Camera:
 		if not camera_manager.is_controlled():
 			camera = camera_manager.get_camera()
 
-			camera.set_view
-
 	def toggle_freeview(self):
 		camera_manager = toy.app.camera_manager
 		camera_manager.set_is_controlled(not camera_manager.is_controlled())

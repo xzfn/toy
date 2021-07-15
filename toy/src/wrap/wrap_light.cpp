@@ -21,14 +21,11 @@ void wrap_Light(py::module_& m) {
 	t.def("get_type", &Light::get_type);
 	t.def("set_type", &Light::set_type);
 
-	t.def("get_position", &Light::get_position);
-	t.def("set_position", &Light::set_position);
+	t.def("get_transform", &Light::get_transform);
+	t.def("set_transform", &Light::set_transform);
 
 	t.def("get_color", &Light::get_color);
 	t.def("set_color", &Light::set_color);
-
-	t.def("get_direction", &Light::get_direction);
-	t.def("set_direction", &Light::set_direction);
 
 	t.def("get_range", &Light::get_range);
 	t.def("set_range", &Light::set_range);
