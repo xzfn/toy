@@ -736,8 +736,12 @@ void destroy_descriptor_set_layout(VkDevice device, VkDescriptorSetLayout descri
     vkDestroyDescriptorSetLayout(device, descriptor_set_layout, vulkan_allocator);
 }
 
-VkDescriptorPool create_descriptor_pool(VkDevice device) {
+VkDescriptorPool create_descriptor_pool(VkDevice device, bool enable_free) {
     VkResult vkres;
+    VkDescriptorPoolCreateFlags flags = 0;
+    if (enable_free) {
+        flags |= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    }
     std::uint32_t descriptor_max_count = 1000;
     std::array<VkDescriptorPoolSize, 2> pool_sizes =
     { {
@@ -753,7 +757,7 @@ VkDescriptorPool create_descriptor_pool(VkDevice device) {
     VkDescriptorPoolCreateInfo create_info = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,  // sType;
         nullptr,  // pNext;
-        VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,  // flags;  // TODO not good for performance, may need per frame transient pool
+        flags,  // flags;
         descriptor_max_count * (uint32_t)pool_sizes.size(),  // maxSets;
         (uint32_t)pool_sizes.size(),  // poolSizeCount;
         pool_sizes.data()  // pPoolSizes;
@@ -762,6 +766,18 @@ VkDescriptorPool create_descriptor_pool(VkDevice device) {
     vkres = vkCreateDescriptorPool(device, &create_info, vulkan_allocator, &descriptor_pool);
     assert(vkres == VK_SUCCESS);
     return descriptor_pool;
+}
+
+void vkutil::reset_descriptor_pool(VkDevice device, VkDescriptorPool descriptor_pool)
+{
+    VkResult vkres;
+    vkres = vkResetDescriptorPool(device, descriptor_pool, 0);
+    check_vk_result(vkres);
+}
+
+void vkutil::destroy_descriptor_pool(VkDevice device, VkDescriptorPool descriptor_pool)
+{
+    vkDestroyDescriptorPool(device, descriptor_pool, vulkan_allocator);
 }
 
 VkDescriptorSet create_descriptor_set(VkDevice device,

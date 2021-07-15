@@ -215,6 +215,16 @@ void VulkanContext::free_descriptor_sets(const std::vector<VkDescriptorSet>& des
 	vkutil::free_descriptor_sets(basic.device, basic.descriptor_pool, descriptor_sets);
 }
 
+void VulkanContext::reset_descriptor_pool(VkDescriptorPool descriptor_pool)
+{
+	vkutil::reset_descriptor_pool(basic.device, descriptor_pool);
+}
+
+void VulkanContext::destroy_descriptor_pool(VkDescriptorPool descriptor_pool)
+{
+	vkutil::destroy_descriptor_pool(basic.device, descriptor_pool);
+}
+
 void VulkanContext::destroy_vulkan_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets)
 {
 	auto& frame = frames[basic.frame_index];
@@ -246,6 +256,7 @@ void VulkanContext::render(VkClearColorValue clear_color,
 	frame.vulkan_buffers.clear();
 	free_descriptor_sets(frame.vulkan_descriptor_sets);
 	frame.vulkan_descriptor_sets.clear();
+	reset_descriptor_pool(frame.descriptor_pool);
 
 	vkres = vkAcquireNextImageKHR(
 		basic.device,
@@ -459,6 +470,11 @@ VkDescriptorSet VulkanContext::create_descriptor_set(VkDescriptorSetLayout descr
 	return vkutil::create_descriptor_set(basic.device, basic.descriptor_pool, descriptor_set_layout);
 }
 
+VkDescriptorSet VulkanContext::create_descriptor_set_transient(VkDescriptorSetLayout descriptor_set_layout)
+{
+	return vkutil::create_descriptor_set(basic.device, frames[basic.frame_index].descriptor_pool, descriptor_set_layout);
+}
+
 void VulkanContext::init_vulkan_instance()
 {
 	basic.instance = vkutil::create_vulkan_instance();
@@ -558,6 +574,7 @@ void VulkanContext::init_frames() {
 		frame.image_available_semaphore = vkutil::create_semaphore(basic.device);
 		frame.rendering_finished_semaphore = vkutil::create_semaphore(basic.device);
 		frame.fence = vkutil::create_fence(basic.device);
+		frame.descriptor_pool = vkutil::create_descriptor_pool(basic.device, false);
 	}
 }
 
@@ -631,7 +648,7 @@ void VulkanContext::init_swapchain_images()
 
 void VulkanContext::init_descriptor_pool()
 {
-	basic.descriptor_pool = vkutil::create_descriptor_pool(basic.device);
+	basic.descriptor_pool = vkutil::create_descriptor_pool(basic.device, true);
 }
 
 void VulkanContext::recreate_swapchain()
@@ -662,6 +679,8 @@ void VulkanContext::destroy_vulkan()
 		frame.vulkan_buffers.clear();
 		free_descriptor_sets(frame.vulkan_descriptor_sets);
 		frame.vulkan_descriptor_sets.clear();
+		reset_descriptor_pool(frame.descriptor_pool);
+		destroy_descriptor_pool(frame.descriptor_pool);
 	}
 
 	for (uint32_t i = 0; i < swap_images.size(); ++i) {
@@ -678,7 +697,7 @@ void VulkanContext::destroy_vulkan()
 
 	vkDestroyCommandPool(device, basic.command_pool, vulkan_allocator);
 
-	vkDestroyDescriptorPool(device, basic.descriptor_pool, vulkan_allocator);
+	destroy_descriptor_pool(basic.descriptor_pool);
 	vkDestroyRenderPass(device, basic.render_pass, vulkan_allocator);
 	vkDestroyRenderPass(device, basic.depth_render_pass, vulkan_allocator);
 

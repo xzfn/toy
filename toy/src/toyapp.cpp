@@ -264,35 +264,27 @@ void App::pre_render(VkCommandBuffer command_buffer) {
 	frame_uniform.screen_width = (float)ctx.basic.extent.width;
 	frame_uniform.screen_height = (float)ctx.basic.extent.height;
 
-	descriptor_set_frame = ctx.create_descriptor_set(pipeline.ref_descriptor_set_layouts().frame);
+	descriptor_set_frame = ctx.create_descriptor_set_transient(pipeline.ref_descriptor_set_layouts().frame);
 	auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&frame_uniform, sizeof(frame_uniform));
 	pipeline.update_descriptor_set_frame(descriptor_set_frame, buffer_and_memory.first, sizeof(frame_uniform));
-	std::vector<VkDescriptorSet> sets_frame{ descriptor_set_frame };
-	ctx.destroy_vulkan_descriptor_sets(sets_frame);
 	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
 
 	// light
 	LightUniforms light_uniform = light_manager.build_light_uniform();
 
-	descriptor_set_light = ctx.create_descriptor_set(pipeline.ref_descriptor_set_layouts().light);
+	descriptor_set_light = ctx.create_descriptor_set_transient(pipeline.ref_descriptor_set_layouts().light);
 	buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_uniform, sizeof(light_uniform));
 	pipeline.update_descriptor_set_light(descriptor_set_light, buffer_and_memory.first, sizeof(light_uniform));
-
-	std::vector<VkDescriptorSet> sets_light{ descriptor_set_light };
-	ctx.destroy_vulkan_descriptor_sets(sets_light);
 	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
 
 	// shadow
 	ShadowUniforms shadow_uniform = shadow_manager.build_shadow_uniform();
 
-	descriptor_set_shadow = ctx.create_descriptor_set(pipeline.ref_descriptor_set_layouts().shadow);
+	descriptor_set_shadow = ctx.create_descriptor_set_transient(pipeline.ref_descriptor_set_layouts().shadow);
 	buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&shadow_uniform, sizeof(shadow_uniform));
 	VkSampler depth_sampler = shadow_manager.get_depth_sampler();
 	VkImageView depth_image_view_array = shadow_manager.get_depth_image_view_array();
 	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, buffer_and_memory.first, sizeof(shadow_uniform), depth_sampler, depth_image_view_array);
-
-	std::vector<VkDescriptorSet> sets_shadow{ descriptor_set_shadow };
-	ctx.destroy_vulkan_descriptor_sets(sets_shadow);
 	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
 }
 

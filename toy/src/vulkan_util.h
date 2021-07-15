@@ -42,7 +42,9 @@ VkRenderPass create_render_pass(VkDevice device, VkSurfaceFormatKHR surface_form
 VkRenderPass create_depth_render_pass(VkDevice device, VkFormat depth_format);
 VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device);
 void destroy_descriptor_set_layout(VkDevice device, VkDescriptorSetLayout descriptor_set_layout);
-VkDescriptorPool create_descriptor_pool(VkDevice device);
+VkDescriptorPool create_descriptor_pool(VkDevice device, bool enable_free);
+void reset_descriptor_pool(VkDevice device, VkDescriptorPool descriptor_pool);
+void destroy_descriptor_pool(VkDevice device, VkDescriptorPool descriptor_pool);
 VkDescriptorSet create_descriptor_set(VkDevice device,
 	VkDescriptorPool descriptor_pool,
 	VkDescriptorSetLayout descriptor_set_layout

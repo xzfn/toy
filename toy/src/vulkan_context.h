@@ -45,6 +45,7 @@ struct VulkanFrame {
 	VkSemaphore image_available_semaphore;
 	VkSemaphore rendering_finished_semaphore;
 	VkFence fence;
+	VkDescriptorPool descriptor_pool;
 	std::vector<VulkanBuffer> vulkan_buffers;
 	std::vector<VkDescriptorSet> vulkan_descriptor_sets;
 };
@@ -100,8 +101,11 @@ public:
 	std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer(uint8_t* buffer_data, std::size_t buffer_size);
 	std::pair<VkBuffer, VkDeviceMemory> create_uniform_buffer_coherent(uint8_t* buffer_data, std::size_t buffer_size);
 	VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout descriptor_set_layout);
+	VkDescriptorSet create_descriptor_set_transient(VkDescriptorSetLayout descriptor_set_layout);
 	void update_descriptor_set(VkDescriptorSet descriptor_set, VkSampler sampler, VkImageView image_view, VkBuffer uniform_buffer, std::size_t uniform_buffer_size);
 	void free_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets);
+	void reset_descriptor_pool(VkDescriptorPool descriptor_pool);
+	void destroy_descriptor_pool(VkDescriptorPool descriptor_pool);
 	void render(VkClearColorValue clear_color,
 		std::function<void(VkCommandBuffer command_buffer)> depth_pass_callback,
 		std::function<void(VkCommandBuffer command_buffer)> render_callback

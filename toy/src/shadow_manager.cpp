@@ -132,12 +132,9 @@ void ShadowManager::render_one_depth(VkCommandBuffer command_buffer, BasicPipeli
 	FrameUniforms light_frame_uniforms;
 	light_frame_uniforms.view_projection = view_projection;
 
-	VkDescriptorSet light_frame_descriptor_set = ctx.create_descriptor_set(pipeline_depth.ref_descriptor_set_layouts().frame);
+	VkDescriptorSet light_frame_descriptor_set = ctx.create_descriptor_set_transient(pipeline_depth.ref_descriptor_set_layouts().frame);
 	auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_frame_uniforms, sizeof(light_frame_uniforms));
 	pipeline_depth.update_descriptor_set_frame(light_frame_descriptor_set, buffer_and_memory.first, sizeof(light_frame_uniforms));
-
-	std::vector<VkDescriptorSet> sets{ light_frame_descriptor_set };
-	ctx.destroy_vulkan_descriptor_sets(sets);
 	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
 
 	std::vector<VkDescriptorSet> descriptor_sets_frame{
