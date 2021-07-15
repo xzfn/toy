@@ -163,33 +163,6 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	texture_cubemap.init(ctx, cubemap_raw_images);
 	material_cubemap.init(ctx, pipeline_skybox, texture_cubemap);
 
-
-	DescriptorSetLayouts pipeline_descriptor_set_layouts = pipeline.ref_descriptor_set_layouts();
-
-	descriptor_set_frame = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.model);
-	auto frame_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(
-		nullptr, sizeof(FrameUniforms));
-	frame_uniform_buffer = frame_uniform_buffer_and_memory.first;
-	frame_uniform_memory = frame_uniform_buffer_and_memory.second;
-	pipeline.update_descriptor_set_frame(descriptor_set_frame, frame_uniform_buffer, sizeof(FrameUniforms));
-
-	descriptor_set_light = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.light);
-	auto light_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(
-		nullptr, sizeof(LightUniforms));
-	light_uniform_buffer = light_uniform_buffer_and_memory.first;
-	light_uniform_memory = light_uniform_buffer_and_memory.second;
-	pipeline.update_descriptor_set_light(descriptor_set_light, light_uniform_buffer, sizeof(LightUniforms));
-
-	descriptor_set_shadow = ctx.create_descriptor_set(pipeline_descriptor_set_layouts.shadow);
-	auto shadow_uniform_buffer_and_memory = ctx.create_uniform_buffer_coherent(nullptr, sizeof(ShadowUniforms));
-	shadow_uniform_buffer = shadow_uniform_buffer_and_memory.first;
-	shadow_uniform_memory = shadow_uniform_buffer_and_memory.second;
-
-	// shadow
-	VkSampler depth_sampler = shadow_manager.get_depth_sampler();
-	VkImageView depth_image_view_array = shadow_manager.get_depth_image_view_array();
-	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, shadow_uniform_buffer, sizeof(ShadowUniforms), depth_sampler, depth_image_view_array);
-
 	auto light1 = std::make_shared<Light>();
 	light1->set_type(LightType::Point);
 	light1->set_position(glm::vec3(5.0f, 5.0f, 5.0f));
@@ -221,12 +194,7 @@ void App::shutdown() {
 	VulkanContext& ctx = *ctxptr;
 	ctx.device_wait_idle();
 
-	ctx.destroy_buffer_and_memory(frame_uniform_buffer, frame_uniform_memory);
-	ctx.destroy_buffer_and_memory(light_uniform_buffer, light_uniform_memory);
-	ctx.destroy_buffer_and_memory(shadow_uniform_buffer, shadow_uniform_memory);
-
 	shadow_manager.destroy();
-
 }
 
 void App::update() {
@@ -261,45 +229,6 @@ void App::update() {
 
 	camera_manager.update(delta_time);
 
-	auto extent = ctx.basic.window_extent;
-	
-	camera_manager.get_camera()->set_view_size((float)extent.width, (float)extent.height);
-
-	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
-	frame_uniform.view_projection = camera_view_projection;
-	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
-	frame_uniform.sun_light_direction = light_manager.get_sun()->get_direction();
-	frame_uniform.screen_width = (float)ctx.basic.extent.width;
-	frame_uniform.screen_height = (float)ctx.basic.extent.height;
-
-	void* memory_pointer;
-	int frame_uniform_data_size = sizeof(frame_uniform);
-	void* frame_uniform_data = &frame_uniform;
-	vkMapMemory(ctx.basic.device, frame_uniform_memory, 0,
-		frame_uniform_data_size, 0, &memory_pointer);
-	memcpy(memory_pointer, frame_uniform_data, frame_uniform_data_size);
-	vkUnmapMemory(ctx.basic.device, frame_uniform_memory);
-
-
-	LightUniforms light_uniform = light_manager.build_light_uniform();
-
-	int light_uniform_data_size = sizeof(light_uniform);
-	void* light_uniform_data = &light_uniform;
-	vkMapMemory(ctx.basic.device, light_uniform_memory, 0,
-		light_uniform_data_size, 0, &memory_pointer);
-	memcpy(memory_pointer, light_uniform_data, light_uniform_data_size);
-	vkUnmapMemory(ctx.basic.device, light_uniform_memory);
-
-	// shadow
-	ShadowUniforms shadow_uniform = shadow_manager.build_shadow_uniform();
-
-	int shadow_uniform_data_size = sizeof(shadow_uniform);
-	void* shadow_uniform_data = &shadow_uniform;
-	vkMapMemory(ctx.basic.device, shadow_uniform_memory, 0,
-		shadow_uniform_data_size, 0, &memory_pointer);
-	memcpy(memory_pointer, shadow_uniform_data, shadow_uniform_data_size);
-	vkUnmapMemory(ctx.basic.device, shadow_uniform_memory);
-
 
 	ctx.render(clear_color,
 		[this](VkCommandBuffer command_buffer) {
@@ -311,6 +240,7 @@ void App::update() {
 	timed_text_builder.update(delta_time);
 
 	input_manager.clear_frame();
+
 }
 
 void App::depth_pass(VkCommandBuffer command_buffer)
@@ -318,8 +248,58 @@ void App::depth_pass(VkCommandBuffer command_buffer)
 	shadow_manager.render_depth_pass(command_buffer, pipeline_depth, light_manager, render_manager);
 }
 
+void App::pre_render(VkCommandBuffer command_buffer) {
+	(void)command_buffer;
+
+	VulkanContext& ctx = *ctxptr;
+	auto extent = ctx.basic.window_extent;
+
+	// frame
+	camera_manager.get_camera()->set_view_size((float)extent.width, (float)extent.height);
+
+	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
+	frame_uniform.view_projection = camera_view_projection;
+	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
+	frame_uniform.sun_light_direction = light_manager.get_sun()->get_direction();
+	frame_uniform.screen_width = (float)ctx.basic.extent.width;
+	frame_uniform.screen_height = (float)ctx.basic.extent.height;
+
+	descriptor_set_frame = ctx.create_descriptor_set(pipeline.ref_descriptor_set_layouts().frame);
+	auto buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&frame_uniform, sizeof(frame_uniform));
+	pipeline.update_descriptor_set_frame(descriptor_set_frame, buffer_and_memory.first, sizeof(frame_uniform));
+	std::vector<VkDescriptorSet> sets_frame{ descriptor_set_frame };
+	ctx.destroy_vulkan_descriptor_sets(sets_frame);
+	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
+
+	// light
+	LightUniforms light_uniform = light_manager.build_light_uniform();
+
+	descriptor_set_light = ctx.create_descriptor_set(pipeline.ref_descriptor_set_layouts().light);
+	buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&light_uniform, sizeof(light_uniform));
+	pipeline.update_descriptor_set_light(descriptor_set_light, buffer_and_memory.first, sizeof(light_uniform));
+
+	std::vector<VkDescriptorSet> sets_light{ descriptor_set_light };
+	ctx.destroy_vulkan_descriptor_sets(sets_light);
+	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
+
+	// shadow
+	ShadowUniforms shadow_uniform = shadow_manager.build_shadow_uniform();
+
+	descriptor_set_shadow = ctx.create_descriptor_set(pipeline.ref_descriptor_set_layouts().shadow);
+	buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&shadow_uniform, sizeof(shadow_uniform));
+	VkSampler depth_sampler = shadow_manager.get_depth_sampler();
+	VkImageView depth_image_view_array = shadow_manager.get_depth_image_view_array();
+	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, buffer_and_memory.first, sizeof(shadow_uniform), depth_sampler, depth_image_view_array);
+
+	std::vector<VkDescriptorSet> sets_shadow{ descriptor_set_shadow };
+	ctx.destroy_vulkan_descriptor_sets(sets_shadow);
+	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });
+}
+
 void App::render(VkCommandBuffer command_buffer) {
 	//return;
+	pre_render(command_buffer);
+
 	VulkanContext& ctx = *ctxptr;
 
 	glm::mat4 model(1.0f);

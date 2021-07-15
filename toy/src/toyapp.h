@@ -40,6 +40,8 @@ public:
 
 	void depth_pass(VkCommandBuffer command_buffer);
 
+	void pre_render(VkCommandBuffer command_buffer);
+
 	void render(VkCommandBuffer command_buffer);
 
 	void on_resize(uint32_t width, uint32_t height);
@@ -84,16 +86,8 @@ public:
 	glm::vec3 background_color{ 1.0f, 1.0f, 1.0f };
 
 	VkDescriptorSet descriptor_set_frame;
-	VkBuffer frame_uniform_buffer;
-	VkDeviceMemory frame_uniform_memory;
-
 	VkDescriptorSet descriptor_set_light;
-	VkBuffer light_uniform_buffer;
-	VkDeviceMemory light_uniform_memory;
-
 	VkDescriptorSet descriptor_set_shadow;
-	VkBuffer shadow_uniform_buffer;
-	VkDeviceMemory shadow_uniform_memory;
 
 	Texture texture;
 	TextureCubemap texture_cubemap;
