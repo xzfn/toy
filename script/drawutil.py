@@ -22,14 +22,14 @@ def draw_lines_transform(transform, lines, color=vmath.Vector3(1.0, 0.0, 0.0), d
     for p0, p1 in lines:
         _add_line(_transform_point(p0), _transform_point(p1), color, duration)
 
-def draw_transform(transform, duration=0.0):
+def draw_transform(transform, scale=1.0, duration=0.0):
     axis_x, axis_y, axis_z = transform.rotation.to_matrix3()
     origin = transform.translation
-    scale = transform.scale
+    scale_vec = transform.scale * scale
     _add_line = toy.app.timed_geometry_builder.add_line
-    _add_line(origin, origin + axis_x * scale.x, vmath.Vector3(1.0, 0.0, 0.0), duration)
-    _add_line(origin, origin + axis_y * scale.y, vmath.Vector3(0.0, 1.0, 0.0), duration)
-    _add_line(origin, origin + axis_z * scale.z, vmath.Vector3(0.0, 0.0, 1.0), duration)
+    _add_line(origin, origin + axis_x * scale_vec.x, vmath.Vector3(1.0, 0.0, 0.0), duration)
+    _add_line(origin, origin + axis_y * scale_vec.y, vmath.Vector3(0.0, 1.0, 0.0), duration)
+    _add_line(origin, origin + axis_z * scale_vec.z, vmath.Vector3(0.0, 0.0, 1.0), duration)
 
 def draw_ground_grid(step=1.0, count=10, color=vmath.Vector3(0.5, 0.5, 0.5), duration=0.0):
     side = step * count
@@ -155,7 +155,7 @@ def draw_perspective(transform, fov, aspect, z_near, z_far, color=vmath.Vector3(
         vmath.Vector3(xf, yf, neg_z_far),
         vmath.Vector3(-xf, yf, neg_z_far),
     ]
-    draw_transform(transform, duration)
+    draw_transform(transform, 1.0, duration)
     draw_lines_transform(transform, connect_points_loop(nears), color, duration)
     draw_lines_transform(transform, connect_points_loop(fars), color, duration)
     draw_lines_transform(transform, connect_point_pairs(nears, fars), color, duration)
@@ -175,7 +175,7 @@ def draw_orthographic(transform, left, right, bottom, top, z_near, z_far, color=
         vmath.Vector3(right, top, neg_z_far),
         vmath.Vector3(left, top, neg_z_far),
     ]
-    draw_transform(transform, duration)
+    draw_transform(transform, 1.0, duration)
     draw_lines_transform(transform, connect_points_loop(nears), color, duration)
     draw_lines_transform(transform, connect_points_loop(fars), color, duration)
     draw_lines_transform(transform, connect_point_pairs(nears, fars), color, duration)

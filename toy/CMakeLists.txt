@@ -96,6 +96,9 @@ set(toy_SOURCES
 	src/shadow_manager.h
 	src/shadow_manager.cpp
 
+	src/cascaded_shadow_map_util.h
+	src/cascaded_shadow_map_util.cpp
+
 	src/scope_util.h
 )
 

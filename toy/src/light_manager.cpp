@@ -86,3 +86,13 @@ std::vector<std::shared_ptr<Light>>& LightManager::ref_lights()
 {
 	return m_lights;
 }
+
+glm::vec4 LightManager::get_sun_cascade_splits()
+{
+	return m_sun_cascade_splits;
+}
+
+void LightManager::set_sun_cascade_splits(glm::vec4 splits)
+{
+	m_sun_cascade_splits = splits;
+}

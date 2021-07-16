@@ -28,8 +28,26 @@ vec3 encode_float(float n) {
 	return vec3(n, n, n);
 }
 
+vec3 encode_small_int(int n) {
+	const vec3 rainbow[7] = {
+		vec3(1.0, 0.0, 0.0),  // FF0000  red
+		vec3(1.0, 0.4980, 0.0),  // FF7F00  orange
+		vec3(1.0, 1.0, 0.0),  // FFFF00  yellow
+		vec3(0.0, 1.0, 0.0),  // 00FF00  green
+		vec3(0.0, 1.0, 1.0),  // 00FFFF  cyan
+		vec3(0.0, 0.0, 1.0),  // 0000FF  blue
+		vec3(0.5451, 0.0, 1.0)  // 8B00FF  violet
+	};
+	return rainbow[n % 7];
+}
+
 vec2 clip_to_uv(vec2 clip) {
 	return (vec2(clip.x, -clip.y) + vec2(1.0, 1.0)) * 0.5;
+}
+
+int calc_sun_cascade(vec4 sun_cascade_splits, float view_z) {
+	bvec4 bools = greaterThan(vec4(-view_z), sun_cascade_splits);
+	return int(bools.x) + int(bools.y) + int(bools.z) + int(bools.w);
 }
 
 vec3 shade_sun_light(vec3 base_color, vec3 view_dir, vec3 frag_normal, float visibility) {
@@ -64,7 +82,11 @@ void main() {
 
 	vec3 view_dir = normalize(u_frame.camera_position - v_WorldPosition);
 
-	float visibility = calc_shadow_visibility(0);
+	float view_z = (u_frame.view * vec4(v_WorldPosition, 1.0)).z;
+
+	int sun_shadow_layer = calc_sun_cascade(u_frame.sun_cascade_splits, view_z);
+	vec3 debug_cascade_color = encode_small_int(sun_shadow_layer);
+	float visibility = calc_shadow_visibility(sun_shadow_layer);
 
 	//out_Color = vec4(base_color * visibility, 1.0);
 	vec3 shaded_color = 0.5 * shade_sun_light(base_color, view_dir, frag_normal, visibility);
@@ -111,6 +133,7 @@ void main() {
 			result_color += specular_color * light.color * spot_attenuation * spot_visibility;
 		}
 	}
-
+	
 	out_Color = vec4(shaded_color + 0.5 * result_color, 1.0);
+	out_Color = out_Color * vec4(debug_cascade_color, 1.0);
 }

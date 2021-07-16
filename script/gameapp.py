@@ -25,6 +25,7 @@ from units.enemy import Enemy
 from units.projection import Projection
 from units.cameraman import Cameraman
 from units.lightman import Lightman
+from units.shadowman import Shadowman
 
 import keycodes
 
@@ -106,6 +107,7 @@ class App:
         self.world.unit_manager.create_unit(Projection)
         self.world.unit_manager.create_unit(Cameraman)
         self.world.unit_manager.create_unit(Lightman)
+        self.world.unit_manager.create_unit(Shadowman)
 
         self.red_texture = toy.Texture.create_color(vcolor.RED)
         self.green_texture = toy.Texture.create_color(vcolor.GREEN)
@@ -157,7 +159,7 @@ class App:
 
         ground_transform = vmath.Transform()
         ground_transform.translation = vmath.Vector3(0.0, -0.01, 0.0)
-        ground_transform.scale = vmath.Vector3(20.0, 20.0, 20.0)
+        ground_transform.scale = vmath.Vector3(20.0, 20.0, 20.0) * 50
         ground_transform.rotation = vmath.Quaternion.from_angle_axis(math.pi / 2.0, vutil.VEC3_X)
         toy.app.render_manager.add_mesh(self.mesh, ground_transform.to_matrix4(), self.material)
 
@@ -205,6 +207,7 @@ class App:
         self.spot_light.set_color(vcolor.bounce(vcolors.red, vcolors.lime, alpha))
         
         sun_direction = vmath.Vector3(math.cos(self.world.game_time), -1.0, math.sin(self.world.game_time)).normalize()
+        #sun_direction = vmath.Vector3(math.cos(self.world.game_time * 0.2), 0.0, math.sin(self.world.game_time * 0.2)).normalize()
         transform = vmath.Transform()
         transform.rotation = vmath.Quaternion.from_look_rotation(sun_direction, vutil.VEC3_Y)
         toy.app.light_manager.get_sun().set_transform(transform)

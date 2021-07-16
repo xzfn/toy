@@ -12,7 +12,7 @@
 
 
 class RenderManager;
-
+class CameraManager;
 
 constexpr int SHADOW_DEPTH_WIDTH = 512;
 constexpr int SHADOW_DEPTH_HEIGHT = 512;
@@ -25,7 +25,7 @@ public:
 	ShadowManager& operator=(const ShadowManager&) = delete;
 
 	void init(VulkanContext& ctx);
-	void render_depth_pass(VkCommandBuffer command_buffer, BasicPipeline& pipeline_depth, LightManager& light_manager, RenderManager& render_manager);
+	void render_depth_pass(VkCommandBuffer command_buffer, BasicPipeline& pipeline_depth, LightManager& light_manager, RenderManager& render_manager, CameraManager& camera_manager);
 	void destroy();
 
 	VkSampler get_depth_sampler();

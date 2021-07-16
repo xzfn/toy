@@ -13,6 +13,7 @@
 
 
 struct FrameUniforms {
+	glm::mat4 view;
 	glm::mat4 view_projection;
 
 	glm::vec3 camera_position;
@@ -22,6 +23,8 @@ struct FrameUniforms {
 
 	glm::vec3 sun_light_direction;
 	float padding_1;
+
+	glm::vec4 sun_cascade_splits;
 
 	float screen_width;
 	float screen_height;

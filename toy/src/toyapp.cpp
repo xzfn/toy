@@ -233,7 +233,7 @@ void App::update() {
 
 void App::depth_pass(VkCommandBuffer command_buffer)
 {
-	shadow_manager.render_depth_pass(command_buffer, pipeline_depth, light_manager, render_manager);
+	shadow_manager.render_depth_pass(command_buffer, pipeline_depth, light_manager, render_manager, camera_manager);
 }
 
 void App::pre_render(VkCommandBuffer command_buffer) {
@@ -246,9 +246,11 @@ void App::pre_render(VkCommandBuffer command_buffer) {
 	camera_manager.get_camera()->set_view_size((float)extent.width, (float)extent.height);
 
 	glm::mat4 camera_view_projection = camera_manager.get_camera()->get_view_projection();
+	frame_uniform.view = camera_manager.get_camera()->get_view();
 	frame_uniform.view_projection = camera_view_projection;
 	frame_uniform.camera_position = camera_manager.get_camera_controller()->get_transform().translation;
 	frame_uniform.sun_light_direction = -quat_axis_z(light_manager.get_sun()->get_transform().rotation);
+	frame_uniform.sun_cascade_splits = light_manager.get_sun_cascade_splits();
 	frame_uniform.screen_width = (float)ctx.basic.extent.width;
 	frame_uniform.screen_height = (float)ctx.basic.extent.height;
 

@@ -6,6 +6,9 @@
 
 #include "vulkan_helper.h"
 #include "render_manager.h"
+#include "camera_manager.h"
+
+#include "cascaded_shadow_map_util.h"
 
 
 ShadowManager::ShadowManager()
@@ -32,7 +35,7 @@ void ShadowManager::init(VulkanContext& ctx)
 	}
 }
 
-void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipeline& pipeline_depth, LightManager& light_manager, RenderManager& render_manager)
+void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipeline& pipeline_depth, LightManager& light_manager, RenderManager& render_manager, CameraManager& camera_manager)
 {
 	glm::mat4 light_view_projections[MAX_SHADOWS];
 
@@ -44,10 +47,35 @@ void ShadowManager::render_depth_pass(VkCommandBuffer command_buffer, BasicPipel
 		Light& sun = *psun;
 		glm::mat4 projection = glm::orthoRH_ZO(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
 		Transform light_model = sun.get_transform();
-		glm::mat4 light_view = glm::inverse(transform_to_mat4(light_model));
-		glm::mat4 sun_light_view_projection = projection * light_view;
-		light_view_projections[current_layer_index] = sun_light_view_projection;
-		++current_layer_index;
+
+		Transform camera_transform = camera_manager.get_camera_controller()->get_transform();
+		PerspectiveData perspective_data = camera_manager.get_camera()->get_perspective_data();
+
+		Cascades cascades = calc_cascades(
+			3, camera_transform, perspective_data, light_model.rotation
+		);
+
+		glm::vec4 cascade_splits(100000.0f);
+		for (int i = 0; i < cascades.cascade_count; ++i) {
+			if (current_layer_index >= MAX_SHADOWS) {
+				sun.internal_set_shadow_layer(-1);
+				break;
+			}
+			Transform cascade_model = cascades.ortho_transforms[i];
+			glm::mat4 cascade_view = glm::inverse(transform_to_mat4(cascade_model));
+			OrthographicData ortho_data = cascades.ortho_datas[i];
+			cascade_splits[i] = cascades.splits[i];  // no near
+			glm::mat4 cascade_projection = glm::orthoRH_ZO(
+				ortho_data.left, ortho_data.right, ortho_data.bottom,
+				ortho_data.top, ortho_data.z_near, ortho_data.z_far
+			);
+			glm::mat4 cascade_view_projection = cascade_projection * cascade_view;
+
+			light_view_projections[current_layer_index] = cascade_view_projection;
+			++current_layer_index;
+		}
+		
+		light_manager.set_sun_cascade_splits(cascade_splits);
 	}
 
 	// regular lights, spot only

@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 
+#include <glm/vec4.hpp>
+
 #include "light.h"
 
 
@@ -56,7 +58,11 @@ public:
 	LightUniforms build_light_uniform();
 	std::vector<std::shared_ptr<Light>>& ref_lights();
 
+	glm::vec4 get_sun_cascade_splits();
+	void set_sun_cascade_splits(glm::vec4 splits);
+
 public:
 	std::shared_ptr<Light> m_sun;
+	glm::vec4 m_sun_cascade_splits;
 	std::vector<std::shared_ptr<Light>> m_lights;
 };
