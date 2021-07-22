@@ -22,6 +22,11 @@ def draw_lines_transform(transform, lines, color=vmath.Vector3(1.0, 0.0, 0.0), d
     for p0, p1 in lines:
         _add_line(_transform_point(p0), _transform_point(p1), color, duration)
 
+def draw_color_lines(lines, duration=0.0):
+    _add_line = toy.app.timed_geometry_builder.add_line
+    for p0, p1, color in lines:
+        _add_line(p0, p1, color, duration)
+
 def draw_transform(transform, scale=1.0, duration=0.0):
     axis_x, axis_y, axis_z = transform.rotation.to_matrix3()
     origin = transform.translation
@@ -76,8 +81,10 @@ def connect_point_pairs(points0, points1):
         lines.append((point0, point1))
     return lines
 
-def draw_circle(transform, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+def draw_circle(transform, radius=1.0, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
     points = generate_unit_circle_points(16)
+    transform = transform.copy()
+    transform.scale *= radius
     points = [transform.transform_point(point) for point in points]
     lines = connect_points_loop(points)
     for line in lines:
@@ -179,3 +186,17 @@ def draw_orthographic(transform, left, right, bottom, top, z_near, z_far, color=
     draw_lines_transform(transform, connect_points_loop(nears), color, duration)
     draw_lines_transform(transform, connect_points_loop(fars), color, duration)
     draw_lines_transform(transform, connect_point_pairs(nears, fars), color, duration)
+
+def draw_direction(origin, direction, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    aux_color = vcolor.complementary(color)
+    draw_line(origin, origin + direction, color, duration)
+    cone_origin = origin + vmath.Vector3(0.0, direction.y, 0.0)
+    draw_line(origin, cone_origin, aux_color, duration)
+    transform = vmath.Transform()
+    transform.translation = cone_origin
+    radius = vmath.Vector3(direction.x, 0.0, direction.z).length()
+    draw_circle(transform, radius, aux_color, duration)
+
+def draw_cone(transform, radius, height, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    draw_line(transform.translation, transform.transform_point(vmath.Vector3(0.0, height, 0.0)), color, duration)
+    draw_circle(transform, radius, color, duration)

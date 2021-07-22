@@ -2,27 +2,13 @@ import toy
 import vmath
 
 
-class RepeatUntil:
-	def __init__(self, func):
-		self.func = func
-		self.handler = None
-
-	def set_handler(self, handler):
-		self.handler = handler
-
-	def __call__(self):
-		should_continue = self.func()
+def add_repeat_while(duration, func):
+	def wrapper():
+		should_continue = func()
 		if not should_continue:
-			self.handler()
-
-def add_repeat_util(duration, func):
-	repeat_until = RepeatUntil(func)
-	timer = toy.app.timer_manager.add_repeat_timer(duration, repeat_until)
-	def canceler(timer=timer):
-		toy.app.timer_manager.cancel_timer(timer)
-	repeat_until.set_handler(canceler)
+			toy.app.timer_manager.cancel_timer(timer)
+	timer = toy.app.timer_manager.add_repeat_timer(duration, wrapper)
 	return timer
-
 
 class DynamicBulletText:
 	def __init__(self, position, text, duration):
@@ -31,7 +17,7 @@ class DynamicBulletText:
 		self.duration = duration
 		self.countdown = duration
 
-		self.timer = add_repeat_util(0.0, self.tick)
+		self.timer = add_repeat_while(0.0, self.tick)
 
 	def tick(self):
 		toy.app.timed_text_builder.add_text(self.position, self.text, vmath.Vector3(), 0.0)
