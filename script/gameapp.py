@@ -27,7 +27,7 @@ from units.cameraman import Cameraman
 from units.lightman import Lightman
 from units.shadowman import Shadowman
 from units.testman import Testman
-# from units.testgltf import Testgltf
+from units.testgltf import Testgltf
 from units.testnormal import Testnormal
 
 
@@ -68,8 +68,8 @@ class App:
         # self.world.unit_manager.create_unit(Lightman)
         # self.world.unit_manager.create_unit(Shadowman)
         # self.world.unit_manager.create_unit(Testman)
-        # self.world.unit_manager.create_unit(Testgltf)
-        self.world.unit_manager.create_unit(Testnormal)
+        self.world.unit_manager.create_unit(Testgltf)
+        # self.world.unit_manager.create_unit(Testnormal)
 
     def on_key_down(self, key):
         if key == keycodes.VK_F5:

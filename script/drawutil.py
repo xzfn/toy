@@ -197,6 +197,19 @@ def draw_direction(origin, direction, color=vmath.Vector3(1.0, 0.0, 0.0), durati
     radius = vmath.Vector3(direction.x, 0.0, direction.z).length()
     draw_circle(transform, radius, aux_color, duration)
 
+def draw_ray(origin, direction, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    draw_line(origin, origin + direction, color, duration)
+
+def draw_ray_xy(origin, direction, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    end_position = origin + direction
+    draw_line(origin, end_position, color, duration)
+    normal = direction.cross(vmath.Vector3(0.0, 0.0, 1.0)).normalize()
+    bottom_mid = vutil.lerp(end_position, origin, 0.2)
+    side_length = (bottom_mid - end_position).length() * 0.5
+    side_vec = normal * side_length
+    draw_line(end_position, bottom_mid + side_vec, color, duration)
+    draw_line(end_position, bottom_mid - side_vec, color, duration)
+
 def draw_cone(transform, radius, height, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
     draw_line(transform.translation, transform.transform_point(vmath.Vector3(0.0, height, 0.0)), color, duration)
     draw_circle(transform, radius, color, duration)
