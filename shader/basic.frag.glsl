@@ -135,5 +135,5 @@ void main() {
 	}
 	
 	out_Color = vec4(shaded_color + 0.5 * result_color, 1.0);
-	out_Color = out_Color * vec4(debug_cascade_color, 1.0);
+	out_Color = out_Color;// * vec4(debug_cascade_color, 1.0);
 }

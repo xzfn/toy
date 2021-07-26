@@ -4,6 +4,7 @@ import urllib
 
 import vmath
 import toy
+import toyentry
 
 import pygltflib
 
@@ -27,15 +28,18 @@ class GLTFLoader:
     def __init__(self, filename):
         self.filename = filename
         self.gltf = pygltflib.GLTF2().load(filename)
+        self.path = os.path.dirname(self.filename)
 
         self._uris = {}
         self._buffers = {}
         self._buffer_views = {}
+        self._images = {}
+        self._materials = {}
 
     def get_uri(self, uri):
         if uri in self._uris:
             return self._uris[uri]
-        data = read_uri(uri, self.gltf._path)
+        data = read_uri(uri, self.path)
         self._uris[uri] = data
         return data
 
@@ -111,6 +115,26 @@ class GLTFLoader:
         else:
             raise RuntimeError('bad accessor type')
 
+    def get_image(self, image_index):
+        if image_index in self._images:
+            return self._images[image_index]
+        uri = self.gltf.images[image_index].uri
+        print(os.path.join(self.path, uri))
+        image_obj = toy.Texture.create(os.path.join(self.path, uri))
+        self._images[image_index] = image_obj
+        return image_obj
+
+    def get_material(self, material_index):
+        if material_index in self._materials:
+            return self._materials[material_index]        
+        material = self.gltf.materials[material_index]
+        base_color_texture_index = material.pbrMetallicRoughness.baseColorTexture.index
+        image_obj = self.get_image(base_color_texture_index)
+        pipeline = toyentry.app.pipeline
+        material_obj = toy.Material.create(pipeline, image_obj)
+        self._materials[material_index] = material_obj
+        return material_obj
+
     def build_primitive(self, primitive):
         attributes = primitive.attributes
         indices_index = primitive.indices
@@ -120,7 +144,9 @@ class GLTFLoader:
         mesh_data = toy.MeshData()
         mesh_data.set_vertices_data(positions, normals, uvs)
         mesh_data.set_indices(self.get_accessor(indices_index))
-        return mesh_data
+        mesh = toy.Mesh.create(mesh_data)
+        material = self.get_material(primitive.material)
+        return mesh, material
 
     def build(self):
         primitive_objs = []
@@ -128,4 +154,4 @@ class GLTFLoader:
             primitives = mesh.primitives
             primitive = primitives[0]
             primitive_objs.append(self.build_primitive(primitive))
-        return primitive_objs
+        return primitive_objs, self._images
