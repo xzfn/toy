@@ -257,6 +257,9 @@ void wrap_Matrix4(py::module_& m_) {
 	t.def("inverse", [](glm::mat4& self) {
 		return glm::inverse(self);
 	});
+	t.def("transpose", [](glm::mat4& self) {
+		return glm::transpose(self);
+	});
 	t.def("to_transform", [](glm::mat4& self) {
 		return mat4_to_transform(self);
 	});
