@@ -27,6 +27,9 @@ from units.cameraman import Cameraman
 from units.lightman import Lightman
 from units.shadowman import Shadowman
 from units.testman import Testman
+# from units.testgltf import Testgltf
+from units.testnormal import Testnormal
+
 
 import keycodes
 
@@ -58,13 +61,15 @@ class App:
         self.rgb_materials = [self.red_material, self.green_material, self.blue_material]
 
         # units
-        self.world.unit_manager.create_unit(Player)
-        self.world.unit_manager.create_unit(Enemy)
-        self.world.unit_manager.create_unit(Projection)
-        self.world.unit_manager.create_unit(Cameraman)
-        self.world.unit_manager.create_unit(Lightman)
-        self.world.unit_manager.create_unit(Shadowman)
-        self.world.unit_manager.create_unit(Testman)
+        # self.world.unit_manager.create_unit(Player)
+        # self.world.unit_manager.create_unit(Enemy)
+        # self.world.unit_manager.create_unit(Projection)
+        # self.world.unit_manager.create_unit(Cameraman)
+        # self.world.unit_manager.create_unit(Lightman)
+        # self.world.unit_manager.create_unit(Shadowman)
+        # self.world.unit_manager.create_unit(Testman)
+        # self.world.unit_manager.create_unit(Testgltf)
+        self.world.unit_manager.create_unit(Testnormal)
 
     def on_key_down(self, key):
         if key == keycodes.VK_F5:
