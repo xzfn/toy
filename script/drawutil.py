@@ -213,3 +213,39 @@ def draw_ray_xy(origin, direction, color=vmath.Vector3(1.0, 0.0, 0.0), duration=
 def draw_cone(transform, radius, height, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
     draw_line(transform.translation, transform.transform_point(vmath.Vector3(0.0, height, 0.0)), color, duration)
     draw_circle(transform, radius, color, duration)
+
+def draw_box(transform, extents, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    x = extents.x
+    y = extents.y
+    z = extents.z
+    points_negtive_z = [
+        vmath.Vector3(-x, -y, -z),
+        vmath.Vector3(x, -y, -z),
+        vmath.Vector3(x, y, -z),
+        vmath.Vector3(-x, y, -z)
+    ]
+    points_positive_z = [
+        vmath.Vector3(-x, -y, z),
+        vmath.Vector3(x, -y, z),
+        vmath.Vector3(x, y, z),
+        vmath.Vector3(-x, y, z)
+    ]
+    lines = []
+    lines.extend(connect_points_loop(points_negtive_z))
+    lines.extend(connect_points_loop(points_positive_z))
+    lines.extend(connect_point_pairs(points_negtive_z, points_positive_z))
+    draw_lines_transform(transform, lines, color, duration)
+
+def draw_aabb(aabb, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    transform = vmath.Transform()
+    transform.translation = aabb.center
+    draw_box(transform, aabb.extents, color, duration)
+
+def draw_obb(obb, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    transform = vmath.Transform()
+    transform.translation = obb.center
+    transform.rotation = vmath.Quaternion.from_matrix3(obb.axes)
+    draw_box(transform, obb.extents, color, duration)
+
+def draw_plane(plane, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    pass

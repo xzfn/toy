@@ -29,6 +29,7 @@ from units.shadowman import Shadowman
 from units.testman import Testman
 from units.testgltf import Testgltf
 from units.testnormal import Testnormal
+from units.testculling import Testculling
 
 
 import keycodes
@@ -68,8 +69,9 @@ class App:
         # self.world.unit_manager.create_unit(Lightman)
         # self.world.unit_manager.create_unit(Shadowman)
         # self.world.unit_manager.create_unit(Testman)
-        self.world.unit_manager.create_unit(Testgltf)
+        # self.world.unit_manager.create_unit(Testgltf)
         # self.world.unit_manager.create_unit(Testnormal)
+        self.world.unit_manager.create_unit(Testculling)
 
     def on_key_down(self, key):
         if key == keycodes.VK_F5:
