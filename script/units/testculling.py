@@ -52,6 +52,23 @@ def planes_intersect_aabb(planes, aabb):
     return True
 
 
+def plane_intersect_obb(plane, obb):
+    center = obb.center
+    axes = obb.axes
+    extents = obb.extents
+    normal = vmath.Vector3(plane.x, plane.y, plane.z)
+    dot = plane.x * center.x + plane.y * center.y + plane.z * center.z + plane.w
+    effective_radius = abs(normal.dot(axes[0])) * extents.x + abs(normal.dot(axes[1])) * extents.y + abs(normal.dot(axes[2])) * extents.z
+    return dot > -effective_radius
+
+
+def planes_intersect_obb(planes, obb):
+    for plane in planes:
+        if not plane_intersect_obb(plane, obb):
+            return False
+    return True
+
+
 def inverse_transform_plane(matrix, plane):
     m = matrix.transpose()
     x = vmath.Vector4(m.m00, m.m10, m.m20, m.m30).dot(plane)
@@ -62,9 +79,31 @@ def inverse_transform_plane(matrix, plane):
     return vmath.Vector4(x, y, z, w) * (1.0 / length)
 
 
-def view_projection_planes(matrix):
-    return [
+def normalize_plane(plane):
+    normal = vmath.Vector3(plane.x, plane.y, plane.z)
+    return plane * (1.0 / normal.length())
 
+
+def view_projection_planes(matrix):
+    m = matrix
+    row0 = vmath.Vector4(m.m00, m.m10, m.m20, m.m30)
+    row1 = vmath.Vector4(m.m01, m.m11, m.m21, m.m31)
+    row2 = vmath.Vector4(m.m02, m.m12, m.m22, m.m32)
+    row3 = vmath.Vector4(m.m03, m.m13, m.m23, m.m33)
+    left = row0 + row3
+    right = -row0 + row3
+    bottom = row1 + row3
+    top = -row1 + row3
+    near = row2
+    far = -row2 + row3
+
+    return [
+        normalize_plane(left),
+        normalize_plane(right),
+        normalize_plane(bottom),
+        normalize_plane(top),
+        normalize_plane(near),
+        normalize_plane(far)
     ]
 
 
@@ -91,12 +130,19 @@ class Testculling(Unit):
 
         spheres = [sphere1, sphere2, sphere3, sphere4]
 
+        obb_rotation = vmath.Quaternion.from_angle_axis(game_time * 0.5, vutil.VEC3_Y)
+        obb1 = OBB(vmath.Vector3(0.0, 0.0, delta), obb_rotation.to_matrix3(), vmath.Vector3(2, 1, 4))
+
+        obbs = [obb1]
+
+
         planes = [
             vmath.Vector4(0.0, 0.0, 1.0, -1.0),
             vmath.Vector4(1.0, 0.0, 1.0, -3.0),
         ]
 
         transform = vmath.Transform()
+        transform.translation = vmath.Vector3(math.cos(game_time) * 5, 0.0, math.sin(game_time * 0.5) * 2)
         transform.rotation = vmath.Quaternion.from_angle_axis(math.pi + game_time, vutil.VEC3_Y)
 
         fov = 1.0
@@ -122,6 +168,8 @@ class Testculling(Unit):
 
         planes = frustum_planes
 
+        planes = view_projection_planes(view_projection)
+
         for aabb in aabbs:
             if planes_intersect_aabb(planes, aabb):
                 color = vcolor.GREEN
@@ -136,3 +184,9 @@ class Testculling(Unit):
                 color = vcolor.BLACK
             drawutil.draw_sphere(sphere[0], sphere[1], color)
 
+        for obb in obbs:
+            if planes_intersect_obb(planes, obb):
+                color = vcolor.GREEN
+            else:
+                color = vcolor.BLACK
+            drawutil.draw_obb(obb, color)
