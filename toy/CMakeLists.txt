@@ -48,7 +48,10 @@ set(toy_SOURCES
 
 	src/color_util.h
 	src/color_util.cpp
-
+	src/bounding_util.h
+	src/bounding_util.cpp
+	src/culling_util.h
+	src/culling_util.cpp
 	src/timed_info_fwd.h
 	src/timed_info.h
 	src/timed_info.cpp

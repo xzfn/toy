@@ -166,7 +166,7 @@ void ShadowManager::render_one_depth(VkCommandBuffer command_buffer, BasicPipeli
 	pipeline_depth.bind_descriptor_sets(command_buffer, descriptor_sets_frame);
 
 	// actual render
-	render_manager.render_depth(command_buffer, pipeline_depth);
+	render_manager.render_depth(command_buffer, pipeline_depth, view_projection);
 
 	// end depth render pass
 	vkCmdEndRenderPass(command_buffer);

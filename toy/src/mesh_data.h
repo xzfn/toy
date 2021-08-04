@@ -6,6 +6,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
+#include "bounding_util.h"
+
 
 struct Vertex {
 	glm::vec3 position;
@@ -43,7 +45,11 @@ public:
 	std::vector<Vertex>& ref_vertices();
 	std::vector<uint32_t>& ref_indices();
 
+	AABB get_bounding_box();
+	void recalculate_bounding_box();
+
 private:
 	std::vector<Vertex> m_vertices;
 	std::vector<uint32_t> m_indices;
+	AABB m_bounding_box;
 };

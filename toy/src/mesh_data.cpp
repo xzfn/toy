@@ -9,6 +9,7 @@ MeshData::MeshData()
 
 void MeshData::set_vertices_data(const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& uvs)
 {
+	m_bounding_box = points_to_aabb(positions);
 	set_positions(positions);
 	set_normals(normals);
 	set_uvs(uvs);
@@ -101,4 +102,18 @@ std::vector<Vertex>& MeshData::ref_vertices()
 std::vector<uint32_t>& MeshData::ref_indices()
 {
 	return m_indices;
+}
+
+AABB MeshData::get_bounding_box()
+{
+	return m_bounding_box;
+}
+
+void MeshData::recalculate_bounding_box()
+{
+	PointsToAABB helper;
+	for (auto& vertex : m_vertices) {
+		helper.add(vertex.position);
+	}
+	m_bounding_box = helper.get();
 }

@@ -314,7 +314,7 @@ void App::render(VkCommandBuffer command_buffer) {
 	transient_geometry_mesh.draw(command_buffer);
 
 	// render_manager
-	render_manager.render(command_buffer, descriptor_sets_frame);
+	render_manager.render(command_buffer, descriptor_sets_frame, frame_uniform.view_projection);
 
 	// global timed text
 	material_text.get_pipeline()->bind(command_buffer);

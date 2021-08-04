@@ -26,6 +26,8 @@ void Mesh::init_resource(VulkanContext& ctx, MeshData& mesh_data)
 	m_index_buffer.memory = index_buffer_and_memory.second;
 	// info
 	m_index_count = indices.size();
+	// bounding box
+	m_bounding_box = mesh_data.get_bounding_box();
 }
 
 void Mesh::draw(VkCommandBuffer command_buffer)
@@ -42,4 +44,9 @@ void Mesh::destroy()
 	VulkanContext& ctx = *m_ctx;
 	ctx.destroy_vulkan_buffer(m_vertex_buffer);
 	ctx.destroy_vulkan_buffer(m_index_buffer);
+}
+
+AABB Mesh::get_bounding_box()
+{
+	return m_bounding_box;
 }
