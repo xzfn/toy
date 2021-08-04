@@ -41,7 +41,7 @@ VkInstance create_vulkan_instance() {
         VK_API_VERSION_1_2,  // apiVersion;
     };
 
-    std::vector<char*> extensions = {
+    std::vector<const char*> extensions = {
         VK_KHR_SURFACE_EXTENSION_NAME,
         VK_KHR_WIN32_SURFACE_EXTENSION_NAME
     };
@@ -169,7 +169,7 @@ VkDevice create_device(VkPhysicalDevice physical_device, uint32_t queue_family_i
 {
     VkResult vkres;
 
-    std::vector<char*> device_extensions{
+    std::vector<const char*> device_extensions{
         "VK_KHR_swapchain"
     };
     float queue_priority[] = { 1.0f };

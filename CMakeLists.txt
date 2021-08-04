@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(toy)
 
+set(CMAKE_CXX_STANDARD 20)
+
 # Set a suitable platform define.
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(VULKAN_PLATFORM_DEFINES VK_USE_PLATFORM_WIN32_KHR)
