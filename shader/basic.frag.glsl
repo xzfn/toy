@@ -75,11 +75,17 @@ float calc_spot_angle_attenuation(float cos_theta, float cos_inner, float cos_ou
 	return clamp((cos_theta - cos_outer) / (cos_inner - cos_outer), 0.0, 1.0);
 }
 
+vec3 apply_fog(vec3 shaded_color, vec3 fog_color, float fog_density, float distance_) {
+	float f = exp(-fog_density * distance_);
+	return mix(fog_color, shaded_color, f);
+}
+
 void main() {
 	vec3 base_color = texture(u_Texture, v_Texcoord).xyz;
 
 	vec3 frag_normal = normalize(v_WorldNormal);
 
+	vec3 view_vec = u_frame.camera_position - v_WorldPosition;
 	vec3 view_dir = normalize(u_frame.camera_position - v_WorldPosition);
 
 	float view_z = (u_frame.view * vec4(v_WorldPosition, 1.0)).z;
@@ -134,6 +140,11 @@ void main() {
 		}
 	}
 	
-	out_Color = vec4(shaded_color + 0.5 * result_color, 1.0);
+	shaded_color = shaded_color + 0.5 * result_color;
+
+	vec3 fog_color = vec3(0.4);
+	shaded_color = apply_fog(shaded_color, fog_color, 0.05, length(view_vec));
+
+	out_Color = vec4(shaded_color, 1.0);
 	out_Color = out_Color;// * vec4(debug_cascade_color, 1.0);
 }
