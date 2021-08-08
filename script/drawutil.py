@@ -249,3 +249,10 @@ def draw_obb(obb, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
 
 def draw_plane(plane, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
     pass
+
+def draw_polyline(polyline, color=vmath.Vector3(1.0, 0.0, 0.0), duration=0.0):
+    _add_line = toy.app.timed_geometry_builder.add_line
+    for i in range(len(polyline) - 1):
+        p0 = polyline[i]
+        p1 = polyline[i + 1]
+        _add_line(p0, p1, color, duration)
