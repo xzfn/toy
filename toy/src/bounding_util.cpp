@@ -1,5 +1,21 @@
 #include "bounding_util.h"
 
+#include <format>
+
+
+std::string vec3_floats_to_string(glm::vec3 v) {
+	return std::format("{:.4f}, {:.4f}, {:.4f}", v.x, v.y, v.z);
+}
+
+
+std::string aabb_to_string(AABB aabb) {
+	return std::format(
+		"AABB(center({}), extents({})",
+		vec3_floats_to_string(aabb.center),
+		vec3_floats_to_string(aabb.extents)
+	);
+}
+
 
 AABB min_max_to_aabb(glm::vec3 mins, glm::vec3 maxs) {
 	glm::vec3 center = (mins + maxs) * 0.5f;

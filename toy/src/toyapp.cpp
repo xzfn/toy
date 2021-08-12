@@ -216,6 +216,7 @@ void App::update() {
 	clear_color.float32[3] = 1.0f;
 
 	camera_manager.update(delta_time);
+	render_manager.update(delta_time);
 
 
 	ctx.render(clear_color,

@@ -19,6 +19,9 @@ struct OBB {
 };
 
 
+std::string aabb_to_string(AABB aabb);
+
+
 AABB min_max_to_aabb(glm::vec3 mins, glm::vec3 maxs);
 
 AABB transform_aabb(glm::mat4 matrix, AABB aabb);

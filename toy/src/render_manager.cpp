@@ -33,6 +33,12 @@ void RenderManager::add_geometry_mesh(std::shared_ptr<GeometryMesh> mesh, glm::m
 	m_geometry_mesh_render_commands.push_back(render_command);
 }
 
+void RenderManager::update(float delta_time)
+{
+	(void)delta_time;
+	m_debug_info.depth_culled_list.clear();
+}
+
 void RenderManager::render(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet> descriptor_sets, glm::mat4 view_projection)
 {
 	std::size_t total = m_mesh_render_commands.size();
@@ -57,8 +63,7 @@ void RenderManager::render(VkCommandBuffer command_buffer, std::vector<VkDescrip
 		mesh.draw(command_buffer);
 	}
 
-	(void)total;
-	//std::cout << std::format("culling {}/{}\n", culled, total);
+	m_debug_info.render_culled = PartSlashTotal(culled, total);
 
 	for (auto& render_command : m_geometry_mesh_render_commands) {
 		GeometryMesh& mesh = *render_command.mesh;
@@ -94,6 +99,10 @@ void RenderManager::render_depth(VkCommandBuffer command_buffer, BasicPipeline& 
 		mesh.draw(command_buffer);
 	}
 
-	(void)total;
-	//std::cout << std::format("shadow culling {}/{}\n", culled, total);
+	m_debug_info.depth_culled_list.push_back(PartSlashTotal(culled, total));
+}
+
+RenderManagerDebugInfo RenderManager::get_debug_info()
+{
+	return m_debug_info;
 }
