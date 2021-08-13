@@ -26,6 +26,7 @@ find_package(pybind11 REQUIRED)
 if (MSVC)
   add_compile_options(/W4)  # /WX
   add_compile_options(/wd4201)
+  add_compile_options(/MP)
 else()
   add_compile_options(-Wall -Wextra -pedantic)  # /-Werror
 endif()
