@@ -27,4 +27,5 @@ void wrap_app(pybind11::module_& m) {
 		this_->script_on_key_down = callback;
 	});
 	t.def("get_window", &App::get_window, py::return_value_policy::reference);
+	t.def("set_should_close", &App::set_should_close);
 }

@@ -45,6 +45,7 @@ class App:
         console_handler = remoteconsole.server.PythonCodeHandler(self.console_environment)
         self.console_server.set_request_handler(console_handler)
         self.world = None
+        self.editor = None
 
     def startup(self):
         toy.app.bind_key_down(self.on_key_down)
@@ -87,10 +88,25 @@ class App:
                 print('reload script')
                 main_script_folder = os.path.dirname(sys.modules[__name__].__file__)
                 retroreload.retroreload_script_folders([main_script_folder])
+        elif key == keycodes.VK_F6:
+            self.setup_editor()
+
+    def setup_editor(self):
+        if self.editor:
+            return
+        from editor import editor_main
+        self.editor = editor_main.Editor()
+
+    def on_action_debug(self):
+        print('on_action_debug')
+        drawutil.draw_sphere(vmath.Vector3(0, 1, 0), color=vcolor.hue(random.random()), duration=10.0)
 
     def update(self):
         self.console_server.service()
         time.sleep(0.001)
+
+        if self.editor:
+            self.editor.update()
 
         delta_time = toy.app.delta_time
 

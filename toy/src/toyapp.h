@@ -68,6 +68,8 @@ public:
 
 	Window* get_window();
 
+	void set_should_close();
+
 public:
 	VulkanContext* ctxptr;
 	Window* m_window;

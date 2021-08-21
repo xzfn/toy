@@ -400,3 +400,8 @@ VulkanContext& App::get_ctx()
 {
 	return *ctxptr;
 }
+
+void App::set_should_close()
+{
+	m_window->set_should_close();
+}
