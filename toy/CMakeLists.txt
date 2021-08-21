@@ -202,6 +202,9 @@ set(toyapp_SOURCES
 	src/wrap/wrap_app.h
 	src/wrap/wrap_app.cpp
 
+	src/wrap/wrap_window.h
+	src/wrap/wrap_window.cpp
+
 	src/python_util.h
 	src/python_util.cpp
 )

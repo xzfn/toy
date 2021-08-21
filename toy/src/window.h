@@ -35,6 +35,9 @@ public:
 	
 	HWND get_win32_hwnd();
 	HINSTANCE get_win32_hinstance();
+	void move_window(int x, int y, int width, int height);
+	void set_borderless(bool is_borderless);
+	void set_win32_hwnd_parent(HWND hwnd_parent);
 
 	void set_update_callback(UpdateCallback callback);
 

@@ -66,6 +66,8 @@ public:
 
 	glm::vec2 get_view_size();
 
+	Window* get_window();
+
 public:
 	VulkanContext* ctxptr;
 	Window* m_window;

@@ -106,6 +106,28 @@ HINSTANCE Window::get_win32_hinstance()
 	return m_hinstance;
 }
 
+void Window::move_window(int x, int y, int width, int height)
+{
+	SetWindowPos(m_hwnd, NULL, x, y, width, height, SWP_NOZORDER);
+}
+
+void Window::set_borderless(bool is_borderless)
+{
+	if (is_borderless) {
+		SetWindowLongPtr(m_hwnd, GWL_STYLE, 0);
+	}
+	else {
+		SetWindowLongPtr(m_hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+	}
+	SetWindowPos(m_hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+void Window::set_win32_hwnd_parent(HWND hwnd_parent)
+{
+	SetWindowLongPtr(m_hwnd, GWLP_HWNDPARENT, (LONG_PTR)hwnd_parent);
+	SetWindowPos(m_hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
 Window::~Window()
 {
 	g_window_registry.unregister_window(m_hwnd);

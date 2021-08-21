@@ -391,6 +391,11 @@ glm::vec2 App::get_view_size()
 	return glm::vec2{ extent.width, extent.height };
 }
 
+Window* App::get_window()
+{
+	return m_window;
+}
+
 VulkanContext& App::get_ctx()
 {
 	return *ctxptr;
