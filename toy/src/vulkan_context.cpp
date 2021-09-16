@@ -120,6 +120,11 @@ VkSampler VulkanContext::create_depth_sampler()
 	return vkutil::create_depth_sampler(basic.device);
 }
 
+VkSampler VulkanContext::create_shadow_sampler()
+{
+	return vkutil::create_shadow_sampler(basic.device);
+}
+
 void VulkanContext::destroy_buffer(VkBuffer buffer)
 {
 	vkDestroyBuffer(basic.device, buffer, vkutil::vulkan_allocator);

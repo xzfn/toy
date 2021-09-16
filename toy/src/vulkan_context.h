@@ -85,6 +85,7 @@ public:
 	VkImageView create_image_view_texture_depth(VkImage image, bool use_depth, bool use_stencil, uint32_t base_array_layer, uint32_t layer_count);
 	VkSampler create_sampler();
 	VkSampler create_depth_sampler();
+	VkSampler create_shadow_sampler();
 	void destroy_buffer(VkBuffer buffer);
 	void free_memory(VkDeviceMemory memory);
 	void destroy_buffer_and_memory(VkBuffer buffer, VkDeviceMemory memory);

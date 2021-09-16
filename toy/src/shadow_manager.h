@@ -28,7 +28,7 @@ public:
 	void render_depth_pass(VkCommandBuffer command_buffer, BasicPipeline& pipeline_depth, LightManager& light_manager, RenderManager& render_manager, CameraManager& camera_manager);
 	void destroy();
 
-	VkSampler get_depth_sampler();
+	VkSampler get_sampler();
 	VkImageView get_depth_image_view_array();
 	ShadowUniforms build_shadow_uniform();
 
@@ -37,7 +37,7 @@ private:
 
 public:
 	VulkanContext* m_ctx;
-	VkSampler m_depth_sampler;
+	VkSampler m_sampler;
 	VkImage m_depth_image;  // 2d array
 	VkDeviceMemory m_depth_image_memory;
 	VkImageView m_depth_image_view_array;  // view for 2d array

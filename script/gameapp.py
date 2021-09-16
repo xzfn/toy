@@ -33,6 +33,7 @@ from units.testculling import Testculling
 from units.testbezier import Testbezier
 from units.engineinfo import EngineInfo
 from units.testmover import Testmover
+from units.testline import Testline
 
 import keycodes
 
@@ -71,13 +72,14 @@ class App:
         # self.world.unit_manager.create_unit(Cameraman)
         # self.world.unit_manager.create_unit(Lightman)
         # self.world.unit_manager.create_unit(Shadowman)
-        # self.world.unit_manager.create_unit(Testman)
+        self.world.unit_manager.create_unit(Testman)
         # self.world.unit_manager.create_unit(Testgltf)
         # self.world.unit_manager.create_unit(Testnormal)
         # self.world.unit_manager.create_unit(Testculling)
         # self.world.unit_manager.create_unit(Testbezier)
         self.world.unit_manager.create_unit(EngineInfo)
-        self.world.unit_manager.create_unit(Testmover)
+        # self.world.unit_manager.create_unit(Testmover)
+        # self.world.unit_manager.create_unit(Testline)
 
     def on_key_down(self, key):
         if key == keycodes.VK_F5:

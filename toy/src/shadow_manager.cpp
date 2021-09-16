@@ -19,7 +19,7 @@ void ShadowManager::init(VulkanContext& ctx)
 {
 	m_ctx = &ctx;
 
-	m_depth_sampler = ctx.create_depth_sampler();
+	m_sampler = ctx.create_shadow_sampler();
 
 	auto image_and_memory = ctx.create_texture_depth(SHADOW_DEPTH_WIDTH, SHADOW_DEPTH_HEIGHT, MAX_SHADOWS, true);
 	m_depth_image = image_and_memory.first;
@@ -182,12 +182,12 @@ void ShadowManager::destroy()
 	ctx.destroy_image_view(m_depth_image_view_array);
 	ctx.destroy_image(m_depth_image);
 	ctx.free_memory(m_depth_image_memory);
-	ctx.destroy_sampler(m_depth_sampler);
+	ctx.destroy_sampler(m_sampler);
 }
 
-VkSampler ShadowManager::get_depth_sampler()
+VkSampler ShadowManager::get_sampler()
 {
-	return m_depth_sampler;
+	return m_sampler;
 }
 
 VkImageView ShadowManager::get_depth_image_view_array()

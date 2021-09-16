@@ -273,7 +273,7 @@ void App::pre_render(VkCommandBuffer command_buffer) {
 
 	descriptor_set_shadow = ctx.create_descriptor_set_transient(pipeline.ref_descriptor_set_layouts().shadow);
 	buffer_and_memory = ctx.create_uniform_buffer_coherent((uint8_t*)&shadow_uniform, sizeof(shadow_uniform));
-	VkSampler depth_sampler = shadow_manager.get_depth_sampler();
+	VkSampler depth_sampler = shadow_manager.get_sampler();
 	VkImageView depth_image_view_array = shadow_manager.get_depth_image_view_array();
 	pipeline.update_descriptor_set_shadow(descriptor_set_shadow, buffer_and_memory.first, sizeof(shadow_uniform), depth_sampler, depth_image_view_array);
 	ctx.destroy_vulkan_buffer(VulkanBuffer{ buffer_and_memory.first, buffer_and_memory.second });

@@ -4,7 +4,7 @@
 #include "light_uniforms.glsl"
 #include "shadow_uniforms.glsl"
 
-layout(set = 2, binding = 1) uniform sampler2DArray u_ShadowMap;
+layout(set = 2, binding = 1) uniform sampler2DArrayShadow u_ShadowMap;
 
 // FIXME 4 is material
 layout(set = 4, binding = 0) uniform MaterialUniforms {
@@ -60,14 +60,23 @@ vec3 shade_sun_light(vec3 base_color, vec3 view_dir, vec3 frag_normal, float vis
 	return (ambient_strength + (diffuse_strength + specular_strength) * visibility) * sun_light_color * base_color;
 }
 
-float calc_shadow_visibility(uint layer) {
+// float calc_shadow_visibility(uint layer) {
+// 	vec4 clip_vec = u_shadow.layers[layer].light_matrix * vec4(v_WorldPosition, 1.0);
+// 	vec3 clip_pos = clip_vec.xyz / clip_vec.w;
+// 	vec2 shadow_uv = clip_to_uv(clip_pos.xy);
+// 	float shadow_depth = texture(u_ShadowMap, vec3(shadow_uv, layer)).x;
+// 	float shadow_bias = 0.001;
+// 	float shadow_delta = shadow_bias + shadow_depth - clip_pos.z;
+// 	float visibility = step(0.0, shadow_delta);
+// 	return visibility;
+// }
+
+float calc_shadow_visibility_sampler_shadow(uint layer) {
 	vec4 clip_vec = u_shadow.layers[layer].light_matrix * vec4(v_WorldPosition, 1.0);
 	vec3 clip_pos = clip_vec.xyz / clip_vec.w;
 	vec2 shadow_uv = clip_to_uv(clip_pos.xy);
-	float shadow_depth = texture(u_ShadowMap, vec3(shadow_uv, layer)).x;
-	float shadow_bias = 0.001;
-	float shadow_delta = shadow_bias + shadow_depth - clip_pos.z;
-	float visibility = step(0.0, shadow_delta);
+	float base_z = clip_pos.z - 0.005;
+	float visibility = texture(u_ShadowMap, vec4(shadow_uv, layer, base_z)).x;
 	return visibility;
 }
 
@@ -92,7 +101,7 @@ void main() {
 
 	int sun_shadow_layer = calc_sun_cascade(u_frame.sun_cascade_splits, view_z);
 	vec3 debug_cascade_color = encode_small_int(sun_shadow_layer);
-	float visibility = calc_shadow_visibility(sun_shadow_layer);
+	float visibility = calc_shadow_visibility_sampler_shadow(sun_shadow_layer);
 
 	//out_Color = vec4(base_color * visibility, 1.0);
 	vec3 shaded_color = 0.5 * shade_sun_light(base_color, view_dir, frag_normal, visibility);
@@ -121,7 +130,7 @@ void main() {
 
 			float spot_visibility = 1.0f;
 			if (bool(light.shadow)) {
-				spot_visibility = calc_shadow_visibility(light.shadow_layer);
+				spot_visibility = calc_shadow_visibility_sampler_shadow(light.shadow_layer);
 			}
 
 			vec3 light_dir = normalize(light.position - v_WorldPosition);

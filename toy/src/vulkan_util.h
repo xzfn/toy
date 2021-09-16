@@ -59,6 +59,7 @@ std::pair<VkImage, VkDeviceMemory> create_texture(const VkPhysicalDeviceMemoryPr
 VkImageView create_image_view_texture(VkDevice device, VkImage image);
 VkSampler create_sampler(VkDevice device);
 VkSampler create_depth_sampler(VkDevice device);
+VkSampler create_shadow_sampler(VkDevice device);
 VkImage create_image_cubemap(VkDevice device, uint32_t width, uint32_t height);
 std::pair<VkImage, VkDeviceMemory> create_texture_cubemap(const VkPhysicalDeviceMemoryProperties& memory_properties,
 	VkDevice device, VkQueue queue, VkCommandBuffer command_buffer, uint32_t width, 

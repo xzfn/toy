@@ -1354,6 +1354,34 @@ VkSampler create_depth_sampler(VkDevice device) {
     return sampler;
 }
 
+VkSampler create_shadow_sampler(VkDevice device) {
+    VkResult vkres;
+    VkSamplerCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,  // sType;
+        nullptr,  // pNext;
+        0,  // flags;
+        VK_FILTER_LINEAR,  // magFilter;
+        VK_FILTER_LINEAR,  // minFilter;
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,  // mipmapMode;
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,  // addressModeU;
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,  // addressModeV;
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,  // addressModeW;
+        0.0f,  // mipLodBias;
+        VK_FALSE,  // anisotropyEnable;
+        1.0f,  // maxAnisotropy;
+        VK_TRUE,  // compareEnable;
+        VK_COMPARE_OP_LESS,  // compareOp;
+        0.0f,  // minLod;
+        1.0f,  // maxLod;
+        VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,  // borderColor;
+        VK_FALSE  // unnormalizedCoordinates;
+    };
+    VkSampler sampler = VK_NULL_HANDLE;
+    vkres = vkCreateSampler(device, &create_info, vulkan_allocator, &sampler);
+    check_vk_result(vkres);
+    return sampler;
+}
+
 VkImage create_image_cubemap(VkDevice device, uint32_t width, uint32_t height)
 {
     VkExtent3D extent = {
