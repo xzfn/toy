@@ -68,6 +68,17 @@ class Testman(Unit):
             material = self.rgb_materials[i]
             toy.app.render_manager.add_mesh(self.cube_mesh, transform.to_matrix4(), material)
 
+        input_manager = toy.app.input_manager
+        if input_manager.get_joystick_button(0):
+            transform = vmath.Transform()
+            thumb = input_manager.get_joystick_thumb_right()
+            diff = vmath.Vector3(thumb[0], 0.0, thumb[1])
+            transform.translation = vmath.Vector3(0.0, 5.0, 0.0) + diff * 3.0
+            trigger_left = input_manager.get_joystick_trigger_left()
+            trigger_right = input_manager.get_joystick_trigger_right()
+            transform.rotation = vmath.Quaternion.from_euler_angles(vmath.Vector3(trigger_left, trigger_right, 0.0))
+            toy.app.render_manager.add_mesh(self.cube_mesh, transform.to_matrix4(), self.material)
+
     def draw_lights(self):
         sun_direction = vmath.Vector3(math.cos(self.world.game_time), -1.0, math.sin(self.world.game_time)).normalize()
         transform = vmath.Transform()
