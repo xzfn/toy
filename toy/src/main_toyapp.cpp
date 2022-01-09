@@ -2,10 +2,15 @@
 
 #include <iostream>
 
+#include <lua.hpp>
+
 #include <pybind11/embed.h>
 
 #include <pybind11/functional.h>
 namespace py = pybind11;
+
+#include "lua_util.h"
+
 
 App* g_app;
 
@@ -27,6 +32,11 @@ int main() {
 	py::scoped_interpreter guard{};
 	py::print("hello world");
 
+	lua_State* L = luaL_newstate();
+	luautil::set_global_state(L);
+	luaL_openlibs(L);
+	luautil::bind_all(L);
+
 	App app;
 	g_app = &app;
 	std::cout << "startup\n";
@@ -37,5 +47,7 @@ int main() {
 
 	std::cout << "shutdown\n";
 	app.shutdown();
+
+	lua_close(L);
 	return 0;
 }

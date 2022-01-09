@@ -22,6 +22,11 @@ find_package(glm REQUIRED)
 
 find_package(pybind11 REQUIRED)
 
+find_package(Lua REQUIRED)
+
+find_package(sol2 REQUIRED)
+
+
 # more warnings
 if (MSVC)
   add_compile_options(/W4)  # /WX

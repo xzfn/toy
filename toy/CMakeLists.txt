@@ -144,9 +144,13 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_toy.h
 	src/wrap/wrap_toy.cpp
+	src/luawrap/luawrap_toy.h
+	src/luawrap/luawrap_toy.cpp
 
 	src/wrap/wrap_vmath.h
 	src/wrap/wrap_vmath.cpp
+	src/luawrap/luawrap_vmath.h
+	src/luawrap/luawrap_vmath.cpp
 
 	src/wrap/wrap_timer_manager.h
 	src/wrap/wrap_timer_manager.cpp
@@ -204,14 +208,20 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_app.h
 	src/wrap/wrap_app.cpp
+	src/luawrap/luawrap_app.h
+	src/luawrap/luawrap_app.cpp
 
 	src/wrap/wrap_window.h
 	src/wrap/wrap_window.cpp
 
 	src/python_util.h
 	src/python_util.cpp
+	src/lua_util.h
+	src/lua_util.cpp
 )
 
 add_executable(toyapp ${toyapp_SOURCES})
+target_include_directories(toyapp PUBLIC ${LUA_INCLUDE_DIR})
+target_compile_options(toyapp PUBLIC /bigobj)
 target_link_libraries(toyapp PUBLIC toy)
-target_link_libraries(toyapp PRIVATE pybind11::embed)
+target_link_libraries(toyapp PRIVATE pybind11::embed sol2 ${LUA_LIBRARY})

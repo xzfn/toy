@@ -5,6 +5,9 @@
 #include <pybind11/functional.h>
 namespace py = pybind11;
 
+#define SOL_ALL_SAFETIES_ON 1
+#include <sol/sol.hpp>
+
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -20,6 +23,7 @@ namespace py = pybind11;
 #include "wrap/wrap_toy.h"
 
 #include "python_util.h"
+#include "lua_util.h"
 
 #include "vulkan_helper.h"
 
@@ -56,6 +60,12 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	py::module sys = py::module::import("sys");
 	py::list sys_path = sys.attr("path");
 	sys_path.append("../../toy/script");
+
+	lua_State* L = luautil::get_global_state();
+	sol::state_view lua(L);
+	std::string lua_path = lua["package"]["path"];
+	lua_path = "../../toy/luascript/?.lua;../../toy/luascript/?/init.lua" + lua_path;
+	lua["package"]["path"] = lua_path;
 
 	window->set_resize_callback([this](int width, int height) {
 		this->on_resize(width, height);
@@ -171,6 +181,13 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	auto toyentry = py::module::import("toyentry");
 	toyentry.attr("startup")();
 	PYUTIL_CHECK_RUN_END
+
+	sol::table lua_toyentry = lua["require"]("toyentry");
+	auto lua_ret = lua_toyentry["startup"]();
+	if (!lua_ret.valid()) {
+		sol::error err = lua_ret;
+		std::cout << "ERROR lua startup error " << err.what() << "\n";
+	}
 }
 
 void App::shutdown() {
@@ -178,6 +195,15 @@ void App::shutdown() {
 	auto toyentry = py::module::import("toyentry");
 	toyentry.attr("shutdown")();
 	PYUTIL_SAFE_RUN_END
+
+	lua_State* L = luautil::get_global_state();
+	sol::state_view lua(L);
+	sol::table lua_toyentry = lua["require"]("toyentry");
+	auto lua_ret = lua_toyentry["shutdown"]();
+	if (!lua_ret.valid()) {
+		sol::error err = lua_ret;
+		std::cout << "ERROR lua shutdown error " << err.what() << "\n";
+	}
 
 	VulkanContext& ctx = *ctxptr;
 	ctx.device_wait_idle();
@@ -207,6 +233,15 @@ void App::update() {
 			std::cout << "ERROR python update throws: " << e.what() << "\n";
 			pyutil::call_sys_excepthook(e);
 		}
+	}
+
+	lua_State* L = luautil::get_global_state();
+	sol::state_view lua(L);
+	sol::table lua_toyentry = lua["require"]("toyentry");
+	auto lua_ret = lua_toyentry["update"]();
+	if (!lua_ret.valid()) {
+		sol::error err = lua_ret;
+		std::cout << "ERROR lua update error " << err.what() << "\n";
 	}
 
 	VkClearColorValue clear_color;
