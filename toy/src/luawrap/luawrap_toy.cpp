@@ -4,12 +4,13 @@
 #include "luawrap_toy.h"
 
 #include "luawrap_app.h"
+#include "luawrap_geometry_builder.h"
 
 #include "global_app.h"
 
 
 static void luawrap_toy(sol::table& m) {
-
+	luawrap_geometry_builder(m);
 	luawrap_app(m);
 
 }
@@ -20,6 +21,7 @@ int luaopen_toy(lua_State * L) {
 
 	luawrap_toy(m);
 
+	m["app"] = g_app;
 	m.set_function("get_app", []() {
 		return g_app;
 	});

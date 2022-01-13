@@ -172,6 +172,8 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_geometry_builder.h
 	src/wrap/wrap_geometry_builder.cpp
+	src/luawrap/luawrap_geometry_builder.h
+	src/luawrap/luawrap_geometry_builder.cpp
 
 	src/wrap/wrap_resource_manager.h
 	src/wrap/wrap_resource_manager.cpp

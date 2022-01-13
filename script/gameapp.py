@@ -5,8 +5,6 @@ import math
 import random
 import sys
 
-import numpy as np
-
 import toy
 import vmath
 from vmathlib import vcolors, vutil, vcolor
@@ -35,6 +33,7 @@ from units.engineinfo import EngineInfo
 from units.testmover import Testmover
 from units.testline import Testline
 from units.testease import Testease
+from units.teststoneskipping import TestStoneSkipping
 
 import keycodes
 
@@ -81,7 +80,8 @@ class App:
         self.world.unit_manager.create_unit(EngineInfo)
         # self.world.unit_manager.create_unit(Testmover)
         # self.world.unit_manager.create_unit(Testline)
-        self.world.unit_manager.create_unit(Testease)
+        # self.world.unit_manager.create_unit(Testease)
+        self.world.unit_manager.create_unit(TestStoneSkipping)
 
     def on_key_down(self, key):
         if key == keycodes.VK_F5:
@@ -120,6 +120,9 @@ class App:
         self.world.tick(delta_time)
 
         self.world.render()
+
+        # import pdb
+        # pdb.set_trace()
 
     def draw_frame_info(self):
         delta_time = toy.app.delta_time
