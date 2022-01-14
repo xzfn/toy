@@ -34,4 +34,11 @@ void run_script(lua_State* L, std::string_view code) {
 	lua.script(code);
 }
 
+void check_lua_ret(sol::protected_function_result& lua_ret) {
+	if (!lua_ret.valid()) {
+		sol::error err = lua_ret;
+		std::cout << "ERROR lua error " << err.what() << "\n";
+	}
+}
+
 }

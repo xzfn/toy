@@ -109,6 +109,7 @@ public:
 	TimedTextBuilder timed_text_builder;
 
 	KeyDownCallback script_on_key_down;
+	KeyDownCallback luascript_on_key_down;
 	TimerManager timer_manager;
 	float delta_time;
 	InputManager input_manager;

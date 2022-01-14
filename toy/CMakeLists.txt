@@ -154,6 +154,8 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_timer_manager.h
 	src/wrap/wrap_timer_manager.cpp
+	src/luawrap/luawrap_timer_manager.h
+	src/luawrap/luawrap_timer_manager.cpp
 
 	src/wrap/wrap_input_manager.h
 	src/wrap/wrap_input_manager.cpp

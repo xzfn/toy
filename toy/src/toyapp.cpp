@@ -382,6 +382,10 @@ void App::on_key_down(uint32_t key) {
 		script_on_key_down(key);
 		PYUTIL_SAFE_RUN_END
 	}
+	if (luascript_on_key_down) {
+		luascript_on_key_down(key);
+		// luautil::check_lua_ret(lua_ret);
+	}
 
 	if (key == VK_NUMPAD1) {
 		// test reload shader

@@ -10,6 +10,7 @@ https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 """
 
 OUTPUT_FILEPATH = '../script/keycodes.py'
+OUTPUT_FILEPATH_LUA = '../luascript/keycodes.lua'
 
 
 def parse_line(line):
@@ -21,14 +22,24 @@ def parse_line(line):
 	return None
 
 def write_keycodes(keycodes):
-	keycodes_filename = OUTPUT_FILEPATH
-	with open(keycodes_filename, 'w') as f:
-		f.write('# key codes generated from WinUser.h using misc/generate_keycodes.py\n')
+	desc = 'key codes generated from WinUser.h using misc/generate_keycodes.py'
+	with open(OUTPUT_FILEPATH, 'w', newline='\n') as f:
+		f.write('# {}\n'.format(desc))
 		f.write('\n')
 		for keycode in keycodes:
 			name, value = keycode
 			line = '{} = {}\n'.format(name, value)
 			f.write(line)
+
+	with open(OUTPUT_FILEPATH_LUA, 'w', newline='\n') as f:
+		f.write('-- {}\n'.format(desc))
+		f.write('\n')
+		f.write('return {\n')
+		for keycode in keycodes:
+			name, value = keycode
+			line = '\t{} = {},\n'.format(name, value)
+			f.write(line)
+		f.write('}\n')
 
 def generate_keycodes(vk_lines):
 	keycodes = []

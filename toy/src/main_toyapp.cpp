@@ -14,6 +14,19 @@ namespace py = pybind11;
 
 App* g_app;
 
+void app_main(VulkanContext& vulkan_context, Window& window) {
+	App app;
+	g_app = &app;
+	std::cout << "startup\n";
+	app.startup(vulkan_context, &window);
+
+	std::cout << "mainloop\n";
+	window.mainloop();
+
+	std::cout << "shutdown\n";
+	app.shutdown();
+}
+
 int main() {
 
 
@@ -37,17 +50,10 @@ int main() {
 	luaL_openlibs(L);
 	luautil::bind_all(L);
 
-	App app;
-	g_app = &app;
-	std::cout << "startup\n";
-	app.startup(vulkan_context, &window);
-
-	std::cout << "mainloop\n";
-	window.mainloop();
-
-	std::cout << "shutdown\n";
-	app.shutdown();
+	app_main(vulkan_context, window);
 
 	lua_close(L);
+
+	std::cout << "exit\n";
 	return 0;
 }
