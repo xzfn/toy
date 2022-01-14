@@ -142,6 +142,9 @@ set(toyapp_SOURCES
 	src/mesh_data_helper.h
 	src/mesh_data_helper.cpp
 
+	src/script_runner.h
+	src/script_runner.cpp
+
 	src/wrap/wrap_toy.h
 	src/wrap/wrap_toy.cpp
 	src/luawrap/luawrap_toy.h
@@ -217,6 +220,11 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_window.h
 	src/wrap/wrap_window.cpp
+
+	src/wrap/wrap_script_runner.h
+	src/wrap/wrap_script_runner.cpp
+	src/luawrap/luawrap_script_runner.h
+	src/luawrap/luawrap_script_runner.cpp
 
 	src/python_util.h
 	src/python_util.cpp

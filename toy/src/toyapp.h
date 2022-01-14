@@ -23,6 +23,7 @@
 #include "render_manager.h"
 #include "light_manager.h"
 #include "shadow_manager.h"
+#include "script_runner.h"
 
 
 class App {
@@ -116,5 +117,6 @@ public:
 	CameraManager camera_manager;
 	RenderManager render_manager;
 	LightManager light_manager;
+	ScriptRunner script_runner;
 
 };

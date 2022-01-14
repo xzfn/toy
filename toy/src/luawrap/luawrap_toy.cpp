@@ -5,6 +5,7 @@
 
 #include "luawrap_timer_manager.h"
 #include "luawrap_geometry_builder.h"
+#include "luawrap_script_runner.h"
 
 #include "luawrap_app.h"
 
@@ -14,6 +15,7 @@
 static void luawrap_toy(sol::table& m) {
 	luawrap_timer_manager(m);
 	luawrap_geometry_builder(m);
+	luawrap_script_runner(m);
 
 	luawrap_app(m);
 }

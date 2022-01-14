@@ -19,7 +19,7 @@ void luawrap_app(sol::table& m) {
 	t.set("resource_manager", sol::readonly(&App::resource_manager));
 	t.set("render_manager", sol::readonly(&App::render_manager));
 	t.set("light_manager", sol::readonly(&App::light_manager));
-
+	t.set("script_runner", sol::readonly(&App::script_runner));
 	t.set("material_lines", sol::readonly(&App::material_lines));
 
 	t.set_function("set_background_color", &App::set_background_color);

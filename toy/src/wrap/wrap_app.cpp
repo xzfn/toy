@@ -19,7 +19,7 @@ void wrap_app(pybind11::module_& m) {
 	t.def_readonly("resource_manager", &App::resource_manager);
 	t.def_readonly("render_manager", &App::render_manager);
 	t.def_readonly("light_manager", &App::light_manager);
-
+	t.def_readonly("script_runner", &App::script_runner);
 	t.def_readonly("material_lines", &App::material_lines);
 
 	t.def("set_background_color", &App::set_background_color);
