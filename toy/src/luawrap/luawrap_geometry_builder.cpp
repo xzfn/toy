@@ -8,12 +8,12 @@
 
 void luawrap_GeometryMeshData(sol::table& m) {
 	auto t = m.new_usertype<GeometryMeshData>("GeometryMeshData");
-	t[sol::call_constructor] = sol::constructors<GeometryMeshData()>();
+	t[sol::meta_function::construct] = sol::constructors<GeometryMeshData()>();
 }
 
 void luawrap_GeometryBuilder(sol::table& m) {
 	auto t = m.new_usertype<GeometryBuilder>("GeometryBuilder");
-	t[sol::call_constructor] = sol::constructors<GeometryBuilder()>();
+	t[sol::meta_function::construct] = sol::constructors<GeometryBuilder()>();
 	t.set_function("add_line", &GeometryBuilder::add_line);
 	t.set_function("add_sphere", &GeometryBuilder::add_sphere);
 	t.set_function("add_cube", &GeometryBuilder::add_cube);
@@ -23,7 +23,7 @@ void luawrap_GeometryBuilder(sol::table& m) {
 
 void luawrap_TimedGeometryBuilder(sol::table& m) {
 	auto t = m.new_usertype<TimedGeometryBuilder>("TimedGeometryBuilder");
-	t[sol::call_constructor] = sol::constructors<TimedGeometryBuilder()>();
+	t[sol::meta_function::construct] = sol::constructors<TimedGeometryBuilder()>();
 	t.set_function("add_line", &TimedGeometryBuilder::add_line);
 	t.set_function("add_sphere", &TimedGeometryBuilder::add_sphere);
 	t.set_function("add_cube", &TimedGeometryBuilder::add_cube);

@@ -14,6 +14,7 @@ function App.new()
 	setmetatable(self, App)
 	-- init
 	self._time = 0.0
+	self._height = 0.0
 	return self
 end
 
@@ -44,6 +45,7 @@ function App.startup(self)
 end
 
 function App.update(self)
+	local delta_time = toy.app.delta_time
 	self._time = self._time + toy.app.delta_time
 	local s = math.sin(self._time)
 	local c = math.cos(self._time)
@@ -51,6 +53,31 @@ function App.update(self)
 	drawutil.draw_line(vmath.Vector3.new(0.0, 1.0, 0.0), vmath.Vector3.new(0.0, s, c), vmath.Vector3.new(c, s, 1.0), 1.0)
 	drawutil.draw_sphere(vmath.Vector3.new(0.0, s, 0.0), c * 0.2, vmath.Vector3.new(1.0, 0.0, (s + 1.0) * 0.5), 0.2)
 
+	local input_manager = toy.app.input_manager
+	if input_manager:get_key(keycodes.VK_NUMPAD8) then
+		self._height = self._height + delta_time * 2.0
+	end
+	if input_manager:get_key(keycodes.VK_NUMPAD2) then
+		self._height = self._height + delta_time * (-2.0)
+	end
+	if input_manager:get_key_down(keycodes.VK_NUMPAD5) then
+		self._height = 0.0
+	end
+	drawutil.draw_sphere(vmath.Vector3.new(0.0, self._height, 0.0), 1.0)
+
+	local camera = toy.app.camera_manager:get_camera()
+	local fov_delta = 0.0
+	if input_manager:get_key(keycodes.VK_NUMPAD4) then
+		fov_delta = 1.0
+	end
+	if input_manager:get_key(keycodes.VK_NUMPAD6) then
+		fov_delta = -1.0
+	end
+	if fov_delta ~= 0.0 then
+		local perspective_data = camera:get_perspective_data()
+		perspective_data.fov = perspective_data.fov + fov_delta * delta_time * 0.3
+		camera:set_perspective_data(perspective_data)
+	end
 end
 
 function App.shutdown(self)

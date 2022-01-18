@@ -6,6 +6,11 @@
 #include "luawrap_timer_manager.h"
 #include "luawrap_geometry_builder.h"
 #include "luawrap_script_runner.h"
+#include "luawrap_input_manager.h"
+#include "luawrap_camera.h"
+#include "luawrap_camera_manager.h"
+#include "luawrap_camera_controller.h"
+#include "luawrap_render_manager.h"
 
 #include "luawrap_app.h"
 
@@ -14,7 +19,14 @@
 
 static void luawrap_toy(sol::table& m) {
 	luawrap_timer_manager(m);
+	luawrap_input_manager(m);
+	luawrap_camera(m);
+	luawrap_camera_manager(m);
+	luawrap_camera_controller(m);
+	luawrap_render_manager(m);
+
 	luawrap_geometry_builder(m);
+
 	luawrap_script_runner(m);
 
 	luawrap_app(m);

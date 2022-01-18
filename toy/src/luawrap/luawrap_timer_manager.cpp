@@ -5,7 +5,7 @@
 
 void luawrap_timer_manager(sol::table& m) {
 	auto t = m.new_usertype<TimerManager>("TimerManager");
-	t[sol::call_constructor] = sol::constructors<TimerManager()>();
+	t[sol::meta_function::construct] = sol::constructors<TimerManager()>();
 	t.set_function("schedule", &TimerManager::schedule);
 	t.set_function("add_timer_unsafe", &TimerManager::add_timer);
 	t.set_function("add_timer", [](TimerManager* this_, double duration, sol::protected_function lua_callback) {

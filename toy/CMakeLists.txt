@@ -162,18 +162,28 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_input_manager.h
 	src/wrap/wrap_input_manager.cpp
+	src/luawrap/luawrap_input_manager.h
+	src/luawrap/luawrap_input_manager.cpp
 
 	src/wrap/wrap_camera.h
 	src/wrap/wrap_camera.cpp
+	src/luawrap/luawrap_camera.h
+	src/luawrap/luawrap_camera.cpp
 
 	src/wrap/wrap_camera_manager.h
 	src/wrap/wrap_camera_manager.cpp
+	src/luawrap/luawrap_camera_manager.h
+	src/luawrap/luawrap_camera_manager.cpp
 
 	src/wrap/wrap_camera_controller.h
 	src/wrap/wrap_camera_controller.cpp
+	src/luawrap/luawrap_camera_controller.h
+	src/luawrap/luawrap_camera_controller.cpp
 
 	src/wrap/wrap_render_manager.h
 	src/wrap/wrap_render_manager.cpp
+	src/luawrap/luawrap_render_manager.h
+	src/luawrap/luawrap_render_manager.cpp
 
 	src/wrap/wrap_geometry_builder.h
 	src/wrap/wrap_geometry_builder.cpp
