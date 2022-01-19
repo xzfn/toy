@@ -9,6 +9,7 @@ namespace py = pybind11;
 
 void wrap_VerticesData(py::module_& m) {
 	py::class_<VerticesData> t(m, "VerticesData");
+	t.def(py::init<>());
 	t.def_readwrite("positions", &VerticesData::positions);
 	t.def_readwrite("normals", &VerticesData::normals);
 	t.def_readwrite("uvs", &VerticesData::uvs);

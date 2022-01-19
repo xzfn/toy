@@ -192,36 +192,58 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_resource_manager.h
 	src/wrap/wrap_resource_manager.cpp
+	src/luawrap/luawrap_resource_manager.h
+	src/luawrap/luawrap_resource_manager.cpp
 
 	src/wrap/wrap_text_builder.h
 	src/wrap/wrap_text_builder.cpp
+	src/luawrap/luawrap_text_builder.h
+	src/luawrap/luawrap_text_builder.cpp
 
 	src/wrap/wrap_mesh_data.h
 	src/wrap/wrap_mesh_data.cpp
+	src/luawrap/luawrap_mesh_data.h
+	src/luawrap/luawrap_mesh_data.cpp
 
 	src/wrap/wrap_mesh.h
 	src/wrap/wrap_mesh.cpp
+	src/luawrap/luawrap_mesh.h
+	src/luawrap/luawrap_mesh.cpp
 
 	src/wrap/wrap_geometry_mesh.h
 	src/wrap/wrap_geometry_mesh.cpp
+	src/luawrap/luawrap_geometry_mesh.h
+	src/luawrap/luawrap_geometry_mesh.cpp
 
 	src/wrap/wrap_material.h
 	src/wrap/wrap_material.cpp
+	src/luawrap/luawrap_material.h
+	src/luawrap/luawrap_material.cpp
 
 	src/wrap/wrap_texture.h
 	src/wrap/wrap_texture.cpp
+	src/luawrap/luawrap_texture.h
+	src/luawrap/luawrap_texture.cpp
 
 	src/wrap/wrap_texture_cubemap.h
 	src/wrap/wrap_texture_cubemap.cpp
+	src/luawrap/luawrap_texture_cubemap.h
+	src/luawrap/luawrap_texture_cubemap.cpp
 
 	src/wrap/wrap_basic_pipeline.h
 	src/wrap/wrap_basic_pipeline.cpp
+	src/luawrap/luawrap_basic_pipeline.h
+	src/luawrap/luawrap_basic_pipeline.cpp
 
 	src/wrap/wrap_light.h
 	src/wrap/wrap_light.cpp
+	src/luawrap/luawrap_light.h
+	src/luawrap/luawrap_light.cpp
 
 	src/wrap/wrap_light_manager.h
 	src/wrap/wrap_light_manager.cpp
+	src/luawrap/luawrap_light_manager.h
+	src/luawrap/luawrap_light_manager.cpp
 
 	src/wrap/wrap_app.h
 	src/wrap/wrap_app.cpp
@@ -230,6 +252,8 @@ set(toyapp_SOURCES
 
 	src/wrap/wrap_window.h
 	src/wrap/wrap_window.cpp
+	src/luawrap/luawrap_window.h
+	src/luawrap/luawrap_window.cpp
 
 	src/wrap/wrap_script_runner.h
 	src/wrap/wrap_script_runner.cpp
