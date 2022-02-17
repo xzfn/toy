@@ -16,6 +16,7 @@ import retroreload
 from world import World
 import drawutil
 import shaderutil
+import imguiutil
 import mathutil
 
 from units.player import Player
@@ -65,6 +66,7 @@ class App:
         self.blue_material = toy.Material.create(self.pipeline, self.blue_texture)
         self.rgb_materials = [self.red_material, self.green_material, self.blue_material]
 
+        imguiutil.startup()
         # units
         # self.world.unit_manager.create_unit(Player)
         # self.world.unit_manager.create_unit(Enemy)
@@ -121,6 +123,7 @@ class App:
 
         self.world.render()
 
+        imguiutil.render()
         # import pdb
         # pdb.set_trace()
 

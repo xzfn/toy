@@ -1,6 +1,8 @@
 #include "load_helper.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "color_util.h"
 
@@ -22,6 +24,16 @@ std::shared_ptr<Texture> create_color_texture(glm::vec3 color) {
 	App& app = *get_app();
 	uint32_t pixel = rgb_to_hex(color);
 	imageutil::Image raw_image = imageutil::create_color_image(2, 2, 4, pixel);  // TODO change 4 to 3 when supported
+	auto texture = std::make_unique<Texture>();
+	texture->init(app.get_ctx(), raw_image);
+	return texture;
+}
+
+std::shared_ptr<Texture> create_rgba32_texture(int width, int height, std::string data)
+{
+	App& app = *get_app();
+	std::vector<uint8_t> bytes_data(data.begin(), data.end());
+	imageutil::Image raw_image = imageutil::create_rgba32_image(width, height, bytes_data);
 	auto texture = std::make_unique<Texture>();
 	texture->init(app.get_ctx(), raw_image);
 	return texture;
@@ -68,6 +80,22 @@ std::shared_ptr<BasicPipeline> create_basic_pipeline(std::string vert_spv, std::
 	return pipeline;
 }
 
+std::shared_ptr<BasicPipeline> create_imgui_pipeline()
+{
+	App& app = *get_app();
+	ResourceManager& resource_manager = app.resource_manager;
+	auto pipeline = std::make_unique<BasicPipeline>();
+	PipelineDescription desc;
+	desc.filename_vert_spv = resource_manager.full_path("shader/imgui.vert.spv");
+	desc.filename_frag_spv = resource_manager.full_path("shader/imgui.frag.spv");
+	desc.vertex_format = VertexFormat::ImGuiPositionUvColor;
+	desc.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	desc.cull_model_flags = VK_CULL_MODE_NONE;
+	desc.render_pass = app.get_ctx().basic.render_pass;
+	pipeline->init_pipeline(app.get_ctx(), desc);
+	return pipeline;
+}
+
 std::shared_ptr<Mesh> create_mesh(MeshData& mesh_data)
 {
 	App& app = *get_app();
@@ -81,5 +109,13 @@ std::shared_ptr<GeometryMesh> create_geometry_mesh(GeometryMeshData& mesh_data)
 	App& app = *get_app();
 	auto mesh = std::make_unique<GeometryMesh>();
 	mesh->init_resource(app.get_ctx(), mesh_data);
+	return mesh;
+}
+
+std::shared_ptr<ImGuiMesh> create_imgui_mesh(std::string vertex_data, std::string index_data)
+{
+	App& app = *get_app();
+	auto mesh = std::make_unique<ImGuiMesh>();
+	mesh->init_resource(app.get_ctx(), vertex_data, index_data);
 	return mesh;
 }

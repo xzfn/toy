@@ -8,6 +8,8 @@
 class VertexMesh {
 public:
 	VertexMesh();
+	VertexMesh(const VertexMesh&) = delete;
+	VertexMesh& operator=(const VertexMesh&) = delete;
 	~VertexMesh();
 
 	void init_resource(VulkanContext& ctx, std::vector<ColorTextureTriangleData> data);

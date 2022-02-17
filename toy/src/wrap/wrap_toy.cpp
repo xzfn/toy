@@ -24,6 +24,9 @@ namespace py = pybind11;
 #include "wrap_window.h"
 #include "wrap_script_runner.h"
 
+#include "wrap_imgui_mesh.h"
+#include "wrap_imgui_manager.h"
+
 #include "wrap_app.h"
 
 
@@ -48,6 +51,9 @@ void wrap_toy(py::module_& m) {
 	wrap_light_manager(m);
 	wrap_window(m);
 	wrap_script_runner(m);
+
+	wrap_imgui_mesh(m);
+	wrap_imgui_manager(m);
 
 	wrap_app(m);
 }

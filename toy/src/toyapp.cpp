@@ -352,6 +352,9 @@ void App::render(VkCommandBuffer command_buffer) {
 	// render_manager
 	render_manager.render(command_buffer, descriptor_sets_frame, frame_uniform.view_projection);
 
+	// imgui manager
+	imgui_manager.render(command_buffer, descriptor_sets_frame);
+
 	// global timed text
 	material_text.get_pipeline()->bind(command_buffer);
 	material_text.get_pipeline()->bind_descriptor_sets(command_buffer, descriptor_sets_frame);

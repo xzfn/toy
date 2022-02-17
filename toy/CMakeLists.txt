@@ -63,6 +63,9 @@ set(toy_SOURCES
 	src/geometry_mesh.h
 	src/geometry_mesh.cpp
 
+	src/imgui_mesh.h
+	src/imgui_mesh.cpp
+
 	src/text_builder.h
 	src/text_builder.cpp
 	src/ascii_texture.h
@@ -98,6 +101,9 @@ set(toy_SOURCES
 	src/shadow_config.h
 	src/shadow_manager.h
 	src/shadow_manager.cpp
+
+	src/imgui_manager.h
+	src/imgui_manager.cpp
 
 	src/cascaded_shadow_map_util.h
 	src/cascaded_shadow_map_util.cpp
@@ -259,6 +265,11 @@ set(toyapp_SOURCES
 	src/wrap/wrap_script_runner.cpp
 	src/luawrap/luawrap_script_runner.h
 	src/luawrap/luawrap_script_runner.cpp
+
+	src/wrap/wrap_imgui_mesh.h
+	src/wrap/wrap_imgui_mesh.cpp
+	src/wrap/wrap_imgui_manager.h
+	src/wrap/wrap_imgui_manager.cpp
 
 	src/python_util.h
 	src/python_util.cpp

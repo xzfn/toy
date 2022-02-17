@@ -21,6 +21,7 @@
 #include "input_manager.h"
 #include "camera_manager.h"
 #include "render_manager.h"
+#include "imgui_manager.h"
 #include "light_manager.h"
 #include "shadow_manager.h"
 #include "script_runner.h"
@@ -116,6 +117,7 @@ public:
 	InputManager input_manager;
 	CameraManager camera_manager;
 	RenderManager render_manager;
+	ImGuiManager imgui_manager;
 	LightManager light_manager;
 	ScriptRunner script_runner;
 

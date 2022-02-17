@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <exception>
+#include <cassert>
 
 #include "stb_image.h"
 
@@ -61,6 +62,16 @@ Image create_color_image(int width, int height, int channels, uint32_t pixel) {
 			p[icomp] = (pixel >> ((icomp) * 8)) & 0xff;
 		}
 	}
+	return image;
+}
+
+Image create_rgba32_image(int width, int height, std::vector<uint8_t> data) {
+	assert(data.size() == width * height * 4);
+	Image image;
+	image.width = width;
+	image.height = height;
+	image.channels = 4;
+	image.data = data;
 	return image;
 }
 

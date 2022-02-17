@@ -11,4 +11,5 @@ void wrap_texture(pybind11::module_& m) {
 	py::class_<Texture, std::shared_ptr<Texture>> t(m, "Texture");
 	t.def_static("create", &create_texture);
 	t.def_static("create_color", &create_color_texture);
+	t.def_static("create_rgba32", &create_rgba32_texture);
 }

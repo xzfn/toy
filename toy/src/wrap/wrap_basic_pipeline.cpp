@@ -10,6 +10,7 @@ namespace py = pybind11;
 void wrap_basic_pipeline(pybind11::module_& m) {
 	py::class_<BasicPipeline, std::shared_ptr<BasicPipeline>> t(m, "BasicPipeline");
 	t.def_static("create", &create_basic_pipeline);
+	t.def_static("create_imgui", &create_imgui_pipeline);
 	t.def("get_shader_spvs", &BasicPipeline::get_shader_spvs);
 	t.def("reload_shader", &BasicPipeline::reload_shader);
 	// t.def("init_resource", &BasicPipeline::init_resource);
