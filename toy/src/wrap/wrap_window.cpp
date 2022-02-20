@@ -20,4 +20,5 @@ void wrap_window(pybind11::module_& m) {
 	t.def("set_win32_hwnd_parent", [](Window* this_, uintptr_t hwnd_parent) {
 		this_->set_win32_hwnd_parent((HWND)hwnd_parent);
 	});
+	t.def("get_window_size", &Window::get_window_size);
 }

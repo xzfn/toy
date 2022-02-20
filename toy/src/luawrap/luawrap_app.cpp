@@ -36,4 +36,5 @@ void luawrap_app(sol::table& m) {
 	t.set_function("get_window", &App::get_window);
 
 	t.set_function("set_should_close", &App::set_should_close);
+	t.set("want_capture_keyboard", &App::want_capture_keyboard);
 }

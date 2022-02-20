@@ -18,4 +18,5 @@ void luawrap_window(sol::table& m) {
 	t.set_function("set_win32_hwnd_parent", [](Window* this_, uintptr_t hwnd_parent) {
 		this_->set_win32_hwnd_parent((HWND)hwnd_parent);
 	});
+	t.set_function("get_window_size", &Window::get_window_size);
 }

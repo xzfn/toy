@@ -15,6 +15,9 @@ void wrap_input_manager(py::module_& m) {
 	t.def("get_key", &InputManager::get_key);
 	t.def("get_key_down", &InputManager::get_key_down);
 	t.def("get_key_up", &InputManager::get_key_up);
+	t.def("get_keys_down", &InputManager::get_keys_down);
+	t.def("get_keys_up", &InputManager::get_keys_up);
+	t.def("get_chars", &InputManager::get_chars);
 
 	t.def("get_mouse_button", &InputManager::get_mouse_button);
 	t.def("get_mouse_button_down", &InputManager::get_mouse_button_down);
@@ -42,4 +45,6 @@ void wrap_input_manager(py::module_& m) {
 		auto thumb_position = input_manager.get_joystick_thumb_right();
 		return std::make_pair(thumb_position.x, thumb_position.y);
 	});
+	t.def("get_clipboard_text", &InputManager::get_clipboard_text);
+	t.def("set_clipboard_text", &InputManager::set_clipboard_text);
 }

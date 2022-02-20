@@ -54,6 +54,8 @@ public:
 
 	void on_key_up(uint32_t key);
 
+	void on_char(uint32_t c);
+
 	void on_mouse_down(uint32_t mouse_button, uint32_t x, uint32_t y);
 
 	void on_mouse_up(uint32_t mouse_button, uint32_t x, uint32_t y);
@@ -112,6 +114,8 @@ public:
 
 	KeyDownCallback script_on_key_down;
 	KeyDownCallback luascript_on_key_down;
+	std::function<bool()> want_capture_keyboard;
+
 	TimerManager timer_manager;
 	float delta_time;
 	InputManager input_manager;

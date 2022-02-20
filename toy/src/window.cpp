@@ -94,6 +94,8 @@ void Window::init(uint32_t width, uint32_t height, const wchar_t* title)
 	m_hwnd = hwnd;
 	m_hinstance = hInstance;
 
+	m_window_width = width;
+	m_window_height = height;
 }
 
 HWND Window::get_win32_hwnd()
@@ -126,6 +128,11 @@ void Window::set_win32_hwnd_parent(HWND hwnd_parent)
 {
 	SetWindowLongPtr(m_hwnd, GWLP_HWNDPARENT, (LONG_PTR)hwnd_parent);
 	SetWindowPos(m_hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+std::pair<uint32_t, uint32_t> Window::get_window_size()
+{
+	return std::make_pair(m_window_width, m_window_height);
 }
 
 Window::~Window()
@@ -183,6 +190,11 @@ void Window::set_key_down_callback(KeyDownCallback callback)
 void Window::set_key_up_callback(KeyUpCallback callback)
 {
 	m_callbacks.key_up = callback;
+}
+
+void Window::set_char_callback(CharCallback callback)
+{
+	m_callbacks.on_char = callback;
 }
 
 LRESULT Window::window_proc_impl(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
@@ -271,6 +283,8 @@ LRESULT Window::window_proc_impl(HWND hwnd, UINT message, WPARAM wparam, LPARAM 
 		if (m_callbacks.resize) {
 			UINT width = LOWORD(lparam);
 			UINT height = HIWORD(lparam);
+			m_window_width = width;
+			m_window_height = height;
 			m_callbacks.resize(width, height);
 		}
 	}
@@ -297,6 +311,15 @@ LRESULT Window::window_proc_impl(HWND hwnd, UINT message, WPARAM wparam, LPARAM 
 		if (m_callbacks.key_up) {
 			uint32_t key = (uint32_t)wparam;
 			m_callbacks.key_up(key);
+		}
+	}
+	break;
+
+	case WM_CHAR:
+	{
+		if (m_callbacks.on_char) {
+			uint32_t c = (uint32_t)wparam;
+			m_callbacks.on_char(c);
 		}
 	}
 	break;

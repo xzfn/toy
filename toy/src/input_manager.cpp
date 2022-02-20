@@ -4,6 +4,8 @@
 #include "Xinput.h"
 #include "winerror.h"
 
+#include <cassert>
+
 
 InputManager::InputManager()
 {
@@ -19,6 +21,11 @@ void InputManager::input_key_up(Key key)
 {
 	m_frame_key_up.insert(key);
 	m_key_states[key] = false;
+}
+
+void InputManager::input_char(uint32_t c)
+{
+	m_frame_chars.push_back(c);
 }
 
 void InputManager::input_mouse_button_down(MouseButton mouse_button)
@@ -46,10 +53,16 @@ void InputManager::input_mouse_wheel(float wheel_delta)
 	m_frame_mouse_wheel_delta += wheel_delta;
 }
 
+void InputManager::set_frame_capture_keyboard()
+{
+	m_frame_capture_keyboard = true;
+}
+
 void InputManager::clear_frame()
 {
 	m_frame_key_down.clear();
 	m_frame_key_up.clear();
+	m_frame_chars.clear();
 	m_frame_mouse_button_down.clear();
 	m_frame_mouse_button_up.clear();
 	m_frame_mouse_move.dx = 0;
@@ -57,11 +70,15 @@ void InputManager::clear_frame()
 	m_frame_mouse_wheel_delta = 0.0f;
 	m_frame_joystick_button_down = 0;
 	m_frame_joystick_button_up = 0;
+	m_frame_capture_keyboard = false;
 	update_joystick();
 }
 
 bool InputManager::get_key(Key key)
 {
+	if (m_frame_capture_keyboard) {
+		return false;
+	}
 	auto it = m_key_states.find(key);
 	if (it == m_key_states.end()) {
 		return false;
@@ -71,12 +88,33 @@ bool InputManager::get_key(Key key)
 
 bool InputManager::get_key_down(Key key)
 {
+	if (m_frame_capture_keyboard) {
+		return false;
+	}
 	return m_frame_key_down.find(key) != m_frame_key_down.end();
 }
 
 bool InputManager::get_key_up(Key key)
 {
+	if (m_frame_capture_keyboard) {
+		return false;
+	}
 	return m_frame_key_up.find(key) != m_frame_key_up.end();
+}
+
+std::vector<Key> InputManager::get_keys_down()
+{
+	return std::vector(m_frame_key_down.begin(), m_frame_key_down.end());
+}
+
+std::vector<Key> InputManager::get_keys_up()
+{
+	return std::vector(m_frame_key_up.begin(), m_frame_key_up.end());
+}
+
+std::vector<uint32_t> InputManager::get_chars()
+{
+	return m_frame_chars;
 }
 
 bool InputManager::get_mouse_button(MouseButton mouse_button)
@@ -204,4 +242,45 @@ ThumbPosition InputManager::get_joystick_thumb_left()
 ThumbPosition InputManager::get_joystick_thumb_right()
 {
 	return m_joystick_thumb_right;
+}
+
+void InputManager::set_clipboard_text(std::string text)
+{
+	// https://stackoverflow.com/questions/1264137/how-to-copy-string-to-clipboard-in-c
+	if (text.empty()) {
+		return;
+	}
+
+	std::size_t len = text.size() + 1;
+	HGLOBAL h_mem = GlobalAlloc(GMEM_MOVEABLE, len);
+	assert(h_mem != nullptr);
+	memcpy(GlobalLock(h_mem), text.data(), len);
+	GlobalUnlock(h_mem);
+
+	OpenClipboard(nullptr);
+	EmptyClipboard();
+	SetClipboardData(CF_TEXT, h_mem);
+	CloseClipboard();
+}
+
+std::string InputManager::get_clipboard_text()
+{
+	// https://stackoverflow.com/questions/14762456/getclipboarddatacf-text
+	OpenClipboard(nullptr);
+
+	HANDLE h_data = GetClipboardData(CF_TEXT);
+	if (h_data == nullptr) {
+		CloseClipboard();
+		return std::string();
+	}
+	char* p_text = (char*)GlobalLock(h_data);
+	if (p_text == nullptr) {
+		CloseClipboard();
+		return std::string();
+	}
+
+	std::string text(p_text);
+	GlobalUnlock(h_data);
+	CloseClipboard();
+	return text;
 }

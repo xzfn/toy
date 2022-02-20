@@ -81,6 +81,9 @@ void App::startup(VulkanContext& ctx, Window* window) {
 	window->set_key_up_callback([this](uint32_t key) {
 		this->on_key_up(key);
 	});
+	window->set_char_callback([this](uint32_t key) {
+		this->on_char(key);
+	});
 
 	window->set_mouse_down_callback([this](uint32_t mouse_button, uint32_t x, uint32_t y) {
 		this->on_mouse_down(mouse_button, x, y);
@@ -217,6 +220,10 @@ void App::update() {
 	double new_timestamp = std::chrono::duration<double>(now).count();
 	delta_time = (float)(new_timestamp - timestamp);
 	timestamp = new_timestamp;
+
+	if (want_capture_keyboard && want_capture_keyboard()) {
+		input_manager.set_frame_capture_keyboard();
+	}
 
 	timer_manager.schedule(new_timestamp);
 
@@ -398,6 +405,10 @@ void App::on_key_down(uint32_t key) {
 
 void App::on_key_up(uint32_t key) {
 	input_manager.input_key_up(key);
+}
+
+void App::on_char(uint32_t c) {
+	input_manager.input_char(c);
 }
 
 void App::on_mouse_down(uint32_t mouse_button, uint32_t x, uint32_t y) {

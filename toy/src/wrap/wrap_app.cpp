@@ -29,4 +29,5 @@ void wrap_app(pybind11::module_& m) {
 	});
 	t.def("get_window", &App::get_window, py::return_value_policy::reference);
 	t.def("set_should_close", &App::set_should_close);
+	t.def_readwrite("want_capture_keyboard", &App::want_capture_keyboard);
 }

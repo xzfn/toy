@@ -10,6 +10,9 @@ void luawrap_input_manager(sol::table& m) {
 	t.set_function("get_key", &InputManager::get_key);
 	t.set_function("get_key_down", &InputManager::get_key_down);
 	t.set_function("get_key_up", &InputManager::get_key_up);
+	t.set_function("get_keys_down", &InputManager::get_keys_down);
+	t.set_function("get_keys_up", &InputManager::get_keys_up);
+	t.set_function("get_chars", &InputManager::get_chars);
 
 	t.set_function("get_mouse_button", &InputManager::get_mouse_button);
 	t.set_function("get_mouse_button_down", &InputManager::get_mouse_button_down);
@@ -37,4 +40,6 @@ void luawrap_input_manager(sol::table& m) {
 		auto thumb_position = input_manager.get_joystick_thumb_right();
 		return std::make_pair(thumb_position.x, thumb_position.y);
 	});
+	t.set_function("get_clipboard_text", &InputManager::get_clipboard_text);
+	t.set_function("set_clipboard_text", &InputManager::set_clipboard_text);
 }

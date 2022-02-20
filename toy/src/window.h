@@ -19,7 +19,7 @@ typedef std::function<void(uint32_t mouse_button, uint32_t x, uint32_t y)> Mouse
 typedef std::function<void(float delta, uint32_t x, uint32_t y)> MouseWheelCallback;
 typedef std::function<void(uint32_t key)> KeyDownCallback;
 typedef std::function<void(uint32_t key)> KeyUpCallback;
-
+typedef std::function<void(uint32_t c)> CharCallback;
 typedef std::function<void()> UpdateCallback;
 
 
@@ -38,6 +38,7 @@ public:
 	void move_window(int x, int y, int width, int height);
 	void set_borderless(bool is_borderless);
 	void set_win32_hwnd_parent(HWND hwnd_parent);
+	std::pair<uint32_t, uint32_t> get_window_size();
 
 	void set_update_callback(UpdateCallback callback);
 
@@ -48,6 +49,7 @@ public:
 	void set_mouse_wheel_callback(MouseWheelCallback callback);
 	void set_key_down_callback(KeyDownCallback callback);
 	void set_key_up_callback(KeyUpCallback callback);
+	void set_char_callback(CharCallback callback);
 
 	void set_should_close();
 
@@ -68,6 +70,7 @@ private:
 		MouseWheelCallback mouse_wheel;
 		KeyDownCallback key_down;
 		KeyUpCallback key_up;
+		CharCallback on_char;
 	};
 
 private:
@@ -76,4 +79,6 @@ private:
 	HWND m_hwnd = NULL;
 	HINSTANCE m_hinstance = NULL;
 	bool m_should_close = false;
+	uint32_t m_window_width = 0;
+	uint32_t m_window_height = 0;
 };
