@@ -403,6 +403,15 @@ void VulkanContext::render(VkClearColorValue clear_color,
 
 }
 
+void VulkanContext::reset_scissor(VkCommandBuffer command_buffer)
+{
+	VkRect2D scissor = {
+		{0, 0},
+		{basic.extent.width, basic.extent.height}
+	};
+	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+}
+
 void VulkanContext::device_wait_idle()
 {
 	vkDeviceWaitIdle(basic.device);

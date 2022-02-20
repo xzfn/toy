@@ -10,6 +10,7 @@ struct ImGuiMeshRenderCommand {
 	std::shared_ptr<Material> material;
 	std::size_t element_count;
 	std::size_t index_buffer_offset;
+	glm::vec4 clip_rect;
 };
 
 
@@ -21,7 +22,11 @@ public:
 
 public:
 
-	void add_imgui_mesh_part(std::shared_ptr<ImGuiMesh> mesh, glm::mat4 matrix, std::shared_ptr<Material> material, std::size_t element_count, std::size_t index_buffer_offset);
+	void add_imgui_mesh_part(
+		std::shared_ptr<ImGuiMesh> mesh, glm::mat4 matrix, std::shared_ptr<Material> material,
+		std::size_t element_count, std::size_t index_buffer_offset, glm::vec4 clip_rect
+	);
+
 	void render(VkCommandBuffer command_buffer, std::vector<VkDescriptorSet> descriptor_sets);
 
 private:

@@ -111,6 +111,7 @@ public:
 		std::function<void(VkCommandBuffer command_buffer)> depth_pass_callback,
 		std::function<void(VkCommandBuffer command_buffer)> render_callback
 		);
+	void reset_scissor(VkCommandBuffer command_buffer);
 	void device_wait_idle();
 
 private:

@@ -41,7 +41,9 @@ class ImGuiRenderer:
                 assert imgui.INDEX_SIZE == 4
 
                 toy.app.imgui_manager.add_imgui_mesh_part(
-                    mesh, vmath.Matrix4(), texture_id, command.elem_count, idx_buffer_offset)
+                    mesh, vmath.Matrix4(), texture_id, command.elem_count, idx_buffer_offset,
+                    vmath.Vector4(*command.clip_rect)
+                )
 
                 idx_buffer_offset += command.elem_count
 
@@ -64,7 +66,7 @@ def render():
     imgui.new_frame()
     _height += 0.2
     if _height > 80.0:
-        _height = 10.0  # TODO FIXME need scissor
+        _height = 10.0  # test scissor
     imgui.set_next_window_position(100, 50)
     imgui.set_next_window_size(300, _height, imgui.ALWAYS)  # imgui.ONCE
     imgui.begin('Custom window')
