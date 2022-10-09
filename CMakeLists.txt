@@ -14,6 +14,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
 endif()
 set(WIN32_UNICODE_DEFINES _UNICODE UNICODE)
 
+find_package(Vulkan REQUIRED)
+
 find_package(volk CONFIG REQUIRED)
 
 find_path(stb_INCLUDE_DIR stb_image.h DOC "Path to stb folder" REQUIRED)

@@ -35,6 +35,8 @@ from units.testmover import Testmover
 from units.testline import Testline
 from units.testease import Testease
 from units.teststoneskipping import TestStoneSkipping
+from units.testshake import Testshake
+
 
 import keycodes
 
@@ -83,7 +85,8 @@ class App:
         # self.world.unit_manager.create_unit(Testmover)
         # self.world.unit_manager.create_unit(Testline)
         # self.world.unit_manager.create_unit(Testease)
-        self.world.unit_manager.create_unit(TestStoneSkipping)
+        # self.world.unit_manager.create_unit(TestStoneSkipping)
+        self.world.unit_manager.create_unit(Testshake)
 
     def on_key_down(self, key):
         if key == keycodes.VK_F5:
